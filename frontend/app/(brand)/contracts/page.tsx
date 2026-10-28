@@ -214,20 +214,22 @@ export default function ContractsPage() {
           >
             Download sample PDF
           </button>
-          <button
-            type="button"
-            className="btn"
-            style={{
-              background: "var(--color-surface-sunken)",
-              color: "var(--color-accent)",
-              border: "1px solid var(--color-border)",
-              fontSize: "12px",
-            }}
-            disabled={busy}
-            onClick={handleLoadSample}
-          >
-            {busy ? "Scanning sample…" : "⚡ Quick test sample contract"}
-          </button>
+          {!isBrand && (
+            <button
+              type="button"
+              className="btn"
+              style={{
+                background: "var(--color-surface-sunken)",
+                color: "var(--color-accent)",
+                border: "1px solid var(--color-border)",
+                fontSize: "12px",
+              }}
+              disabled={busy}
+              onClick={handleLoadSample}
+            >
+              {busy ? "Scanning sample…" : "⚡ Test sample contract (flag scan)"}
+            </button>
+          )}
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
           {!isBrand && (
@@ -282,7 +284,7 @@ export default function ContractsPage() {
             <input name="file" type="file" accept="application/pdf" required className="field" />
           </label>
           <div style={{ fontSize: "11.5px", color: "var(--color-ink-faint)" }}>
-            Scanned automatically for red-flag clauses after upload.
+            Upload agreement document (PDF) for creator collaboration.
           </div>
           <div>
             <button className="btn" disabled={busy} type="submit">{busy ? "Uploading…" : "Upload"}</button>
@@ -301,7 +303,6 @@ export default function ContractsPage() {
         <tr style={{ color: "var(--color-ink-faint)", textAlign: "left" }}>
           <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Creator</th>
           <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Contract</th>
-          <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Reviewed</th>
           <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}>Status</th>
         </tr>
       </thead>
@@ -310,10 +311,9 @@ export default function ContractsPage() {
           <tr key={c.id}>
             <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>{creatorNameFor(c)}</td>
             <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-              <Link href={`/contracts/${c.id}/clauses`} style={{ color: "var(--color-accent)" }}>View clauses →</Link>
-            </td>
-            <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-              <StatusPill status={c.raw_text ? "Reviewed" : "Not yet"} variant={c.raw_text ? "success" : "neutral"} />
+              <Link href={`/contracts/${c.id}/clauses`} style={{ color: "var(--color-accent)", fontWeight: 500 }}>
+                View contract →
+              </Link>
             </td>
             <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}>
               <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", alignItems: "center" }}>
@@ -359,7 +359,7 @@ export default function ContractsPage() {
       <thead>
         <tr style={{ color: "var(--color-ink-faint)", textAlign: "left" }}>
           <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Contract</th>
-          <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Reviewed</th>
+          <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Protection Scan</th>
           <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Status</th>
           <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Uploaded</th>
           <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}></th>
@@ -375,7 +375,7 @@ export default function ContractsPage() {
                 {title}
               </td>
               <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                <StatusPill status={c.raw_text ? "Reviewed" : "Pending"} variant={c.raw_text ? "success" : "neutral"} />
+                <StatusPill status={c.raw_text ? "Scanned" : "Pending"} variant={c.raw_text ? "success" : "neutral"} />
               </td>
               <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
                 <StatusPill status={c.status.replace(/_/g, " ")} variant={variantFor(c.status)} />
@@ -385,7 +385,7 @@ export default function ContractsPage() {
               </td>
               <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}>
                 <Link href={`/contracts/${c.id}/clauses`} style={{ color: "var(--color-accent)", fontWeight: 500 }}>
-                  View clauses →
+                  Review clauses & flags →
                 </Link>
               </td>
             </tr>
