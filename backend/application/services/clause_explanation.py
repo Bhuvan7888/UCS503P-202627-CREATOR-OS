@@ -4,6 +4,13 @@ from domain.interfaces.repositories import ClauseCardRepo
 from domain.logic.red_flag_engine import detect_flags
 from domain.models.contract_intelligence import ClauseCardOut
 
+DEFAULT_FLAG_EXPLANATIONS = {
+    "perpetual_usage_rights": "The brand acquires perpetual rights to use your content and likeness forever across all media without additional compensation or expiration date.",
+    "unlimited_revisions": "Demanding unlimited revisions exposes the creator to endless rounds of rework and reshoots without compensating for additional time or effort.",
+    "unpaid_whitelisting": "Allows the brand to run paid ads and boosting through your creator account handle without paying a whitelisting access fee.",
+    "extended_exclusivity": "Exclusivity extends beyond the active campaign window, preventing you from partnering with other brands in the niche.",
+}
+
 logger = logging.getLogger(__name__)
 
 class ClauseExplanationService:
@@ -30,6 +37,8 @@ class ClauseExplanationService:
             except Exception as e:
                 logger.error(f"Failed to fetch LLM explanation for clause flag: {e}")
                 llm_explanation = None
+            if not llm_explanation and flag_reason:
+                llm_explanation = DEFAULT_FLAG_EXPLANATIONS.get(flag_reason)
 
         card.flag = flag_status
         card.flag_reason_code = flag_reason

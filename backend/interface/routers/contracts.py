@@ -1,16 +1,18 @@
 import logging
+import re
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 
 from application.services.contract_intelligence import ContractIntelligenceService
 from application.services.contracts import ContractService
 from domain.models.contract import Contract, ContractCreatorStatusUpdateRequest, ContractStatusUpdateRequest
+from domain.models.contract_intelligence import ClauseInput
 from exceptions import InvalidStatusTransition, PermissionDeniedError
 from infrastructure.llm.gemini_adapter import GeminiAdapter
-from infrastructure.pdf import extract_text
+from infrastructure.pdf import extract_text, generate_sample_contract_pdf
 from infrastructure.supabase.client import get_supabase_client
-from infrastructure.supabase.repos import SupabaseActivityLogRepo, SupabaseContractRepo
+from infrastructure.supabase.repos import SupabaseActivityLogRepo, SupabaseContractRepo, SupabaseDealRepo
 from infrastructure.supabase.storage import SupabaseStorage
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from interface.routers.contract_intelligence import get_ci_service
@@ -18,6 +20,38 @@ from interface.routers.contract_intelligence import get_ci_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["contracts"])
+
+
+def fallback_segment_clauses(text: str) -> list[ClauseInput]:
+    """Fallback segmenter that splits contract text by numbered sections or clauses
+    and infers clause types when Gemini API is unavailable or in mock mode."""
+    pattern = r"(?=(?:^|\n)(?:\d+[\.\)]\s+|Section\s+\d+|Clause\s+\d+|ARTICLE\s+\d+))"
+    raw_parts = [p.strip() for p in re.split(pattern, text, flags=re.MULTILINE) if p.strip()]
+    if len(raw_parts) <= 1:
+        raw_parts = [p.strip() for p in text.split("\n\n") if p.strip()]
+
+    def classify_clause(clause_text: str) -> str:
+        lower = clause_text.lower()
+        if any(k in lower for k in ["usage right", "licens", "perpetu", "intellectual property", "ownership"]):
+            return "usage_rights"
+        if any(k in lower for k in ["revision", "edit", "reshoot"]):
+            return "revisions"
+        if any(k in lower for k in ["exclusiv", "non-compete", "competitor"]):
+            return "exclusivity"
+        if any(k in lower for k in ["payment", "compensation", "fee", "invoice", "inr"]):
+            return "payment_terms"
+        if any(k in lower for k in ["deliverable", "scope", "reel", "story", "video", "post"]):
+            return "deliverables"
+        if any(k in lower for k in ["whitelist", "boost", "ad authorization"]):
+            return "whitelisting"
+        return "general_terms"
+
+    clauses: list[ClauseInput] = []
+    for part in raw_parts:
+        if len(part) < 15 and not any(c.isalnum() for c in part):
+            continue
+        clauses.append(ClauseInput(clause_type=classify_clause(part), raw_text=part))
+    return clauses
 
 def get_contract_service() -> ContractService:
     client = get_supabase_client(service_role=True)
@@ -28,6 +62,46 @@ def get_contract_service() -> ContractService:
 
 def get_storage() -> SupabaseStorage:
     return SupabaseStorage(get_supabase_client(service_role=True))
+
+@router.get("/contracts/sample-contract-pdf")
+async def download_sample_contract_pdf():
+    pdf_bytes = generate_sample_contract_pdf()
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="creator_os_sample_contract.pdf"'},
+    )
+
+@router.post("/contracts/upload-sample", response_model=Contract)
+async def upload_sample_contract(
+    actor: ActorContext = Depends(get_current_actor),
+    storage: SupabaseStorage = Depends(get_storage),
+    service: ContractService = Depends(get_contract_service),
+    ci_service: ContractIntelligenceService = Depends(get_ci_service),
+):
+    pdf_bytes = generate_sample_contract_pdf()
+    text = extract_text(pdf_bytes)
+
+    if actor.actor_type == "creator":
+        path = f"personal-contracts/{actor.creator_id}/sample-contract.pdf"
+        uploaded_path = await storage.upload_file("creator-os-assets", path, pdf_bytes)
+        contract = await service.create_personal_contract(actor.creator_id, uploaded_path)
+    else:
+        client = get_supabase_client(service_role=True)
+        deal_repo = SupabaseDealRepo(client)
+        deals = await deal_repo.list_for_brand(actor.brand_id, limit=1)
+        deal_id = deals[0].id if deals else UUID(int=1)
+        path = f"contracts/{deal_id}/sample-contract.pdf"
+        uploaded_path = await storage.upload_file("creator-os-assets", path, pdf_bytes)
+        contract = await service.create_contract(deal_id, uploaded_path, actor.brand_id, actor.actor_id, actor.actor_type)
+
+    if text.strip():
+        contract = await service.save_raw_text(contract.id, text)
+        clauses = fallback_segment_clauses(text)
+        if clauses:
+            await ci_service.scan_contract(contract.id, clauses)
+
+    return contract
 
 @router.post("/deals/{deal_id}/contracts", response_model=Contract)
 async def upload_contract(
@@ -52,7 +126,13 @@ async def upload_contract(
             # Saved unconditionally (before segmentation) so the full text is
             # always viewable even if clause segmentation/scanning fails below.
             contract = await service.save_raw_text(contract.id, text)
-            clauses = await GeminiAdapter().segment_clauses(text)
+            clauses = []
+            try:
+                clauses = await GeminiAdapter().segment_clauses(text)
+            except Exception:
+                logger.warning("Gemini clause segmentation unavailable; using fallback segmentation")
+            if not clauses:
+                clauses = fallback_segment_clauses(text)
             if clauses:
                 await ci_service.scan_contract(contract.id, clauses)
     except Exception:
@@ -81,7 +161,13 @@ async def upload_personal_contract(
         text = extract_text(content)
         if text.strip():
             contract = await service.save_raw_text(contract.id, text)
-            clauses = await GeminiAdapter().segment_clauses(text)
+            clauses = []
+            try:
+                clauses = await GeminiAdapter().segment_clauses(text)
+            except Exception:
+                logger.warning("Gemini clause segmentation unavailable; using fallback segmentation")
+            if not clauses:
+                clauses = fallback_segment_clauses(text)
             if clauses:
                 await ci_service.scan_contract(contract.id, clauses)
     except Exception:

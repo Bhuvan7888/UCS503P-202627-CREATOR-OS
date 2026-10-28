@@ -162,6 +162,34 @@ export default function ContractsPage() {
     reload();
   }
 
+  async function handleLoadSample() {
+    setBusy(true);
+    setFormError("");
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/contracts/upload-sample`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${loadSession()?.access_token ?? ""}` },
+        }
+      );
+      if (!res.ok) {
+        setFormError("Couldn't scan sample contract.");
+        return;
+      }
+      reload();
+    } catch {
+      setFormError("Failed to trigger sample contract scan.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function handleDownloadSample() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    window.open(`${apiUrl}/contracts/sample-contract-pdf`, "_blank");
+  }
+
   if (error) {
     return <EmptyState icon={FileText} message="Couldn't load contracts. Try signing in again." />;
   }
@@ -171,17 +199,48 @@ export default function ContractsPage() {
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px", gap: "8px" }}>
-        {!isBrand && (
-          <button className="btn" onClick={() => setShowPersonalForm((v) => !v)}>
-            {showPersonalForm ? "Cancel" : "+ Upload for review"}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", gap: "8px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <button
+            type="button"
+            className="btn"
+            style={{
+              background: "var(--color-surface-sunken)",
+              color: "var(--color-ink)",
+              border: "1px solid var(--color-border)",
+              fontSize: "12px",
+            }}
+            onClick={handleDownloadSample}
+          >
+            Download sample PDF
           </button>
-        )}
-        {isBrand && (
-          <button className="btn" onClick={() => setShowForm((v) => !v)}>
-            {showForm ? "Cancel" : "+ Upload contract"}
+          <button
+            type="button"
+            className="btn"
+            style={{
+              background: "var(--color-surface-sunken)",
+              color: "var(--color-accent)",
+              border: "1px solid var(--color-border)",
+              fontSize: "12px",
+            }}
+            disabled={busy}
+            onClick={handleLoadSample}
+          >
+            {busy ? "Scanning sample…" : "⚡ Quick test sample contract"}
           </button>
-        )}
+        </div>
+        <div style={{ display: "flex", gap: "8px" }}>
+          {!isBrand && (
+            <button className="btn" onClick={() => setShowPersonalForm((v) => !v)}>
+              {showPersonalForm ? "Cancel" : "+ Upload for review"}
+            </button>
+          )}
+          {isBrand && (
+            <button className="btn" onClick={() => setShowForm((v) => !v)}>
+              {showForm ? "Cancel" : "+ Upload contract"}
+            </button>
+          )}
+        </div>
       </div>
 
       {showPersonalForm && (
@@ -299,25 +358,39 @@ export default function ContractsPage() {
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
       <thead>
         <tr style={{ color: "var(--color-ink-faint)", textAlign: "left" }}>
+          <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Contract</th>
+          <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Reviewed</th>
           <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Status</th>
           <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Uploaded</th>
-          <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}></th>
+          <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}></th>
         </tr>
       </thead>
       <tbody>
-        {items.map((c) => (
-          <tr key={c.id}>
-            <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-              <StatusPill status={c.status.replace(/_/g, " ")} variant={variantFor(c.status)} />
-            </td>
-            <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", color: "var(--color-ink-soft)" }}>
-              {new Date(c.created_at).toLocaleDateString()}
-            </td>
-            <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-              <Link href={`/contracts/${c.id}/clauses`} style={{ color: "var(--color-accent)" }}>View clauses →</Link>
-            </td>
-          </tr>
-        ))}
+        {items.map((c) => {
+          const deal = deals.find((d) => d.id === c.deal_id);
+          const title = deal?.campaign_name ? `${deal.campaign_name} Agreement` : (c.file_path ? c.file_path.split("/").pop() : "Creator Collaboration Agreement");
+          return (
+            <tr key={c.id}>
+              <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", fontWeight: 500 }}>
+                {title}
+              </td>
+              <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
+                <StatusPill status={c.raw_text ? "Reviewed" : "Pending"} variant={c.raw_text ? "success" : "neutral"} />
+              </td>
+              <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
+                <StatusPill status={c.status.replace(/_/g, " ")} variant={variantFor(c.status)} />
+              </td>
+              <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", color: "var(--color-ink-soft)" }}>
+                {new Date(c.created_at).toLocaleDateString()}
+              </td>
+              <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}>
+                <Link href={`/contracts/${c.id}/clauses`} style={{ color: "var(--color-accent)", fontWeight: 500 }}>
+                  View clauses →
+                </Link>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
       )}

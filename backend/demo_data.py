@@ -171,9 +171,13 @@ class DemoContractRepo:
     def __init__(self):
         self.data: dict[UUID, Contract] = {}
         self.deal_brand_map: dict[UUID, UUID] = {}
+        self.deal_creator_map: dict[UUID, UUID] = {}
+        self.contract_creator_map: dict[UUID, UUID] = {}
 
     async def create(self, contract: Contract) -> Contract:
         self.data[contract.id] = contract
+        if contract.creator_id:
+            self.contract_creator_map[contract.id] = contract.creator_id
         return contract
 
     async def get(self, id: UUID) -> Contract | None:
@@ -181,10 +185,18 @@ class DemoContractRepo:
 
     async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[Contract]:
         matches = [c for c in self.data.values() if self.deal_brand_map.get(c.deal_id) == brand_id]
+        matches.sort(key=lambda c: c.created_at, reverse=True)
         return matches[offset : offset + limit]
 
     async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[Contract]:
-        return []
+        matches = [
+            c for c in self.data.values()
+            if c.creator_id == creator_id
+            or self.deal_creator_map.get(c.deal_id) == creator_id
+            or self.contract_creator_map.get(c.id) == creator_id
+        ]
+        matches.sort(key=lambda c: c.created_at, reverse=True)
+        return matches[offset : offset + limit]
 
     async def update_status(self, id: UUID, status: str) -> Contract:
         contract = self.data[id]
@@ -268,6 +280,7 @@ class DemoPaymentRepo:
     def __init__(self):
         self.data: dict[UUID, Payment] = {}
         self.contract_brand_map: dict[UUID, UUID] = {}
+        self.contract_creator_map: dict[UUID, UUID] = {}
 
     async def create(self, payment: Payment) -> Payment:
         self.data[payment.id] = payment
@@ -278,10 +291,13 @@ class DemoPaymentRepo:
 
     async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[Payment]:
         matches = [p for p in self.data.values() if self.contract_brand_map.get(p.contract_id) == brand_id]
+        matches.sort(key=lambda p: p.created_at, reverse=True)
         return matches[offset : offset + limit]
 
     async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[Payment]:
-        return []
+        matches = [p for p in self.data.values() if self.contract_creator_map.get(p.contract_id) == creator_id]
+        matches.sort(key=lambda p: p.created_at, reverse=True)
+        return matches[offset : offset + limit]
 
     async def mark_paid(self, id: UUID, invoice_number: str | None = None) -> Payment:
         payment = self.data[id]
@@ -422,6 +438,8 @@ class DemoClauseCardRepo:
         self.contract_brand_map: dict[UUID, UUID] = {}
 
     async def create(self, card: ClauseCardOut) -> ClauseCardOut:
+        if not card.id or card.id == UUID(int=0):
+            card.id = uuid4()
         self.data[card.id] = card
         return card
 
@@ -709,6 +727,7 @@ def _seed_demo_data(s: DemoStore):
         )
         s.deal_repo.data[deal_id] = d
         s.contract_repo.deal_brand_map[deal_id] = brand_id
+        s.contract_repo.deal_creator_map[deal_id] = creator_id
         s.deliverable_repo.deal_brand_map[deal_id] = brand_id
         s.negotiation_session_repo.deal_brand_map[deal_id] = brand_id
         s.negotiation_session_repo.deal_creator_map[deal_id] = creator_id
@@ -762,25 +781,58 @@ def _seed_demo_data(s: DemoStore):
     add_deliverable(d9, "Travel Vlog — Travel Speaker", "1x destination vlog, 3-5 min", "in_production")
 
     # Contracts & Payments
-    def add_contract_and_payment(deal_id: UUID, brand_id: UUID, amount: float, paid: bool):
+    def add_contract_and_payment(
+        deal_id: UUID,
+        brand_id: UUID,
+        amount: float,
+        paid: bool,
+        raw_text: str | None = None,
+        clauses_data: list[tuple[str, str, str, str | None, str | None]] | None = None,
+        status_override: str | None = None,
+    ) -> UUID:
         cid = uuid4()
+        deal = s.deal_repo.data.get(deal_id)
+        creator_id = deal.creator_id if deal else None
+        contract_status = status_override or ("signed" if paid else "uploaded")
+
         contract = Contract(
             id=cid,
             deal_id=deal_id,
-            status="signed" if paid else "uploaded",
+            creator_id=creator_id,
+            status=contract_status,
             previous_status=None,
             s3_path=f"contracts/{deal_id}/demo-agreement.pdf",
             usage_rights_duration_days=60,
             exclusivity_scope="category",
             revision_limit=2,
             payment_timeline_days=30,
-            raw_text="BRAND COLLABORATION AGREEMENT - Creator OS Demo",
-            creator_status="accepted",
+            raw_text=raw_text or "BRAND COLLABORATION AGREEMENT - Creator OS Demo",
+            creator_status="accepted" if paid else "unread",
             created_at=now,
             updated_at=now,
         )
         s.contract_repo.data[cid] = contract
+        s.contract_repo.deal_brand_map[deal_id] = brand_id
+        if creator_id:
+            s.contract_repo.deal_creator_map[deal_id] = creator_id
+            s.contract_repo.contract_creator_map[cid] = creator_id
+            s.payment_repo.contract_creator_map[cid] = creator_id
         s.payment_repo.contract_brand_map[cid] = brand_id
+        s.clause_card_repo.contract_brand_map[cid] = brand_id
+
+        if clauses_data:
+            for ctype, raw_clause, flag, reason, expl in clauses_data:
+                card = ClauseCardOut(
+                    id=uuid4(),
+                    contract_id=cid,
+                    clause_type=ctype,
+                    raw_text=raw_clause,
+                    flag=flag,
+                    flag_reason_code=reason,
+                    llm_explanation=expl,
+                    created_at=now,
+                )
+                s.clause_card_repo.data[card.id] = card
 
         pid = uuid4()
         payment = Payment(
@@ -796,13 +848,88 @@ def _seed_demo_data(s: DemoStore):
             updated_at=now,
         )
         s.payment_repo.data[pid] = payment
+        return cid
 
-    add_contract_and_payment(d1, mama_id, 9720.0, True)
-    add_contract_and_payment(d3, mama_id, 12000.0, False)
-    add_contract_and_payment(d4, nykaa_id, 4920.0, True)
-    add_contract_and_payment(d6, nykaa_id, 6200.0, False)
-    add_contract_and_payment(d7, boat_id, 11625.0, True)
-    add_contract_and_payment(d9, boat_id, 6600.0, False)
+    mama_ananya_text = """MAMAEARTH INFLUENCER COLLABORATION AGREEMENT
+Campaign: Glow Serum Launch
+
+1. DELIVERABLES & SCOPE
+Creator agrees to produce and publish 1x 30-second Instagram Reel highlighting the Glow Serum application and 2x Instagram Stories with link stickers.
+
+2. USAGE RIGHTS & LICENSING
+Brand is granted non-exclusive commercial digital usage rights for social media channels for a duration of 60 days following publication.
+
+3. REVISIONS POLICY
+Creator agrees to provide up to two rounds of reasonable edits prior to final publication.
+
+4. CATEGORY EXCLUSIVITY
+Creator agrees not to promote competing vitamin C skincare serums during the active 3-week campaign window.
+
+5. COMPENSATION & PAYMENT TERMS
+Brand shall pay the Creator INR 9,720 within 30 days of completion and receipt of invoice."""
+
+    mama_ananya_clauses = [
+        ("deliverables", "1. DELIVERABLES & SCOPE\nCreator agrees to produce and publish 1x 30-second Instagram Reel highlighting the Glow Serum application and 2x Instagram Stories with link stickers.", "green", None, None),
+        ("usage_rights", "2. USAGE RIGHTS & LICENSING\nBrand is granted non-exclusive commercial digital usage rights for social media channels for a duration of 60 days following publication.", "green", None, None),
+        ("revisions", "3. REVISIONS POLICY\nCreator agrees to provide up to two rounds of reasonable edits prior to final publication.", "green", None, None),
+        ("exclusivity", "4. CATEGORY EXCLUSIVITY\nCreator agrees not to promote competing vitamin C skincare serums during the active 3-week campaign window.", "green", None, None),
+        ("payment_terms", "5. COMPENSATION & PAYMENT TERMS\nBrand shall pay the Creator INR 9,720 within 30 days of completion and receipt of invoice.", "green", None, None),
+    ]
+
+    mama_rohan_text = """MAMAEARTH BRAND COLLABORATION AGREEMENT
+Campaign: Protein-Infused Face Wash
+
+1. DELIVERABLES & TIMELINE
+Creator shall produce 1x high-definition Instagram Reel showcasing the Protein-Infused Face Wash routine within 14 days of receiving product samples.
+
+2. USAGE RIGHTS & PERPETUITY
+Brand is granted irrevocable, worldwide, perpetual usage rights to the deliverables across all digital channels, paid ads, and third-party media platforms without any additional royalty fees.
+
+3. REVISIONS & EDITING COMMITMENT
+Creator agrees to provide unlimited revisions to the produced video assets until complete brand satisfaction is achieved, at no extra cost.
+
+4. EXCLUSIVITY
+Creator shall not promote or endorse competing men's grooming or skincare brands for a period of 30 days following publication.
+
+5. COMPENSATION & TERMS
+Brand agrees to pay the Creator a fee of INR 12,000 within 30 days of deliverable approval and invoice receipt."""
+
+    mama_rohan_clauses = [
+        ("deliverables", "1. DELIVERABLES & TIMELINE\nCreator shall produce 1x high-definition Instagram Reel showcasing the Protein-Infused Face Wash routine within 14 days of receiving product samples.", "green", None, None),
+        ("usage_rights", "2. USAGE RIGHTS & PERPETUITY\nBrand is granted irrevocable, worldwide, perpetual usage rights to the deliverables across all digital channels, paid ads, and third-party media platforms without any additional royalty fees.", "red", "perpetual_usage_rights", "Brand acquires perpetual rights to use your content and likeness forever across all media without additional compensation or expiration date."),
+        ("revisions", "3. REVISIONS & EDITING COMMITMENT\nCreator agrees to provide unlimited revisions to the produced video assets until complete brand satisfaction is achieved, at no extra cost.", "red", "unlimited_revisions", "Demanding unlimited revisions exposes the creator to endless rounds of rework and reshoots without compensating for additional time or effort."),
+        ("exclusivity", "4. EXCLUSIVITY\nCreator shall not promote or endorse competing men's grooming or skincare brands for a period of 30 days following publication.", "green", None, None),
+        ("payment_terms", "5. COMPENSATION & TERMS\nBrand agrees to pay the Creator a fee of INR 12,000 within 30 days of deliverable approval and invoice receipt.", "green", None, None),
+    ]
+
+    nykaa_ananya_text = """NYKAA BEAUTY COLLABORATION AGREEMENT
+Campaign: Beauty Subscription Box Feature
+
+1. SCOPE OF DELIVERABLES
+Creator will post 1x unboxing video and haul review on Instagram showcasing the featured subscription items.
+
+2. WHITELISTING & BOOSTING
+Brand reserves the right to run unpaid whitelisting/boosting ads through Creator's account without supplementary compensation.
+
+3. REVISIONS
+Creator shall provide standard revisions within 48 hours of draft submission.
+
+4. COMPENSATION
+Creator shall receive INR 6,200 upon satisfactory completion of deliverables."""
+
+    nykaa_ananya_clauses = [
+        ("deliverables", "1. SCOPE OF DELIVERABLES\nCreator will post 1x unboxing video and haul review on Instagram showcasing the featured subscription items.", "green", None, None),
+        ("usage_rights", "2. WHITELISTING & BOOSTING\nBrand reserves the right to run unpaid whitelisting/boosting ads through Creator's account without supplementary compensation.", "red", "unpaid_whitelisting", "Allows the brand to run paid ads and boosting through your creator account handle without paying a whitelisting access fee."),
+        ("revisions", "3. REVISIONS\nCreator shall provide standard revisions within 48 hours of draft submission.", "green", None, None),
+        ("payment_terms", "4. COMPENSATION\nCreator shall receive INR 6,200 upon satisfactory completion of deliverables.", "green", None, None),
+    ]
+
+    add_contract_and_payment(d1, mama_id, 9720.0, True, raw_text=mama_ananya_text, clauses_data=mama_ananya_clauses)
+    add_contract_and_payment(d3, mama_id, 12000.0, False, raw_text=mama_rohan_text, clauses_data=mama_rohan_clauses)
+    add_contract_and_payment(d4, nykaa_id, 4920.0, True, raw_text="NYKAA FASHION COLLABORATION AGREEMENT\n1. DELIVERABLES: 3-look styled Reel.\n2. USAGE RIGHTS: 45 days.\n3. REVISIONS: Up to 2 rounds.\n4. COMPENSATION: INR 4,920.", clauses_data=[("deliverables", "1. DELIVERABLES: 3-look styled Reel.", "green", None, None), ("usage_rights", "2. USAGE RIGHTS: 45 days.", "green", None, None), ("revisions", "3. REVISIONS: Up to 2 rounds.", "green", None, None), ("payment_terms", "4. COMPENSATION: INR 4,920.", "green", None, None)])
+    add_contract_and_payment(d6, nykaa_id, 6200.0, False, raw_text=nykaa_ananya_text, clauses_data=nykaa_ananya_clauses)
+    add_contract_and_payment(d7, boat_id, 11625.0, True, raw_text="BOAT DIGITAL CREATOR AGREEMENT\n1. DELIVERABLES: 60-90s dedicated YouTube review and 1 Instagram Reel.\n2. USAGE RIGHTS: 90 days digital license.\n3. REVISIONS: 1 round.\n4. COMPENSATION: INR 11,625.", clauses_data=[("deliverables", "1. DELIVERABLES: 60-90s dedicated YouTube review and 1 Instagram Reel.", "green", None, None), ("usage_rights", "2. USAGE RIGHTS: 90 days digital license.", "green", None, None), ("revisions", "3. REVISIONS: 1 round.", "green", None, None), ("payment_terms", "4. COMPENSATION: INR 11,625.", "green", None, None)])
+    add_contract_and_payment(d9, boat_id, 6600.0, False, raw_text="BOAT ADVENTURE COLLABORATION AGREEMENT\n1. DELIVERABLES: 1x destination vlog integration (3-5 minutes).\n2. USAGE RIGHTS: 60 days digital usage.\n3. REVISIONS: Up to 2 revisions.\n4. COMPENSATION: INR 6,600.", clauses_data=[("deliverables", "1. DELIVERABLES: 1x destination vlog integration (3-5 minutes).", "green", None, None), ("usage_rights", "2. USAGE RIGHTS: 60 days digital usage.", "green", None, None), ("revisions", "3. REVISIONS: Up to 2 revisions.", "green", None, None), ("payment_terms", "4. COMPENSATION: INR 6,600.", "green", None, None)])
 
     # Growth Snapshots for creators
     for c_id, base_f in [

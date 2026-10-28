@@ -17,6 +17,13 @@ from domain.models.contract_intelligence import (
 from exceptions import NotFoundError, ValidationError
 
 
+DEFAULT_FLAG_EXPLANATIONS = {
+    "perpetual_usage_rights": "The brand acquires perpetual rights to use your content and likeness forever across all media without additional compensation or expiration date.",
+    "unlimited_revisions": "Demanding unlimited revisions exposes the creator to endless rounds of rework and reshoots without compensating for additional time or effort.",
+    "unpaid_whitelisting": "Allows the brand to run paid ads and boosting through your creator account handle without paying a whitelisting access fee.",
+    "extended_exclusivity": "Exclusivity extends beyond the active campaign window, preventing you from partnering with other brands in the niche.",
+}
+
 class ContractIntelligenceService:
     def __init__(
         self,
@@ -62,7 +69,7 @@ class ContractIntelligenceService:
                 raw_text=clause.raw_text,
                 flag=result.flag,
                 flag_reason_code=result.reason_code,
-                llm_explanation=None,
+                llm_explanation=DEFAULT_FLAG_EXPLANATIONS.get(result.reason_code) if result.flag == "red" else None,
                 created_at=now
             )
             cards.append(await self.clause_card_repo.create(card))

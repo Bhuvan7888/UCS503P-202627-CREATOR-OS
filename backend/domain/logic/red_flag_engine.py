@@ -4,10 +4,10 @@ from domain.models.contract_intelligence import FlagResult
 
 # Fixed list of red flags
 RED_FLAG_PATTERNS = [
-    (r"\bperpetual usage rights\b", "perpetual_usage_rights"),
-    (r"\bunpaid whitelisting/boosting\b", "unpaid_whitelisting"),
-    (r"\bunlimited revisions\b", "unlimited_revisions"),
-    (r"\bexclusivity beyond campaign window\b", "extended_exclusivity"),
+    (r"\b(perpetual( usage)? rights?|in perpetuity)\b", "perpetual_usage_rights"),
+    (r"\b(unpaid whitelisting|unpaid boosting|whitelisting/boosting)\b", "unpaid_whitelisting"),
+    (r"\bunlimited revisions?\b", "unlimited_revisions"),
+    (r"\b(exclusivity beyond|perpetual exclusivity)\b", "extended_exclusivity"),
 ]
 
 def detect_flags(clause_text: str, clause_type: str) -> list[FlagResult]:
