@@ -1,80 +1,74 @@
 # CreatorOS — AI-Powered Creator Deal Management Platform
 
-CreatorOS (DEALOS) is a monorepo platform designed for content creators to manage brand sponsorship inquiries, evaluate rate benchmarks, parse briefs, analyze contracts, track performance, and handle invisible tax calculations and invoices.
+CreatorOS is an end-to-end platform designed for content creators and brands to manage sponsorship deals, rate benchmarks, brief parsing, AI contract clause analysis & red-flag detection, deliverable workflows, and payments.
 
 ---
 
 ## 1. Project Architecture
 
-This project is configured as a **pnpm monorepo workspace** managed with **Turborepo** for build caching and task pipelines:
+The repository is organized into modern full-stack services:
 
 ```
-├── apps
-│   ├── api          # NestJS backend (API Server)
-│   └── web          # Next.js frontend (Client Application)
-├── packages
-│   └── shared       # Shared TypeScript schemas, DTOs, and validation logic
+├── backend/         # FastAPI backend (Python 3.13, Hexagonal Architecture)
+│   ├── domain/      # Pure business models & logic (deals, contracts, payments, flags)
+│   ├── application/ # Orchestration services (clause analysis, negotiations, messages)
+│   ├── infrastructure/ # External adapters (Supabase, Gemini AI, Resend)
+│   └── interface/   # FastAPI HTTP routes & schemas
+├── frontend/        # Next.js 16 frontend (React 19, TypeScript, App Router)
+├── packages/        # Shared libraries and schemas
+└── supabase/        # Database migrations & schemas
 ```
 
 ---
 
 ## 2. Tech Stack
 
-- **Frontend**: Next.js 14, React 18, Tailwind CSS, Framer Motion.
-- **Backend**: NestJS, Prisma ORM, Passport, Multer, BullMQ, Helmet, Throttle.
-- **Databases**: PostgreSQL (Main store) & Redis (Caching and queues).
+- **Frontend**: Next.js 16 (App Router, Turbopack), React 19, TypeScript, `openapi-fetch`, Tailwind CSS.
+- **Backend**: FastAPI (Python 3.13), Pydantic v2, `uv` package manager.
+- **Database & Auth**: Supabase (PostgreSQL + GoTrue Auth).
+- **AI & Intelligence**: Google Gemini API (`gemini-2.5-flash`) for contract clause intelligence, negotiation assistance, and script generation.
 
 ---
 
-## Local Development Setup
+## 3. Local Development Setup
 
 ### Prerequisites
-- Node.js 18+
-- pnpm
+- Node.js 18+ & npm
+- Python 3.13+ & [`uv`](https://docs.astral.sh/uv/)
 
-### Database
-This project uses Supabase (PostgreSQL). Create a free project at https://supabase.com and copy your connection string into apps/api/.env as DATABASE_URL.
-
-### Cache
-This project uses Upstash Redis. Create a free database at https://upstash.com and copy UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN into apps/api/.env.
-
-### Running locally
+### Backend Setup
 ```bash
-# Install dependencies
-pnpm install
+cd backend
 
-# Apply database migrations
-cd apps/api && pnpm prisma migrate deploy
+# Install dependencies with uv
+uv sync
 
-# Seed benchmark data
-cd apps/api && pnpm prisma db seed
-
-# Start dev servers
-pnpm dev
+# Run development server
+uv run uvicorn main:app --reload --port 8000
 ```
+- API server runs at: `http://localhost:8000`
+- Interactive OpenAPI Swagger docs: `http://localhost:8000/docs`
 
-The API runs on http://localhost:3001
-The web app runs on http://localhost:3000
+### Frontend Setup
+```bash
+cd frontend
 
----
+# Install dependencies
+npm install
 
-## 4. Workspaces & Commands
-
-Run commands from the root using Turborepo filters:
-
-| Task       | Command           | Description                                  |
-| ---------- | ----------------- | -------------------------------------------- |
-| Run Dev    | `pnpm dev`        | Starts frontend & backend dev servers        |
-| Build All  | `pnpm build`      | Compiles shared packages, backend & frontend |
-| Lint Code  | `pnpm lint`       | Audits style and formatting rules            |
-| Type Check | `pnpm type-check` | Compiles TS without outputting files         |
-| Run Tests  | `pnpm test`       | Runs unit tests across all workspaces        |
-| E2E Tests  | `pnpm test:e2e`   | Runs NestJS E2E integration tests            |
+# Run development server
+npm run dev
+```
+- Web application runs at: `http://localhost:3000`
 
 ---
 
-## 5. API Documentation (Swagger)
+## 4. API Client & Code Generation
 
-When the NestJS backend is running, Swagger docs are exposed at:
-👉 **[http://localhost:3001/api/docs](http://localhost:3001/api/docs)**
-Use this to test request body schemas, parameters, and authentication guards.
+The frontend uses type-safe contracts generated directly from FastAPI's OpenAPI specification:
+
+```bash
+cd frontend
+npm run generate:api
+```
+This updates `frontend/lib/api-types.ts` from `http://localhost:8000/openapi.json`.
