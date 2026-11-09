@@ -413,6 +413,6 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 
 | Action | Path | Reason |
 |---|---|---|
-| move | `frontend/src/components/{ActivityLog,AssistantPanel,DataTable,StatTile}.tsx` → `_deprecated/frontend/components/` | 0 imports anywhere in `src/` (re-checked before moving) | |
-| move | `frontend/src/lib/supabase.ts` → `_deprecated/frontend/lib/supabase.ts` | 0 imports; the frontend only talks to the FastAPI backend | |
-| move | `frontend/tests/example.spec.ts`, `frontend/tests/e2e/flow.spec.ts` → `_deprecated/frontend/tests/` | Playwright boilerplate hitting playwright.dev; e2e spec targets `/agency` which doesn't exist | |
+| move | `frontend/src/components/{ActivityLog,AssistantPanel,DataTable,StatTile}.tsx` → `_deprecated/frontend/components/` | 0 imports anywhere in `src/` (re-checked before moving) |
+| move | `frontend/src/lib/supabase.ts` → `_deprecated/frontend/lib/supabase.ts` | 0 imports; the frontend only talks to the FastAPI backend |
+| move | `frontend/tests/example.spec.ts`, `frontend/tests/e2e/flow.spec.ts` → `_deprecated/frontend/tests/` | Playwright boilerplate hitting playwright.dev; e2e spec targets `/agency` which doesn't exist |
