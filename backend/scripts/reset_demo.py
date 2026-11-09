@@ -9,7 +9,7 @@ another real account later, add its email to PRESERVE_EMAILS below first.
 
 Run from backend/, with the venv active and real Supabase credentials in .env:
 
-    python reset_demo.py
+    python -m scripts.reset_demo
 """
 import asyncio
 
@@ -72,7 +72,7 @@ async def main() -> None:
         client.auth.admin.delete_user(str(u.id))
         deleted_users += 1
     print(f"\nDeleted {deleted_users} auth user(s). Preserved {len(preserved)}.")
-    print("Done. Run `python seed_demo.py` next.")
+    print("Done. Run `python -m scripts.seed_demo` next.")
 
 
 if __name__ == "__main__":

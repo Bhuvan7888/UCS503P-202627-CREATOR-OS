@@ -12,8 +12,8 @@ with the real companies named.
 Run from backend/, with the venv active and real Supabase credentials in
 .env. Not idempotent — run reset_demo.py first if re-seeding:
 
-    python reset_demo.py
-    python seed_demo.py
+    python -m scripts.reset_demo
+    python -m scripts.seed_demo
 """
 import asyncio
 import subprocess

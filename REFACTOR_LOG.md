@@ -264,3 +264,16 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | move | `backend/tests/integration/test_rls_role_matrix.py` → `backend/tests/features/auth/test_auth_rls_role_matrix.py` | tests mirror the feature |
 | add | `backend/features/auth/__init__.py` | public API (generated from names other packages import) |
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+
+## Phase 3.3 — Backend cleanup after the feature moves
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/domain/logic/tokens.py` → `_deprecated/backend/domain/logic/tokens.py` | imported only by its own test (`grep -rn "logic.tokens"` → `tests/unit/test_tokens.py` only) |
+| move | `backend/tests/unit/test_tokens.py` → `_deprecated/backend/tests/unit/test_tokens.py` | tests the deprecated module (pytest pass count 109 → 107 for this reason only) |
+| move | `backend/tests/unit/test_layering.py` → `backend/tests/architecture/test_layering.py` | architecture test, not a unit test |
+| move | `backend/tests/unit/test_fakes_conform.py` → `backend/tests/fakes/test_fakes_conform.py` | lives with the fakes it checks |
+| move | `backend/seed_demo.py`, `reset_demo.py`, `dump_openapi.py` → `backend/scripts/` | scripts out of the app root; run as `uv run python -m scripts.<name>` from `backend/` (docstrings updated; `dump_openapi` output path unchanged because it is cwd-relative) |
+| remove | `backend/infrastructure/supabase/repos.py`, `backend/domain/interfaces/repositories.py` | empty after all repositories/ports were split per feature |
+| remove | `__init__.py` of `domain/`, `domain/logic/`, `application/`, `application/services/`, `infrastructure/`, `interface/`, `interface/routers/`, `tests/unit/`, `tests/integration/` | empty packages after the moves |
+| edit | `backend/.importlinter` | roots are now `features` + `shared`; old global layering contract replaced by the per-feature layers contract (13 features) + `shared`-is-leaf |

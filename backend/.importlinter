@@ -1,53 +1,41 @@
 [importlinter]
 exclude_type_checking_imports = True
 root_packages =
-    domain
-    application
-    infrastructure
-    interface
-    shared
     features
+    shared
 
-[importlinter:contract:1]
-name = Layering contract
-type = layers
-layers =
-    interface
-    application
-    domain
-
+# 1. shared/ is a leaf: cross-cutting code may not depend on any feature.
 [importlinter:contract:shared-is-leaf]
-name = shared must not depend on features or app layers
+name = shared must not depend on features
 type = forbidden
 source_modules =
     shared
 forbidden_modules =
     features
-    domain
-    application
-    infrastructure
-    interface
 ignore_imports =
     # The Gemini adapter uses ClauseInput as its structured-output schema (runtime use).
     shared.llm.gemini_adapter -> features.contract_intelligence
 
+# 2. Inside every feature: router > services > domain (models, rules, repository ports).
+#    Layers are optional because not every feature has all of them.
+#    Wiring modules (dependencies, supabase_repository, *_adapter) are composition code and unlisted.
 [importlinter:contract:feature-layers]
 name = Inside each feature: router > services > domain (models, rules, repository ports)
 type = layers
 containers =
-    features.benchmarks
+    features.activity_log
+    features.analytics
     features.auth
-    features.contracts
-    features.contract_intelligence
-    features.negotiation
-    features.creators
+    features.benchmarks
     features.brands
+    features.contract_intelligence
+    features.contracts
+    features.creators
     features.deals
     features.deliverables
-    features.payments
-    features.activity_log
     features.messages
-    features.analytics
+    features.negotiation
+    features.payments
 layers =
     (router)
     (service) : (clause_explanation_service)
