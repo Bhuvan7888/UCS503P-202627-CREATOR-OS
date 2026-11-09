@@ -209,7 +209,7 @@ class FakeNegotiationSessionRepo:
 
 from datetime import UTC
 
-from domain.models.contract_intelligence import ClauseCardOut, EscalationOut
+from features.contract_intelligence import ClauseCardOut, EscalationOut
 
 
 class FakeEmailPort:
@@ -245,7 +245,7 @@ class FakeLLMPort:
     async def segment_clauses(self, contract_text: str) -> list:
         if self.should_fail:
             raise Exception("LLM connection failed.")
-        from domain.models.contract_intelligence import ClauseInput
+        from features.contract_intelligence import ClauseInput
         return [ClauseInput(clause_type="general", raw_text=contract_text)]
 
 class FakeClauseCardRepo:

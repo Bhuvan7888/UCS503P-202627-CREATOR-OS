@@ -1,6 +1,6 @@
 import re
 
-from domain.models.contract_intelligence import FlagResult
+from features.contract_intelligence.models import FlagResult
 
 # Fixed list of red flags
 RED_FLAG_PATTERNS = [

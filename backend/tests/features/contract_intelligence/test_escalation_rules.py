@@ -1,6 +1,6 @@
 import pytest
 
-from domain.logic.escalation import open_case, resolve
+from features.contract_intelligence import open_case, resolve
 from shared.errors import InvalidStatusTransition
 
 

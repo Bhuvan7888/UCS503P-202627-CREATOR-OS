@@ -1,12 +1,13 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from application.services.clause_explanation import ClauseExplanationService
-from domain.interfaces.email import EmailPort
-from domain.interfaces.repositories import ClauseCardRepo, ContractRepo, EscalationRepo
-from domain.logic.escalation import open_case, resolve
-from domain.logic.red_flag_engine import detect_flags
-from domain.models.contract_intelligence import (
+from domain.interfaces.repositories import ContractRepo
+from features.contract_intelligence.clause_explanation_service import (
+    ClauseExplanationService,
+)
+from features.contract_intelligence.email_port import EmailPort
+from features.contract_intelligence.escalation_rules import open_case, resolve
+from features.contract_intelligence.models import (
     ClauseCardOut,
     ClauseInput,
     EscalateRequest,
@@ -14,6 +15,8 @@ from domain.models.contract_intelligence import (
     FlagResult,
     ResolveEscalationRequest,
 )
+from features.contract_intelligence.red_flag_rules import detect_flags
+from features.contract_intelligence.repository import ClauseCardRepo, EscalationRepo
 from shared.errors import NotFoundError, ValidationError
 
 DEFAULT_FLAG_EXPLANATIONS = {

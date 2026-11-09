@@ -27,12 +27,16 @@ forbidden_modules =
     application
     infrastructure
     interface
+ignore_imports =
+    # The Gemini adapter uses ClauseInput as its structured-output schema (runtime use).
+    shared.llm.gemini_adapter -> features.contract_intelligence
 
 [importlinter:contract:feature-layers]
 name = Inside each feature: router > services > domain (models, rules, repository ports)
 type = layers
 containers =
     features.benchmarks
+    features.contract_intelligence
     features.negotiation
     features.creators
     features.brands
@@ -44,5 +48,5 @@ containers =
     features.analytics
 layers =
     (router)
-    (service)
-    (models) : (rules) : (repository)
+    (service) : (clause_explanation_service)
+    (models) : (rules) : (red_flag_rules) : (escalation_rules) : (repository) : (email_port)

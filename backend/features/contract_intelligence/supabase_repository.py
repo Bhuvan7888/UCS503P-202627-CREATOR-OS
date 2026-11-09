@@ -4,7 +4,7 @@ from uuid import UUID
 
 from supabase import Client
 
-from domain.models.contract_intelligence import ClauseCardOut, EscalationOut
+from features.contract_intelligence.models import ClauseCardOut, EscalationOut
 from features.demo_mode import is_demo_mode, store
 
 

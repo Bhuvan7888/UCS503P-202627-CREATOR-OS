@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from google import genai
 from google.genai import types
 
-from domain.models.contract_intelligence import ClauseInput
+from features.contract_intelligence import ClauseInput
 from shared.config import settings
 from shared.llm.llm_port import LLMPort
 from shared.money import format_inr

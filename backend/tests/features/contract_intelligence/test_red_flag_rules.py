@@ -1,4 +1,4 @@
-from domain.logic.red_flag_engine import detect_flags
+from features.contract_intelligence import detect_flags
 
 
 def test_detect_flags_perpetual_usage():

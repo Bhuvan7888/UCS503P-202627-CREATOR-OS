@@ -4,21 +4,22 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 
-from application.services.contract_intelligence import ContractIntelligenceService
 from application.services.contracts import ContractService
 from domain.models.contract import (
     Contract,
     ContractCreatorStatusUpdateRequest,
     ContractStatusUpdateRequest,
 )
-from domain.models.contract_intelligence import ClauseInput
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.contract_intelligence import ClauseInput, ContractIntelligenceService
+from features.contract_intelligence.dependencies import (
+    get_contract_intelligence_service,
+)
 from features.deals.supabase_repository import SupabaseDealRepo
 from infrastructure.pdf import extract_text, generate_sample_contract_pdf
 from infrastructure.supabase.repos import SupabaseContractRepo
 from infrastructure.supabase.storage import SupabaseStorage
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
-from interface.routers.contract_intelligence import get_ci_service
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 from shared.llm.gemini_adapter import GeminiAdapter
 from shared.supabase_client import get_supabase_client
@@ -83,7 +84,7 @@ async def upload_sample_contract(
     actor: ActorContext = Depends(get_current_actor),
     storage: SupabaseStorage = Depends(get_storage),
     service: ContractService = Depends(get_contract_service),
-    ci_service: ContractIntelligenceService = Depends(get_ci_service),
+    ci_service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
 ):
     pdf_bytes = generate_sample_contract_pdf()
     text = extract_text(pdf_bytes)
@@ -116,7 +117,7 @@ async def upload_contract(
     actor: ActorContext = Depends(get_current_brand),
     storage: SupabaseStorage = Depends(get_storage),
     service: ContractService = Depends(get_contract_service),
-    ci_service: ContractIntelligenceService = Depends(get_ci_service),
+    ci_service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
 ):
     content = await file.read()
     path = f"contracts/{deal_id}/{file.filename}"
@@ -152,7 +153,7 @@ async def upload_personal_contract(
     actor: ActorContext = Depends(get_current_actor),
     storage: SupabaseStorage = Depends(get_storage),
     service: ContractService = Depends(get_contract_service),
-    ci_service: ContractIntelligenceService = Depends(get_ci_service),
+    ci_service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
 ):
     if not actor.creator_id:
         raise HTTPException(status_code=403, detail="This action requires a creator account")

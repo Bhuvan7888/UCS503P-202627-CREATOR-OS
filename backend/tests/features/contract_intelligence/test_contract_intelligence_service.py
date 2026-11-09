@@ -3,12 +3,12 @@ from uuid import uuid4
 
 import pytest
 
-from application.services.clause_explanation import ClauseExplanationService
-from application.services.contract_intelligence import ContractIntelligenceService
 from domain.models.contract import Contract
-from domain.models.contract_intelligence import (
+from features.contract_intelligence import (
     ClauseCardOut,
+    ClauseExplanationService,
     ClauseInput,
+    ContractIntelligenceService,
     EscalateRequest,
 )
 from tests.fakes.fake_repos import (

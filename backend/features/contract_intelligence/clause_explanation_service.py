@@ -1,8 +1,8 @@
 import logging
 
-from domain.interfaces.repositories import ClauseCardRepo
-from domain.logic.red_flag_engine import detect_flags
-from domain.models.contract_intelligence import ClauseCardOut
+from features.contract_intelligence.models import ClauseCardOut
+from features.contract_intelligence.red_flag_rules import detect_flags
+from features.contract_intelligence.repository import ClauseCardRepo
 from shared.llm.llm_port import LLMPort
 
 DEFAULT_FLAG_EXPLANATIONS = {

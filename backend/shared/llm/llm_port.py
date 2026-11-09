@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     # annotations only: importing these at runtime would create import cycles with the features
-    from domain.models.contract_intelligence import ClauseInput
+    from features.contract_intelligence import ClauseInput
     from features.negotiation import NegotiationSession
 
 

@@ -1,13 +1,11 @@
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
 
-from application.services.clause_explanation import ClauseExplanationService
+from features.contract_intelligence import ClauseCardOut, ClauseExplanationService
 from tests.fakes.fake_repos import FakeClauseCardRepo, FakeLLMPort
 
-
-from domain.models.contract_intelligence import ClauseCardOut
-from datetime import UTC, datetime
 
 @pytest.mark.asyncio
 async def test_clause_explanation_success():

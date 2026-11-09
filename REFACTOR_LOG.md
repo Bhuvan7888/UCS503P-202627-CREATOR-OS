@@ -206,3 +206,30 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | add | `backend/tests/conftest.py` | autouse fixture clears `app.dependency_overrides` after each test. The pre-existing failing `test_invalid_contract_transition` leaks overrides on failure; a neighbouring test used to clear them by accident, and splitting `test_routers.py` exposed the leak (the smoke tests caught it) |
 | edit | `backend/shared/llm/llm_port.py`, `gemini_adapter.py` | feature models used only in annotations are imported under `TYPE_CHECKING`. Removes a runtime import cycle (`llm_port → negotiation → service → llm_port`) and keeps `shared` free of feature imports |
 | finding | `domain/models/`, `domain/interfaces/` | had no `__init__.py`, so import-linter (which skips namespace packages) never saw imports of them: the baseline layering contract was weaker than it looked. All new packages have `__init__.py` |
+
+## Phase 3.3 — Backend feature: `contract_intelligence`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/contract_intelligence.py` → `backend/features/contract_intelligence/router.py` | feature folder |
+| move | `backend/application/services/contract_intelligence.py` → `backend/features/contract_intelligence/service.py` | feature folder |
+| move | `backend/application/services/clause_explanation.py` → `backend/features/contract_intelligence/clause_explanation_service.py` | feature folder |
+| move | `backend/domain/models/contract_intelligence.py` → `backend/features/contract_intelligence/models.py` | feature folder |
+| move | `backend/domain/logic/red_flag_engine.py` → `backend/features/contract_intelligence/red_flag_rules.py` | feature folder |
+| move | `backend/domain/logic/escalation.py` → `backend/features/contract_intelligence/escalation_rules.py` | feature folder |
+| move | `backend/domain/interfaces/email.py` → `backend/features/contract_intelligence/email_port.py` | feature folder |
+| move | `backend/infrastructure/email/resend_adapter.py` → `backend/features/contract_intelligence/resend_email_adapter.py` | feature folder |
+| move | `backend/infrastructure/supabase/contract_intelligence_repos.py` → `backend/features/contract_intelligence/supabase_repository.py` | feature folder |
+| split | `ClauseCardRepo`, `EscalationRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/contract_intelligence/repository.py` | one repository/port per feature |
+| move | `backend/tests/unit/test_contract_intelligence.py` → `backend/tests/features/contract_intelligence/test_contract_intelligence_service.py` | tests mirror the feature |
+| move | `backend/tests/unit/test_clause_explanation.py` → `backend/tests/features/contract_intelligence/test_clause_explanation_service.py` | tests mirror the feature |
+| move | `backend/tests/unit/test_red_flag_engine.py` → `backend/tests/features/contract_intelligence/test_red_flag_rules.py` | tests mirror the feature |
+| move | `backend/tests/unit/test_escalation.py` → `backend/tests/features/contract_intelligence/test_escalation_rules.py` | tests mirror the feature |
+| move | `backend/tests/integration/test_escalations.py` → `backend/tests/features/contract_intelligence/test_contract_intelligence_api.py` | tests mirror the feature |
+| add | `backend/features/contract_intelligence/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+| split | `get_ci_service` from `features/contract_intelligence/router.py` → `features/contract_intelligence/dependencies.py` | the contracts feature needs it; routers are entry points, not libraries |
+| rename | `get_ci_service` → `get_contract_intelligence_service` | no abbreviations |
+| rule | feature indexes | wiring modules (`router.py`, `dependencies.py`, `supabase_repository.py`, `*_adapter.py`) are never exported from an index; including `dependencies.py` caused a circular import (index → dependencies → supabase repo → demo store → index) |
+| fix | `features/contract_intelligence/repository.py` | added the missing `ClauseCardOut`/`EscalationOut` import (baseline F821 ×13, annotation-only, no runtime effect) |
+| edit | `backend/.importlinter` | documented exception `shared.llm.gemini_adapter -> features.contract_intelligence` (ClauseInput is the Gemini structured-output schema); rule modules added to the domain layer |
