@@ -1,18 +1,11 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from domain.interfaces.repositories import (
-    NegotiationConversationRepo,
-    NegotiationSessionRepo,
-)
-from domain.logic.growth import estimate_weekly_growth_rate
-from domain.logic.negotiation import (
-    calculate_base_rate,
-    calculate_forecast,
-    calculate_range,
-    checklist_is_complete,
-)
-from domain.models.negotiation import (
+from features.activity_log import ActivityLog, ActivityLogRepo
+from features.creators import GrowthSnapshotRepo
+from features.deals import DealRepo
+from features.negotiation.growth_forecast import estimate_weekly_growth_rate
+from features.negotiation.models import (
     ChecklistState,
     ForecastPoint,
     NegotiationConversation,
@@ -20,9 +13,16 @@ from domain.models.negotiation import (
     NegotiationSession,
     NegotiationSessionCreate,
 )
-from features.activity_log import ActivityLog, ActivityLogRepo
-from features.creators import GrowthSnapshotRepo
-from features.deals import DealRepo
+from features.negotiation.repository import (
+    NegotiationConversationRepo,
+    NegotiationSessionRepo,
+)
+from features.negotiation.rules import (
+    calculate_base_rate,
+    calculate_forecast,
+    calculate_range,
+    checklist_is_complete,
+)
 from shared.llm.llm_port import LLMPort
 
 DEFAULT_WEEKLY_GROWTH_RATE = 0.05
@@ -166,7 +166,7 @@ class NegotiationService:
         return await self.session_repo.list_offers(session_id)
 
     async def generate_script(self, session_id: UUID, kind: str) -> str:
-        from domain.logic.negotiation import generate_script as pure_generate_script
+        from features.negotiation.rules import generate_script as pure_generate_script
         session = await self.session_repo.get(session_id)
         if not session:
             raise ValueError("Session not found")

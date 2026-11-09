@@ -12,7 +12,7 @@ from features.deals.models import (
 )
 from features.deals.service import DealService
 from features.deals.supabase_repository import SupabaseDealRepo
-from infrastructure.supabase.repos import SupabaseNegotiationSessionRepo
+from features.negotiation.supabase_repository import SupabaseNegotiationSessionRepo
 from interface.dependencies import ActorContext, get_current_actor
 from shared.errors import NotFoundError, PermissionDeniedError
 from shared.supabase_client import get_supabase_client

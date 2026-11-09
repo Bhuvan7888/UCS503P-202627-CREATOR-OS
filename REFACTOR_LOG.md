@@ -187,3 +187,22 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | add | `backend/features/creators/__init__.py` | public API (generated from names other packages import) |
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
 | edit | all `backend/features/*/__init__.py` | Supabase repositories removed from feature indexes. The per-feature layer contract caught `creators.repository → brands index → brands.supabase_repository → demo_mode → seed → creators.service` (a hidden upward dependency). Indexes now export only the domain API; composition roots (`router.py`, `dependencies.py`) import `features.<x>.supabase_repository` directly |
+
+## Phase 3.3 — Backend feature: `negotiation`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/negotiation.py` → `backend/features/negotiation/router.py` | feature folder |
+| move | `backend/application/services/negotiation.py` → `backend/features/negotiation/service.py` | feature folder |
+| move | `backend/domain/models/negotiation.py` → `backend/features/negotiation/models.py` | feature folder |
+| move | `backend/domain/logic/negotiation.py` → `backend/features/negotiation/rules.py` | feature folder |
+| move | `backend/domain/logic/growth.py` → `backend/features/negotiation/growth_forecast.py` | feature folder |
+| split | `SupabaseNegotiationSessionRepo`, `SupabaseNegotiationConversationRepo` from `backend/infrastructure/supabase/repos.py` → `backend/features/negotiation/supabase_repository.py` | one repository/port per feature |
+| split | `NegotiationSessionRepo`, `NegotiationConversationRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/negotiation/repository.py` | one repository/port per feature |
+| move | `backend/tests/unit/test_negotiation.py` → `backend/tests/features/negotiation/test_negotiation_service.py` | tests mirror the feature |
+| split | `=client`, `test_negotiation_counter_offer_409` from `backend/tests/integration/test_routers.py` → `backend/tests/features/negotiation/test_negotiation_api.py` | tests mirror the feature |
+| add | `backend/features/negotiation/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+| add | `backend/tests/conftest.py` | autouse fixture clears `app.dependency_overrides` after each test. The pre-existing failing `test_invalid_contract_transition` leaks overrides on failure; a neighbouring test used to clear them by accident, and splitting `test_routers.py` exposed the leak (the smoke tests caught it) |
+| edit | `backend/shared/llm/llm_port.py`, `gemini_adapter.py` | feature models used only in annotations are imported under `TYPE_CHECKING`. Removes a runtime import cycle (`llm_port → negotiation → service → llm_port`) and keeps `shared` free of feature imports |
+| finding | `domain/models/`, `domain/interfaces/` | had no `__init__.py`, so import-linter (which skips namespace packages) never saw imports of them: the baseline layering contract was weaker than it looked. All new packages have `__init__.py` |

@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING
 
 from google import genai
 from google.genai import types
 
 from domain.models.contract_intelligence import ClauseInput
-from domain.models.negotiation import NegotiationSession
 from shared.config import settings
 from shared.llm.llm_port import LLMPort
 from shared.money import format_inr
+
+if TYPE_CHECKING:
+    # annotation only: importing it at runtime would create a cycle with features.negotiation
+    from features.negotiation import NegotiationSession
 
 logger = logging.getLogger(__name__)
 

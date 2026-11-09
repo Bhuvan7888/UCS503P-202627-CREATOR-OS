@@ -27,14 +27,8 @@ from application.services.auth import AuthService
 from application.services.clause_explanation import ClauseExplanationService
 from application.services.contract_intelligence import ContractIntelligenceService
 from application.services.contracts import ContractService
-from application.services.negotiation import NegotiationService
 from domain.models.auth import BrandSignupRequest, CreatorSignupRequest
 from domain.models.contract import ContractStatusUpdateRequest
-from domain.models.negotiation import (
-    ChecklistState,
-    NegotiationConversation,
-    NegotiationSessionCreate,
-)
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from features.brands.supabase_repository import (
     SupabaseBrandMemberRepo,
@@ -55,6 +49,16 @@ from features.deliverables import (
 from features.deliverables.supabase_repository import SupabaseDeliverableRepo
 from features.messages import Message
 from features.messages.supabase_repository import SupabaseMessageRepo
+from features.negotiation import (
+    ChecklistState,
+    NegotiationConversation,
+    NegotiationService,
+    NegotiationSessionCreate,
+)
+from features.negotiation.supabase_repository import (
+    SupabaseNegotiationConversationRepo,
+    SupabaseNegotiationSessionRepo,
+)
 from features.payments import PaymentCreateRequest, PaymentService
 from features.payments.supabase_repository import SupabasePaymentRepo
 from infrastructure.email.resend_adapter import ResendAdapter
@@ -63,11 +67,7 @@ from infrastructure.supabase.contract_intelligence_repos import (
     SupabaseClauseCardRepo,
     SupabaseEscalationRepo,
 )
-from infrastructure.supabase.repos import (
-    SupabaseContractRepo,
-    SupabaseNegotiationConversationRepo,
-    SupabaseNegotiationSessionRepo,
-)
+from infrastructure.supabase.repos import SupabaseContractRepo
 from infrastructure.supabase.storage import SupabaseStorage
 from shared.llm.gemini_adapter import GeminiAdapter
 from shared.supabase_client import get_supabase_client

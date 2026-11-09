@@ -3,14 +3,15 @@ from uuid import uuid4
 
 import pytest
 
-from domain.logic.negotiation import (
+from features.negotiation import (
+    ChecklistState,
+    NegotiationSession,
     calculate_base_rate,
     calculate_forecast,
     calculate_range,
     checklist_is_complete,
     generate_script,
 )
-from domain.models.negotiation import ChecklistState, NegotiationSession
 
 
 def test_calculate_base_rate():
@@ -89,7 +90,7 @@ def test_generate_script():
     assert s3 and isinstance(s3, str)
 
 
-from application.services.negotiation import NegotiationService
+from features.negotiation import NegotiationService
 from tests.fakes.fake_repos import FakeLLMPort
 
 

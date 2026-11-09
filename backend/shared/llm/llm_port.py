@@ -1,7 +1,11 @@
-from typing import Protocol, runtime_checkable
+from __future__ import annotations
 
-from domain.models.contract_intelligence import ClauseInput
-from domain.models.negotiation import NegotiationSession
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
+
+if TYPE_CHECKING:
+    # annotations only: importing these at runtime would create import cycles with the features
+    from domain.models.contract_intelligence import ClauseInput
+    from features.negotiation import NegotiationSession
 
 
 @runtime_checkable

@@ -1,6 +1,10 @@
 from typing import Literal
 
-from domain.models.negotiation import ChecklistState, ForecastPoint, NegotiationSession
+from features.negotiation.models import (
+    ChecklistState,
+    ForecastPoint,
+    NegotiationSession,
+)
 from shared.money import format_inr
 
 

@@ -10,6 +10,7 @@ from features.creators.router import router as creators_router
 from features.deals.router import router as deals_router
 from features.deliverables.router import router as deliverables_router
 from features.messages.router import router as messages_router
+from features.negotiation.router import router as negotiation_router
 from features.payments.router import router as payments_router
 from interface.routers.auth import router as auth_router
 from interface.routers.contract_intelligence import escalations_router
@@ -17,7 +18,6 @@ from interface.routers.contract_intelligence import (
     router as contract_intelligence_router,
 )
 from interface.routers.contracts import router as contracts_router
-from interface.routers.negotiation import router as negotiation_router
 
 app = FastAPI(title="Creator OS")
 

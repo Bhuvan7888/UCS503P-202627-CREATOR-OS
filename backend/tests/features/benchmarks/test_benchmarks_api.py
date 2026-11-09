@@ -4,11 +4,10 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
-from application.services.negotiation import NegotiationService
-from domain.models.negotiation import ChecklistState, NegotiationSession
 from features.benchmarks import BenchmarkService
 from features.benchmarks.router import router as benchmarks_router
-from interface.routers.negotiation import router as negotiation_router
+from features.negotiation import ChecklistState, NegotiationService, NegotiationSession
+from features.negotiation.router import router as negotiation_router
 from tests.fakes.fake_repos import FakeLLMPort, FakeRateBenchmarkRepo
 
 
@@ -75,7 +74,7 @@ class MinimalFakeActivityLogRepo:
     pass
 
 def test_negotiation_script_fails_checklist(negotiation_client):
-    from interface.routers.negotiation import get_negotiation_service
+    from features.negotiation.router import get_negotiation_service
     session = NegotiationSession(
         id=uuid4(), deal_id=uuid4(), status="active",
         views_per_week=10000, niche_cpm=50.0, follower_tier_multiplier=1.0, engagement_rate_adjustment=0.0,
@@ -97,7 +96,7 @@ def test_negotiation_script_fails_checklist(negotiation_client):
         assert "Checklist is not complete" in res.json()["detail"]
 
 def test_negotiation_script_success(negotiation_client):
-    from interface.routers.negotiation import get_negotiation_service
+    from features.negotiation.router import get_negotiation_service
     session = NegotiationSession(
         id=uuid4(), deal_id=uuid4(), status="active",
         views_per_week=10000, niche_cpm=50.0, follower_tier_multiplier=1.0, engagement_rate_adjustment=0.0,

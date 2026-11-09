@@ -33,6 +33,7 @@ name = Inside each feature: router > services > domain (models, rules, repositor
 type = layers
 containers =
     features.benchmarks
+    features.negotiation
     features.creators
     features.brands
     features.deals

@@ -3,9 +3,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from application.services.negotiation import NegotiationService
-from domain.logic.negotiation import calculate_range
-from domain.models.negotiation import (
+from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.creators.supabase_repository import SupabaseGrowthSnapshotRepo
+from features.deals.supabase_repository import SupabaseDealRepo
+from features.negotiation.models import (
     ChecklistState,
     CounterOfferRequest,
     ForecastPoint,
@@ -16,10 +17,9 @@ from domain.models.negotiation import (
     NegotiationSessionCreate,
     RateRangeOut,
 )
-from features.activity_log.supabase_repository import SupabaseActivityLogRepo
-from features.creators.supabase_repository import SupabaseGrowthSnapshotRepo
-from features.deals.supabase_repository import SupabaseDealRepo
-from infrastructure.supabase.repos import (
+from features.negotiation.rules import calculate_range
+from features.negotiation.service import NegotiationService
+from features.negotiation.supabase_repository import (
     SupabaseNegotiationConversationRepo,
     SupabaseNegotiationSessionRepo,
 )
@@ -162,7 +162,7 @@ async def list_offers(
 ):
     return await service.list_offers(id)
 
-from domain.models.negotiation import ScriptGenerateRequest
+from features.negotiation.models import ScriptGenerateRequest
 
 
 @router.post("/{id}/script", response_model=str)

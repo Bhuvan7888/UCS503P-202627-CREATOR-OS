@@ -5,18 +5,18 @@ from uuid import UUID, uuid4
 
 from domain.models.contract import Contract
 from domain.models.contract_intelligence import ClauseCardOut, EscalationOut
-from domain.models.negotiation import (
-    ChecklistState,
-    NegotiationConversation,
-    NegotiationOffer,
-    NegotiationSession,
-)
 from features.activity_log import ActivityLog
 from features.brands import Brand, BrandMember
 from features.creators import Creator, GrowthSnapshot
 from features.deals import Deal
 from features.deliverables import Deliverable
 from features.messages import Message
+from features.negotiation import (
+    ChecklistState,
+    NegotiationConversation,
+    NegotiationOffer,
+    NegotiationSession,
+)
 from features.payments import Payment
 
 

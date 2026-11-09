@@ -2,10 +2,10 @@ from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
-from domain.interfaces.repositories import NegotiationSessionRepo
 from features.activity_log import ActivityLog, ActivityLogRepo
 from features.deals.models import Deal, DealCreateRequest, WeeklyValuePoint
 from features.deals.repository import DealRepo
+from features.negotiation import NegotiationSessionRepo
 from shared.errors import NotFoundError, PermissionDeniedError
 
 
