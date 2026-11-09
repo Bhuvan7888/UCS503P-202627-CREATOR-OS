@@ -313,3 +313,11 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 |---|---|---|
 | move | `frontend/src/app/(brand)/deliverables/page.tsx` → `frontend/src/features/deliverables/DeliverablesPage.tsx` | feature folder |
 | add | `frontend/src/app/(brand)/deliverables/page.tsx` | one-line route stub → `@/features/deliverables/DeliverablesPage` (URL unchanged) |
+
+## Phase 3.3 — Frontend feature: `landing`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/page.tsx` → `frontend/src/features/landing/LandingPage.tsx` | feature folder |
+| move | `frontend/src/app/landing.module.css` → `frontend/src/features/landing/landing.module.css` | feature folder |
+| add | `frontend/src/app/page.tsx` | one-line route stub → `@/features/landing/LandingPage` (URL unchanged) |
