@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import client from "@/shared/lib/api-client";
 import { saveSession, type AuthSession } from "@/shared/lib/session";
-import { GradientPanel } from "@/shared/components/ui/GradientPanel";
+import { AuthPageFrame } from "./components/AuthPageFrame";
+import { NETWORK_ERROR_MESSAGE } from "./constants/auth-messages";
 import styles from "./auth.module.css";
 
 export default function BrandSignupPage() {
@@ -36,7 +37,7 @@ export default function BrandSignupPage() {
         setSession(data);
       }
     } catch (err) {
-      setError("Network error: Could not connect to the backend. If you are on Vercel, ensure NEXT_PUBLIC_API_URL is set to your deployed backend URL.");
+      setError(NETWORK_ERROR_MESSAGE);
     } finally {
       setPending(false);
     }
@@ -44,10 +45,7 @@ export default function BrandSignupPage() {
 
   if (session) {
     return (
-      <div className={styles.wrap}>
-        <div className={styles.formCol}>
-          <Link href="/" className={styles.logo}>Creator OS</Link>
-          <div className={styles.formBody}>
+      <AuthPageFrame>
             <p className={styles.eyebrow}>Brand</p>
             <h1 className={styles.headline}>You&apos;re in</h1>
             <p className={styles.subline}>
@@ -62,18 +60,12 @@ export default function BrandSignupPage() {
                 Continue to dashboard
               </button>
             </div>
-          </div>
-        </div>
-        <GradientPanel className={styles.art} />
-      </div>
+      </AuthPageFrame>
     );
   }
 
   return (
-    <div className={styles.wrap}>
-      <div className={styles.formCol}>
-        <Link href="/" className={styles.logo}>Creator OS</Link>
-        <div className={styles.formBody}>
+    <AuthPageFrame>
           <p className={styles.eyebrow}>Brand</p>
           <h1 className={styles.headline}>Set up your brand</h1>
           <p className={styles.subline}>
@@ -132,9 +124,6 @@ export default function BrandSignupPage() {
               <Link href="/creator/signup" className={styles.linkMuted}>I&apos;m a creator</Link>
             </div>
           </form>
-        </div>
-      </div>
-      <GradientPanel className={styles.art} />
-    </div>
+    </AuthPageFrame>
   );
 }

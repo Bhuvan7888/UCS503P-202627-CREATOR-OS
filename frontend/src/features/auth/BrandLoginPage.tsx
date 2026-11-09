@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import client from "@/shared/lib/api-client";
 import { saveSession } from "@/shared/lib/session";
-import { GradientPanel } from "@/shared/components/ui/GradientPanel";
+import { AuthPageFrame } from "./components/AuthPageFrame";
+import { NETWORK_ERROR_MESSAGE } from "./constants/auth-messages";
 import styles from "./auth.module.css";
 
 export default function BrandLoginPage() {
@@ -35,17 +36,14 @@ export default function BrandLoginPage() {
         router.push("/brand");
       }
     } catch (err) {
-      setError("Network error: Could not connect to the backend. If you are on Vercel, ensure NEXT_PUBLIC_API_URL is set to your deployed backend URL.");
+      setError(NETWORK_ERROR_MESSAGE);
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <div className={styles.wrap}>
-      <div className={styles.formCol}>
-        <Link href="/" className={styles.logo}>Creator OS</Link>
-        <div className={styles.formBody}>
+    <AuthPageFrame>
           <p className={styles.eyebrow}>Brand</p>
           <h1 className={styles.headline}>Sign in</h1>
           <p className={styles.subline}>
@@ -99,9 +97,6 @@ export default function BrandLoginPage() {
               <Link href="/creator/login" className={styles.linkMuted}>Sign in as a creator instead</Link>
             </div>
           </form>
-        </div>
-      </div>
-      <GradientPanel className={styles.art} />
-    </div>
+    </AuthPageFrame>
   );
 }

@@ -467,3 +467,9 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | Action | Path | Reason |
 |---|---|---|
 | F7 | `frontend/src/shared/lib/api-client.ts` now exports `API_BASE_URL` (was a hard-coded fallback in 7 places) and `postWithSession(path, file?)` (same method, `Authorization: Bearer <token or empty>` header, multipart field `file`). Replaced 4 multipart uploads, 1 body-less POST (sample contract), 1 download URL; each call site keeps its own `res.ok` / error handling | ContractsPage ×4, DealDetailPage, CreatorProfilePage |
+
+## Phase 4 — F2 auth page frame
+
+| Action | Path | Reason |
+|---|---|---|
+| F2 | new `frontend/src/features/auth/components/AuthPageFrame.tsx` (logo column + form body + gradient art, same markup and classes) and `features/auth/constants/auth-messages.ts` (`NETWORK_ERROR_MESSAGE`); 5 copies of the frame and 4 copies of the message replaced | BrandLoginPage, CreatorLoginPage, BrandSignupPage (×2 branches), CreatorSignupPage |
