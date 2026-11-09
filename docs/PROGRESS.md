@@ -1,5 +1,11 @@
 # Creator OS — Progress Log
 
+> **Note (2026-11-09):** the code was reorganised into feature folders on the
+> `refactor/feature-structure` branch. File paths in this log (`domain/`, `application/`,
+> `infrastructure/`, `interface/`, `frontend/lib/`, `frontend/components/`, root-level
+> `seed_demo.py`) describe the layout at the time and no longer exist. For the current layout see
+> [ARCHITECTURE.md](ARCHITECTURE.md) and [FEATURES.md](FEATURES.md).
+
 > This file was rewritten end-to-end to reflect the actual live application
 > (`backend/` + `frontend/`, FastAPI + Supabase + Next.js). The prior version
 > of this file documented a different, since-deleted NestJS/Prisma/Docker

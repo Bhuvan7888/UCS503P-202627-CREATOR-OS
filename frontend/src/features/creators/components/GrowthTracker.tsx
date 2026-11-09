@@ -5,7 +5,7 @@ import type { components } from "@/shared/lib/api-types";
 
 type GrowthSnapshot = components["schemas"]["GrowthSnapshot"];
 
-// Mirrors backend/domain/logic/growth.py::estimate_weekly_growth_rate — same
+// Mirrors backend/features/negotiation/growth_forecast.py::estimate_weekly_growth_rate — same
 // compounding-rate fit across the oldest/newest logged snapshot, just for
 // display here (the backend recomputes it server-side for the actual forecast).
 export function computeGrowthRate(snapshots: GrowthSnapshot[]): number | null {

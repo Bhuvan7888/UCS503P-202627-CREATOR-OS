@@ -557,3 +557,35 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | keep | `@playwright/test` | owner decision: kept for future e2e tests |
 | move | `pytest`, `pytest-asyncio`, `mypy`, `ruff`, `import-linter` → `[dependency-groups] dev` in `backend/pyproject.toml` | dev tools, not runtime deps. `uv.lock` regenerated with CI's pinned uv 0.11.19 (same lockfile revision, no version changes); `uv sync --frozen` + pytest pass under 0.11.19; `uv sync` installs the dev group by default, so CI is unaffected |
 | edit | `backend/pyproject.toml` description | was "Add your description here" |
+
+## Phase 5 — Verification and documentation
+
+| Action | Path | Reason |
+|---|---|---|
+| add | `docs/FEATURES.md` | feature → folders → URLs/endpoints → shared modules |
+| add | `docs/ARCHITECTURE.md` | structure, layering + import rules, naming, shared-vs-feature rule, how to add a feature, verification commands |
+| rewrite | `README.md`, `backend/README.md`, `frontend/README.md` | current layout, feature list, setup, demo mode, checks (backend README was empty; frontend README was create-next-app boilerplate) |
+| edit | `docs/PROGRESS.md` | note that its paths predate the restructure |
+| fix | comments in `GrowthTracker.tsx` (old backend path) and `playwright.config.ts` (deleted folder) | no stale path references left (searched code, configs, scripts, CI, docs) |
+
+### Feature parity (live servers: uvicorn in demo mode on :8765, `next start` on :3765)
+
+| Feature | API endpoints registered | Live API call | Frontend pages (HTTP 200) | Result |
+|---|---|---|---|---|
+| `landing` | — | — | `/` | ✅ |
+| `auth` | 4 | `POST /auth/brand/login` → 200 | `/brand/login`, `/brand/signup`, `/creator/login`, `/creator/signup` | ✅ |
+| `creators` | 9 | `GET /creators/me/growth-snapshots` → 200 | `/creators/[id]` | ✅ |
+| `creator-dashboard` | — | `GET /deals/stats` → 200 | `/creator` | ✅ |
+| `deals` | 8 | `GET /deals` → 200 | `/brand`, `/deals/[id]`, `/creator/board` | ✅ |
+| `contracts` | 10 | `GET /contracts/{id}` → 200 | `/contracts` | ✅ |
+| `contract-intelligence` | 4 | `GET /contracts/{id}/clauses` → 200 | `/contracts/[id]/clauses` | ✅ |
+| `deliverables` | 3 | `GET /deliverables` → 200 | `/deliverables` | ✅ |
+| `payments` | 4 | `GET /payments` → 200 | `/payments` | ✅ |
+| `negotiation` | 10 | `GET /negotiation/sessions/{id}/forecast` → 200 | `/creator/negotiate/[id]` | ✅ |
+| `benchmarks` | 1 | `GET /benchmarks?niche=Beauty&follower_tier=micro` → 200 | — | ✅ |
+| `analytics` | 1 | `GET /analytics/brand` → 200 | `/analytics` | ✅ |
+| `messages` | 4 | `GET /messages/unread` → 200 | `/chat` | ✅ |
+| `activity-log` | 2 | `GET /activity-log` → 200 | `/activity` | ✅ |
+| `demo-mode` | — | `POST /auth/creator/login` → 200 | — | ✅ |
+
+Total API operations: 55 (baseline 55). All features OK: True

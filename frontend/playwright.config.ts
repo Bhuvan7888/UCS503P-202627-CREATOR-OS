@@ -2,8 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Playwright configuration. There are currently no e2e specs (the old ones targeted pages that no
- * longer exist and were moved to _deprecated/); add specs under tests/ and, to run them against a
- * local build, a `webServer` block — see https://playwright.dev/docs/test-configuration.
+ * longer exist and were removed); add specs under tests/ and, to run them against a local build,
+ * a `webServer` block — see https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: "./tests",

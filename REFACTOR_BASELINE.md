@@ -66,3 +66,22 @@ cd backend && uv run pytest -q && uv run lint-imports && uv run ruff check . --s
 cd frontend && npx tsc --noEmit && npm run lint; npm run build && npm run test:smoke
 ```
 Pass criteria: pytest ≤ 6 failures, and only the 6 listed above. lint-imports kept. ruff ≤ 202, mypy ≤ 237. tsc clean. ESLint ≤ 5 errors / 10 warnings. Build OK. Smoke OK.
+
+---
+
+## Final results (after the refactor, branch `refactor/feature-structure`)
+
+| # | Check | Baseline | Final |
+|---|---|---|---|
+| 2 | `uv run pytest -q` | ❌ 6 failed, 67 passed, 1 skipped | ✅ **0 failed, 121 passed**, 1 skipped (6 stale tests updated, Decision 4; 2 tests deleted with unused `tokens.py`; new smoke, shared and money tests) |
+| 3 | `ruff check .` | 202 (ruff built-in defaults) | **161** with the same defaults (`--isolated`); **66** with the new explicit `pyproject.toml` config |
+| 4 | `ruff format --check .` | 74 files would change | ✅ all formatted |
+| 5 | `mypy .` | 237 errors | **134** |
+| 6 | `lint-imports` | ✅ 1 contract (did not see `domain/models` or `domain/interfaces`: no `__init__.py`) | ✅ 2 contracts: per-feature layers (13 features) + `shared` never imports `features` |
+| 7 | Backend boot / OpenAPI | 55 operations | ✅ 55 operations, same paths and auth requirements (smoke test) |
+| 9 | `tsc --noEmit` | ✅ | ✅ |
+| 10 | `npm run lint` | ❌ 5 errors, 10 warnings | ✅ **0 errors**, 3 warnings (intentional `exhaustive-deps`) |
+| 11 | `npm run build` | ✅ 19 routes | ✅ 19 routes, same URLs (smoke test) |
+| — | `prettier --check .` | no formatter | ✅ |
+| — | Demo-mode API snapshot (42 responses, generated at baseline) | — | ✅ identical |
+| — | CI-pinned uv 0.11.19 `uv sync --frozen` | ✅ | ✅ |
