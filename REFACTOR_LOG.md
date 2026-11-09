@@ -277,3 +277,11 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | remove | `backend/infrastructure/supabase/repos.py`, `backend/domain/interfaces/repositories.py` | empty after all repositories/ports were split per feature |
 | remove | `__init__.py` of `domain/`, `domain/logic/`, `application/`, `application/services/`, `infrastructure/`, `interface/`, `interface/routers/`, `tests/unit/`, `tests/integration/` | empty packages after the moves |
 | edit | `backend/.importlinter` | roots are now `features` + `shared`; old global layering contract replaced by the per-feature layers contract (13 features) + `shared`-is-leaf |
+
+## Phase 3.3 — Frontend feature: `activity-log`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(brand)/activity/page.tsx` → `frontend/src/features/activity-log/ActivityLogPage.tsx` | feature folder |
+| add | `frontend/src/app/(brand)/activity/page.tsx` | one-line route stub → `@/features/activity-log/ActivityLogPage` (URL unchanged) |
+| rename | default export in `frontend/src/features/activity-log/ActivityLogPage.tsx` → `ActivityLogPage` | component name = file name |
