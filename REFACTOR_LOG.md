@@ -379,3 +379,17 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | move | `frontend/src/components/creator/DealsTable.tsx` → `frontend/src/features/creator-dashboard/components/DealsTable.tsx` | feature folder |
 | add | `frontend/src/app/(creator)/creator/page.tsx` | one-line route stub → `@/features/creator-dashboard/CreatorDashboardPage` (URL unchanged) |
 | rename | default export in `frontend/src/features/creator-dashboard/CreatorDashboardPage.tsx` → `CreatorDashboardPage` | component name = file name |
+
+## Phase 3.3 — Frontend feature: `auth`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(auth)/brand/login/page.tsx` → `frontend/src/features/auth/BrandLoginPage.tsx` | feature folder |
+| move | `frontend/src/app/(auth)/brand/signup/page.tsx` → `frontend/src/features/auth/BrandSignupPage.tsx` | feature folder |
+| move | `frontend/src/app/(auth)/creator/login/page.tsx` → `frontend/src/features/auth/CreatorLoginPage.tsx` | feature folder |
+| move | `frontend/src/app/(auth)/creator/signup/page.tsx` → `frontend/src/features/auth/CreatorSignupPage.tsx` | feature folder |
+| move | `frontend/src/app/(auth)/auth.module.css` → `frontend/src/features/auth/auth.module.css` | feature folder |
+| add | `frontend/src/app/(auth)/brand/login/page.tsx` | one-line route stub → `@/features/auth/BrandLoginPage` (URL unchanged) |
+| add | `frontend/src/app/(auth)/brand/signup/page.tsx` | one-line route stub → `@/features/auth/BrandSignupPage` (URL unchanged) |
+| add | `frontend/src/app/(auth)/creator/login/page.tsx` | one-line route stub → `@/features/auth/CreatorLoginPage` (URL unchanged) |
+| add | `frontend/src/app/(auth)/creator/signup/page.tsx` | one-line route stub → `@/features/auth/CreatorSignupPage` (URL unchanged) |
