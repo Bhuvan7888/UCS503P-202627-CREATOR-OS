@@ -2,19 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from application.services.auth import AuthService
 from domain.models.auth import (
+    AuthSession,
     BrandLoginRequest,
     BrandSignupRequest,
-    AuthSession,
     CreatorLoginRequest,
     CreatorSignupRequest,
 )
-from exceptions import ValidationError
-from infrastructure.supabase.client import get_supabase_client
 from infrastructure.supabase.repos import (
     SupabaseBrandMemberRepo,
     SupabaseBrandRepo,
     SupabaseCreatorRepo,
 )
+from shared.errors import ValidationError
+from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

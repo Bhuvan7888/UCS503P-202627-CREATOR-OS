@@ -4,7 +4,6 @@ from decimal import Decimal
 from urllib.parse import urlparse
 from uuid import UUID, uuid4
 
-from config import settings
 from domain.models.activity_log import ActivityLog
 from domain.models.auth import AuthSession
 from domain.models.brand import Brand, BrandMember
@@ -21,6 +20,7 @@ from domain.models.negotiation import (
     NegotiationSession,
 )
 from domain.models.payment import Payment
+from shared.config import settings
 
 # --- Check Supabase Availability ---
 _supabase_available: bool | None = None

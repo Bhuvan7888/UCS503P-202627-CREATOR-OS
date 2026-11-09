@@ -3,11 +3,15 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
 from application.services.payments import PaymentService
-from domain.models.payment import Payment, PaymentCreateRequest, PaymentStatusUpdateRequest
-from exceptions import InvalidStatusTransition
-from infrastructure.supabase.client import get_supabase_client
+from domain.models.payment import (
+    Payment,
+    PaymentCreateRequest,
+    PaymentStatusUpdateRequest,
+)
 from infrastructure.supabase.repos import SupabaseActivityLogRepo, SupabasePaymentRepo
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
+from shared.errors import InvalidStatusTransition
+from shared.supabase_client import get_supabase_client
 
 
 def get_payment_service() -> PaymentService:

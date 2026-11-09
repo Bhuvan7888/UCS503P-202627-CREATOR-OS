@@ -13,7 +13,7 @@ Run from backend/, with the venv active and real Supabase credentials in .env:
 """
 import asyncio
 
-from infrastructure.supabase.client import get_supabase_client
+from shared.supabase_client import get_supabase_client
 
 PRESERVE_EMAILS = {"bhuvanmalhotra555@gmail.com"}
 

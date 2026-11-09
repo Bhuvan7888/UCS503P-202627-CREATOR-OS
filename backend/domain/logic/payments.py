@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from exceptions import InvalidStatusTransition
+from shared.errors import InvalidStatusTransition
 
 
 def validate_mark_paid(current_status: str) -> None:

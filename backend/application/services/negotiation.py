@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from domain.interfaces.llm import LLMPort
 from domain.interfaces.repositories import (
     ActivityLogRepo,
     DealRepo,
@@ -25,6 +24,7 @@ from domain.models.negotiation import (
     NegotiationSession,
     NegotiationSessionCreate,
 )
+from shared.llm.llm_port import LLMPort
 
 DEFAULT_WEEKLY_GROWTH_RATE = 0.05
 

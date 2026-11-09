@@ -2,7 +2,7 @@ from functools import lru_cache
 
 from supabase import Client, create_client
 
-from config import settings
+from shared.config import settings
 
 
 def _build_client(service_role: bool) -> Client:

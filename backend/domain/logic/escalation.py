@@ -1,6 +1,6 @@
 from typing import Literal
 
-from exceptions import InvalidStatusTransition
+from shared.errors import InvalidStatusTransition
 
 
 def open_case(contract_status: str) -> str:

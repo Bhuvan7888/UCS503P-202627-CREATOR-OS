@@ -5,16 +5,16 @@ from uuid import UUID, uuid4
 from supabase import Client
 
 from domain.interfaces.repositories import BrandMemberRepo, BrandRepo, CreatorRepo
-from domain.models.brand import Brand, BrandMember
 from domain.models.auth import (
+    AuthSession,
     BrandLoginRequest,
     BrandSignupRequest,
-    AuthSession,
     CreatorLoginRequest,
     CreatorSignupRequest,
 )
+from domain.models.brand import Brand, BrandMember
 from domain.models.creator import Creator
-from exceptions import ValidationError
+from shared.errors import ValidationError
 
 
 class AuthService:

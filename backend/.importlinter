@@ -4,6 +4,8 @@ root_packages =
     application
     infrastructure
     interface
+    shared
+    features
 
 [importlinter:contract:1]
 name = Layering contract
@@ -12,3 +14,15 @@ layers =
     interface
     application
     domain
+
+[importlinter:contract:shared-is-leaf]
+name = shared must not depend on features or app layers
+type = forbidden
+source_modules =
+    shared
+forbidden_modules =
+    features
+    domain
+    application
+    infrastructure
+    interface

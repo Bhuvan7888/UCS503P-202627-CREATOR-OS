@@ -1,7 +1,7 @@
 import pytest
 
 from domain.logic.escalation import open_case, resolve
-from exceptions import InvalidStatusTransition
+from shared.errors import InvalidStatusTransition
 
 
 def test_open_case_valid():

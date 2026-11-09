@@ -5,9 +5,9 @@ from pydantic import BaseModel
 
 from application.services.messages import MessageService
 from domain.models.message import Message, MessageCreateRequest
-from infrastructure.supabase.client import get_supabase_client
 from infrastructure.supabase.repos import SupabaseCreatorRepo, SupabaseMessageRepo
 from interface.dependencies import ActorContext, get_current_actor
+from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 

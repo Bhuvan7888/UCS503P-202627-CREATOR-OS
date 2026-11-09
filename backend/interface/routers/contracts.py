@@ -6,16 +6,24 @@ from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFil
 
 from application.services.contract_intelligence import ContractIntelligenceService
 from application.services.contracts import ContractService
-from domain.models.contract import Contract, ContractCreatorStatusUpdateRequest, ContractStatusUpdateRequest
+from domain.models.contract import (
+    Contract,
+    ContractCreatorStatusUpdateRequest,
+    ContractStatusUpdateRequest,
+)
 from domain.models.contract_intelligence import ClauseInput
-from exceptions import InvalidStatusTransition, PermissionDeniedError
-from infrastructure.llm.gemini_adapter import GeminiAdapter
 from infrastructure.pdf import extract_text, generate_sample_contract_pdf
-from infrastructure.supabase.client import get_supabase_client
-from infrastructure.supabase.repos import SupabaseActivityLogRepo, SupabaseContractRepo, SupabaseDealRepo
+from infrastructure.supabase.repos import (
+    SupabaseActivityLogRepo,
+    SupabaseContractRepo,
+    SupabaseDealRepo,
+)
 from infrastructure.supabase.storage import SupabaseStorage
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from interface.routers.contract_intelligence import get_ci_service
+from shared.errors import InvalidStatusTransition, PermissionDeniedError
+from shared.llm.gemini_adapter import GeminiAdapter
+from shared.supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)
 

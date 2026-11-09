@@ -3,9 +3,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
 from application.services.deals import DealService
-from domain.models.deal import Deal, DealCreateRequest, DealStatusUpdateRequest, WeeklyValuePoint
-from exceptions import NotFoundError, PermissionDeniedError
-from infrastructure.supabase.client import get_supabase_client
+from domain.models.deal import (
+    Deal,
+    DealCreateRequest,
+    DealStatusUpdateRequest,
+    WeeklyValuePoint,
+)
 from infrastructure.supabase.repos import (
     SupabaseActivityLogRepo,
     SupabaseCreatorRepo,
@@ -13,6 +16,8 @@ from infrastructure.supabase.repos import (
     SupabaseNegotiationSessionRepo,
 )
 from interface.dependencies import ActorContext, get_current_actor
+from shared.errors import NotFoundError, PermissionDeniedError
+from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/deals", tags=["deals"])
 

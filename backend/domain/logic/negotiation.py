@@ -1,7 +1,7 @@
 from typing import Literal
 
-from domain.logic.money import format_inr
 from domain.models.negotiation import ChecklistState, ForecastPoint, NegotiationSession
+from shared.money import format_inr
 
 
 def calculate_base_rate(

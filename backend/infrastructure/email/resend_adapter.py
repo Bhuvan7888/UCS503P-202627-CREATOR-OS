@@ -3,8 +3,8 @@ import logging
 
 import resend
 
-from config import settings
 from domain.interfaces.email import EmailPort
+from shared.config import settings
 
 logger = logging.getLogger(__name__)
 

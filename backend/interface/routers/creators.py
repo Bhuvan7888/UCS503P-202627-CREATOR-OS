@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
 from application.services.creators import CreatorService
+from domain.models.auth import LinkBrandRequest
 from domain.models.brand import Brand
 from domain.models.creator import (
     Creator,
@@ -11,9 +12,6 @@ from domain.models.creator import (
     GrowthSnapshot,
     GrowthSnapshotCreateRequest,
 )
-from domain.models.auth import LinkBrandRequest
-from exceptions import ValidationError
-from infrastructure.supabase.client import get_supabase_client
 from infrastructure.supabase.repos import (
     SupabaseActivityLogRepo,
     SupabaseBrandRepo,
@@ -21,6 +19,8 @@ from infrastructure.supabase.repos import (
     SupabaseGrowthSnapshotRepo,
 )
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
+from shared.errors import ValidationError
+from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/creators", tags=["creators"])
 

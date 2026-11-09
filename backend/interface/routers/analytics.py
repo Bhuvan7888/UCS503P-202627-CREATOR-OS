@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 
 from application.services.analytics import AnalyticsService
 from domain.models.analytics import BrandAnalytics
-from infrastructure.supabase.client import get_supabase_client
 from infrastructure.supabase.repos import (
     SupabaseContractRepo,
     SupabaseCreatorRepo,
@@ -10,6 +9,7 @@ from infrastructure.supabase.repos import (
     SupabasePaymentRepo,
 )
 from interface.dependencies import ActorContext, get_current_brand
+from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 

@@ -36,14 +36,19 @@ from domain.models.auth import BrandSignupRequest, CreatorSignupRequest
 from domain.models.contract import ContractStatusUpdateRequest
 from domain.models.creator import GrowthSnapshot
 from domain.models.deal import DealCreateRequest
-from domain.models.deliverable import DeliverableCreateRequest, DeliverableStatusUpdateRequest
+from domain.models.deliverable import (
+    DeliverableCreateRequest,
+    DeliverableStatusUpdateRequest,
+)
 from domain.models.message import Message
-from domain.models.negotiation import ChecklistState, NegotiationConversation, NegotiationSessionCreate
+from domain.models.negotiation import (
+    ChecklistState,
+    NegotiationConversation,
+    NegotiationSessionCreate,
+)
 from domain.models.payment import PaymentCreateRequest
 from infrastructure.email.resend_adapter import ResendAdapter
-from infrastructure.llm.gemini_adapter import GeminiAdapter
 from infrastructure.pdf import extract_text
-from infrastructure.supabase.client import get_supabase_client
 from infrastructure.supabase.contract_intelligence_repos import (
     SupabaseClauseCardRepo,
     SupabaseEscalationRepo,
@@ -63,6 +68,8 @@ from infrastructure.supabase.repos import (
     SupabasePaymentRepo,
 )
 from infrastructure.supabase.storage import SupabaseStorage
+from shared.llm.gemini_adapter import GeminiAdapter
+from shared.supabase_client import get_supabase_client
 
 DEMO_PASSWORD = "DemoPass123!"
 TODAY = date.today()

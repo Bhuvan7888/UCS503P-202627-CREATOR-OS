@@ -16,8 +16,6 @@ from domain.models.negotiation import (
     NegotiationSessionCreate,
     RateRangeOut,
 )
-from infrastructure.llm.gemini_adapter import GeminiAdapter
-from infrastructure.supabase.client import get_supabase_client
 from infrastructure.supabase.repos import (
     SupabaseActivityLogRepo,
     SupabaseDealRepo,
@@ -26,6 +24,8 @@ from infrastructure.supabase.repos import (
     SupabaseNegotiationSessionRepo,
 )
 from interface.dependencies import ActorContext, get_current_actor
+from shared.llm.gemini_adapter import GeminiAdapter
+from shared.supabase_client import get_supabase_client
 
 
 def get_negotiation_service() -> NegotiationService:

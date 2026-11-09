@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends
 
 from application.services.activity_log import ActivityLogService
 from domain.models.activity_log import ActivityLog, ActivityLogManualEntryRequest
-from infrastructure.supabase.client import get_supabase_client
 from infrastructure.supabase.repos import SupabaseActivityLogRepo
 from interface.dependencies import ActorContext, get_current_actor
+from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/activity-log", tags=["activity-log"])
 

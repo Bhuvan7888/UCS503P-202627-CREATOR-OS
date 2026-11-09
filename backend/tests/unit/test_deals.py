@@ -6,8 +6,12 @@ import pytest
 from application.services.deals import DealService
 from domain.models.deal import DealCreateRequest
 from domain.models.negotiation import ChecklistState, NegotiationSession
-from exceptions import NotFoundError, PermissionDeniedError
-from tests.fakes.fake_repos import FakeActivityLogRepo, FakeDealRepo, FakeNegotiationSessionRepo
+from shared.errors import NotFoundError, PermissionDeniedError
+from tests.fakes.fake_repos import (
+    FakeActivityLogRepo,
+    FakeDealRepo,
+    FakeNegotiationSessionRepo,
+)
 
 
 @pytest.mark.asyncio

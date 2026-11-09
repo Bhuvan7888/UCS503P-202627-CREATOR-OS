@@ -1,8 +1,9 @@
 import logging
-from domain.interfaces.llm import LLMPort
+
 from domain.interfaces.repositories import ClauseCardRepo
 from domain.logic.red_flag_engine import detect_flags
 from domain.models.contract_intelligence import ClauseCardOut
+from shared.llm.llm_port import LLMPort
 
 DEFAULT_FLAG_EXPLANATIONS = {
     "perpetual_usage_rights": "The brand acquires perpetual rights to use your content and likeness forever across all media without additional compensation or expiration date.",

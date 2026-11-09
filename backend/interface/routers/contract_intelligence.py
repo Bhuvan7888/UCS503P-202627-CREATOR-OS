@@ -18,14 +18,14 @@ router = APIRouter(prefix="/contracts", tags=["contract_intelligence"])
 
 from application.services.clause_explanation import ClauseExplanationService
 from infrastructure.email.resend_adapter import ResendAdapter
-from infrastructure.llm.gemini_adapter import GeminiAdapter
-from infrastructure.supabase.client import get_supabase_client
 from infrastructure.supabase.contract_intelligence_repos import (
     SupabaseClauseCardRepo,
     SupabaseEscalationRepo,
 )
 from infrastructure.supabase.repos import SupabaseContractRepo
 from interface.dependencies import ActorContext, get_current_brand
+from shared.llm.gemini_adapter import GeminiAdapter
+from shared.supabase_client import get_supabase_client
 
 
 def get_ci_service() -> ContractIntelligenceService:

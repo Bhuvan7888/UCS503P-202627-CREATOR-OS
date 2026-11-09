@@ -42,3 +42,16 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | edit | `frontend/tsconfig.json` | `@/*` → `./src/*` (every import already used `@/`, so no import edits were needed) |
 | edit | `frontend/package.json` | `generate:api` writes to `src/lib/api-types.ts` |
 | add | `backend/features/__init__.py`, `backend/shared/__init__.py` | target packages |
+
+## Phase 3.3 — Backend shared modules (moved before features because every feature imports them)
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/config.py` → `backend/shared/config.py` | cross-cutting settings |
+| move | `backend/exceptions.py` → `backend/shared/errors.py` | cross-cutting domain errors |
+| move | `backend/infrastructure/supabase/client.py` → `backend/shared/supabase_client.py` | used by every feature |
+| move | `backend/domain/logic/money.py` → `backend/shared/money.py` | used by negotiation + LLM adapter |
+| move | `backend/domain/interfaces/llm.py` → `backend/shared/llm/llm_port.py` | LLM port used by 2 features |
+| move | `backend/infrastructure/llm/gemini_adapter.py` → `backend/shared/llm/gemini_adapter.py` | LLM adapter used by 2 features |
+| edit | 34 importers | import paths rewritten by AST codemod; imports re-sorted (ruff I001) in touched files only |
+| edit | `backend/.importlinter` | added `shared`, `features` roots + new contract: `shared` may not import features or app layers |

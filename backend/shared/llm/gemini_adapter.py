@@ -3,11 +3,11 @@ import logging
 from google import genai
 from google.genai import types
 
-from config import settings
-from domain.interfaces.llm import LLMPort
-from domain.logic.money import format_inr
 from domain.models.contract_intelligence import ClauseInput
 from domain.models.negotiation import NegotiationSession
+from shared.config import settings
+from shared.llm.llm_port import LLMPort
+from shared.money import format_inr
 
 logger = logging.getLogger(__name__)
 

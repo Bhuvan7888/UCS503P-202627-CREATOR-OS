@@ -9,7 +9,7 @@ from domain.models.deliverable import (
     DeliverableCreateRequest,
     DeliverableStatusUpdateRequest,
 )
-from exceptions import InvalidStatusTransition, PermissionDeniedError
+from shared.errors import InvalidStatusTransition, PermissionDeniedError
 
 _CREATOR_ALLOWED_STATUSES = {"pending", "in_production", "editing", "submitted", "revision_requested"}
 _BRAND_ALLOWED_STATUSES = {"pending", "in_production", "editing", "submitted", "approved", "revision_requested", "rejected"}

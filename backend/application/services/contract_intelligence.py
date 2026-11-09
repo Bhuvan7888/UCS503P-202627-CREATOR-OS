@@ -14,8 +14,7 @@ from domain.models.contract_intelligence import (
     FlagResult,
     ResolveEscalationRequest,
 )
-from exceptions import NotFoundError, ValidationError
-
+from shared.errors import NotFoundError, ValidationError
 
 DEFAULT_FLAG_EXPLANATIONS = {
     "perpetual_usage_rights": "The brand acquires perpetual rights to use your content and likeness forever across all media without additional compensation or expiration date.",
