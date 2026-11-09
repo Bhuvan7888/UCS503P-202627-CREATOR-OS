@@ -8,8 +8,8 @@ import { test, expect, type Page } from "@playwright/test";
  *   cd frontend && npm run build && npx next start -p 3100
  *   E2E_BASE_URL=http://127.0.0.1:3100 npx playwright test
  *
- * Every test fails on an uncaught page error, a console error, or an API response >= 500
- * (and on any 4xx that the test did not explicitly expect).
+ * Every test fails on an uncaught page error, a console error, or an API error response
+ * (>= 400) that the test did not explicitly expect.
  */
 const WEB = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000";
 const API = process.env.E2E_API_URL ?? "http://127.0.0.1:8000";
@@ -17,17 +17,19 @@ const RUN = Date.now().toString(36);
 
 test.describe.configure({ mode: "serial" });
 
-function watchForProblems(page: Page, allowed4xx: RegExp[] = []) {
+function watchForProblems(page: Page, allowedErrors: RegExp[] = []) {
   const problems: string[] = [];
   page.on("pageerror", (e) => problems.push(`page error: ${e.message}`));
   page.on("console", (m) => {
-    if (m.type() === "error") problems.push(`console error: ${m.text()}`);
+    // The browser also logs every failed request; those are judged by status below.
+    if (m.type() === "error" && !m.text().startsWith("Failed to load resource"))
+      problems.push(`console error: ${m.text()}`);
   });
   page.on("response", (r) => {
     if (!r.url().startsWith(API)) return;
     const what = `${r.status()} ${r.request().method()} ${r.url().slice(API.length)}`;
-    if (r.status() >= 500) problems.push(`server error: ${what}`);
-    else if (r.status() >= 400 && !allowed4xx.some((re) => re.test(what))) problems.push(`client error: ${what}`);
+    if (r.status() >= 400 && !allowedErrors.some((re) => re.test(what)))
+      problems.push(`API error: ${what}`);
   });
   return problems;
 }
@@ -102,10 +104,16 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   const before = await page.locator("a[href$='/clauses']").count();
   await page.getByRole("button", { name: "+ Upload contract" }).click();
   await page.locator('select[name="deal_id"]').selectOption({ index: 2 });
-  await page.locator('input[name="file"]').setInputFiles({ name: "contract.pdf", mimeType: "application/pdf", buffer: pdf });
+  await page
+    .locator('input[name="file"]')
+    .setInputFiles({ name: "contract.pdf", mimeType: "application/pdf", buffer: pdf });
   await page.getByRole("button", { name: "Upload", exact: true }).click();
   await expect(page.locator("a[href$='/clauses']")).toHaveCount(before + 1, { timeout: 15_000 });
-  await page.locator("select").filter({ has: page.locator('option[value="signed"]') }).first().selectOption("signed");
+  await page
+    .locator("select")
+    .filter({ has: page.locator('option[value="signed"]') })
+    .first()
+    .selectOption("signed");
   await expect(page.getByText(/Couldn't update contract status/)).toHaveCount(0);
 
   // Clause review for a contract
@@ -121,7 +129,11 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   await page.locator('input[name="description"]').fill("Reel + 2 stories");
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await expect(page.getByText(`E2E Deliverable ${RUN}`)).toBeVisible();
-  await page.locator("select").filter({ has: page.locator('option[value="approved"]') }).first().selectOption("approved");
+  await page
+    .locator("select")
+    .filter({ has: page.locator('option[value="approved"]') })
+    .first()
+    .selectOption("approved");
 
   // Payments: raise an invoice and mark one paid
   await visit(page, "/payments");
@@ -131,13 +143,19 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   await page.locator('input[name="due_date"]').fill("2026-12-31");
   await page.getByRole("button", { name: "Create invoice" }).click();
   await expect(page.getByText(/12,345/).first()).toBeVisible();
-  await page.locator("select").filter({ has: page.locator('option[value="paid"]') }).first().selectOption("paid");
+  await page
+    .locator("select")
+    .filter({ has: page.locator('option[value="paid"]') })
+    .first()
+    .selectOption("paid");
 
-  // Activity log: add a manual note
+  // Activity log: add a manual note (the list shows the action, not the note text)
   await visit(page, "/activity");
+  const notesBefore = await page.getByText("manual note", { exact: true }).count();
   await page.getByPlaceholder(/Log a manual note/).fill(`E2E note ${RUN}`);
   await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByText(`E2E note ${RUN}`)).toBeVisible();
+  await expect(page.getByText("manual note", { exact: true })).toHaveCount(notesBefore + 1);
+  await expect(page.getByPlaceholder(/Log a manual note/)).toHaveValue("");
 
   // Analytics
   await visit(page, "/analytics");
@@ -150,9 +168,11 @@ test("brand: every page loads and every main action works", async ({ page }) => 
 });
 
 test("creator: every page loads and every main action works", async ({ page }) => {
-  // The negotiation AI needs a real Gemini key; in demo mode the backend answers with an error,
-  // which the page must show without breaking.
-  const problems = watchForProblems(page, [/POST \/negotiation\/sessions\/[^/]+\/conversations$/]);
+  // The negotiation AI needs a real Gemini key. Without one the backend answers 503 ("temporarily
+  // unavailable") quickly, and the page must stay usable.
+  const problems = watchForProblems(page, [
+    /^503 POST \/negotiation\/sessions\/[^/]+\/conversations$/,
+  ]);
   await loginWithDemo(page, "creator", "1. Ananya Sharma (Mamaearth, Nykaa)");
   await expectSettled(page);
 
@@ -167,14 +187,25 @@ test("creator: every page loads and every main action works", async ({ page }) =
   await page.getByRole("button", { name: "Add deal" }).click();
   await expect(page.getByText(`Creator Deal ${RUN}`).first()).toBeVisible();
 
-  // Negotiation workspace from the deals table
-  await page.locator("tbody tr").first().click();
+  // Negotiation workspace for the new deal: set up the rate calculator (creates a session),
+  // then use the workspace
+  await page.getByText(`Creator Deal ${RUN}`).first().click();
   await page.waitForURL(/\/creator\/negotiate\//);
   await expectSettled(page);
-  await expect(page.getByText("SUGGESTED RANGE", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Calculate my rate" }).click();
+  await expect(page.getByText("Suggested range", { exact: false })).toBeVisible();
   await page.locator("textarea").fill("They offered ₹15,000 for one reel.");
+  const aiResponse = page.waitForResponse(
+    (r) => r.url().endsWith("/conversations") && r.request().method() === "POST",
+  );
   await page.getByRole("button", { name: "Send" }).click();
-  await expect(page.locator("textarea")).toBeEnabled({ timeout: 15_000 });
+  const ai = await aiResponse;
+  expect([200, 503]).toContain(ai.status());
+  if (ai.status() === 503) {
+    expect((await ai.json()).detail).toMatch(/temporarily unavailable/);
+    await expect(page.locator("textarea")).toHaveValue("They offered ₹15,000 for one reel."); // text kept
+  }
+  await expect(page.getByRole("button", { name: "Send" })).toBeEnabled();
 
   // Board
   await visit(page, "/creator/board");
@@ -193,7 +224,11 @@ test("creator: every page loads and every main action works", async ({ page }) =
 
   // Deliverables: creator moves one forward
   await visit(page, "/deliverables");
-  await page.locator("select").filter({ has: page.locator('option[value="submitted"]') }).first().selectOption("submitted");
+  await page
+    .locator("select")
+    .filter({ has: page.locator('option[value="submitted"]') })
+    .first()
+    .selectOption("submitted");
 
   // Payments and chat
   await visit(page, "/payments");

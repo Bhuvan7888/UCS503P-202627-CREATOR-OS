@@ -47,7 +47,9 @@ frontend/
 │   │   ├── lib/            api-client, api-types (generated), session, formatting, status colours
 │   │   └── constants/
 │   └── styles/globals.css
-└── tests/smoke/            route-manifest check (run after `npm run build`)
+└── tests/
+    ├── smoke/              route-manifest check (run after `npm run build`)
+    └── e2e/                Playwright flows for both roles against a demo-mode backend
 ```
 
 The routes are unchanged. `src/app/(brand)/deals/[id]/page.tsx` contains only:
@@ -147,4 +149,11 @@ npx tsc --noEmit
 npm run lint
 npm run format:check
 npm run build && npm run test:smoke
+
+# end-to-end (browser): backend in demo mode on :8000, production frontend on :3100
+cd backend && SUPABASE_URL=http://dummy.invalid SUPABASE_SERVICE_ROLE_KEY=dummy SUPABASE_ANON_KEY=dummy \
+  uv run uvicorn main:app --port 8000
+cd frontend && npm run build && npx next start -p 3100
+npx playwright install chromium   # once
+E2E_BASE_URL=http://127.0.0.1:3100 npm run test:e2e
 ```

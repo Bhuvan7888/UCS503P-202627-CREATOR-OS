@@ -598,3 +598,9 @@ Total API operations: 55 (baseline 55). All features OK: True
 | fix | `DemoDeliverableRepo.list_for_creator` | **Pre-existing demo-mode bug**: returned every brand's deliverables to any creator (and so let them change their status). Now filters by the deal's creator, like the Supabase repository. Demo snapshot entry `creator GET /deliverables` updated 6 → 2 (verified independently: 2 of the 6 seeded deliverables are on Ananya's deals) |
 | add | `backend/tests/features/demo_mode/test_demo_store.py` | regression tests for both |
 | fix | `ContractOwnerMap` in `features/demo_mode/in_memory_repositories.py`, wired in `demo_store.py` | **Pre-existing demo-mode bug**, same class: payments (and brand-level clause-card/escalation lists) found their owner only through seed-time contract maps, so an invoice raised on a newly uploaded contract was saved but never listed (found by the e2e invoice step). Regression test added |
+| add | `frontend/tests/e2e/app-flows.spec.ts`, `test:e2e` script | browser flows for landing, brand and creator: login via demo buttons; create deal, onboard creator, add deliverable from a deal, chat, upload contract + status change, clause review, deliverables, invoice + status, activity note, analytics, logout; creator growth snapshot, add deal, rate calculator → negotiation session, AI chat (503 without a Gemini key, handled), board, one-click sample scan + clause views, deliverable status, payments, chat. Fails on any page error, console error, or API status >= 400 not explicitly expected. 3/3 passing, stable over 3 runs |
+
+## End-to-end flows
+
+| Action | Path | Reason |
+|---|---|---|

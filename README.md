@@ -78,6 +78,7 @@ cd frontend && npm run generate:api   # writes src/shared/lib/api-types.ts
 | Backend lint / format / types | `uv run ruff check .` · `uv run ruff format --check .` · `uv run mypy .` |
 | Frontend types / lint / format | `npx tsc --noEmit` · `npm run lint` · `npm run format:check` |
 | Frontend build + route smoke test | `npm run build && npm run test:smoke` |
+| End-to-end browser flows (both roles, demo mode) | `E2E_BASE_URL=http://127.0.0.1:3100 npm run test:e2e`; see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#verification-commands) |
 
 CI (`.github/workflows/ci.yml`) runs the backend tests, the frontend type check and the frontend lint on every PR.
 
