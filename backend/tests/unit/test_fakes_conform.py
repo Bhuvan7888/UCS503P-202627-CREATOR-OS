@@ -1,10 +1,6 @@
-from domain.interfaces.repositories import (
-    BrandMemberRepo,
-    BrandRepo,
-    ContractRepo,
-    CreatorRepo,
-)
+from domain.interfaces.repositories import ContractRepo, CreatorRepo
 from features.activity_log import ActivityLogRepo
+from features.brands import BrandMemberRepo, BrandRepo
 from features.deals import DealRepo
 from features.deliverables import DeliverableRepo
 from features.payments import PaymentRepo

@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from application.services.creators import CreatorService
 from domain.models.auth import LinkBrandRequest
-from domain.models.brand import Brand
 from domain.models.creator import (
     Creator,
     CreatorOnboardRequest,
@@ -13,8 +12,8 @@ from domain.models.creator import (
     GrowthSnapshotCreateRequest,
 )
 from features.activity_log import SupabaseActivityLogRepo
+from features.brands import Brand, SupabaseBrandRepo
 from infrastructure.supabase.repos import (
-    SupabaseBrandRepo,
     SupabaseCreatorRepo,
     SupabaseGrowthSnapshotRepo,
 )

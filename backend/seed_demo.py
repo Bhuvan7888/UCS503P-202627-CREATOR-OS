@@ -38,6 +38,7 @@ from domain.models.negotiation import (
     NegotiationSessionCreate,
 )
 from features.activity_log import SupabaseActivityLogRepo
+from features.brands import SupabaseBrandMemberRepo, SupabaseBrandRepo
 from features.deals import DealCreateRequest, DealService, SupabaseDealRepo
 from features.deliverables import (
     DeliverableCreateRequest,
@@ -54,8 +55,6 @@ from infrastructure.supabase.contract_intelligence_repos import (
     SupabaseEscalationRepo,
 )
 from infrastructure.supabase.repos import (
-    SupabaseBrandMemberRepo,
-    SupabaseBrandRepo,
     SupabaseContractRepo,
     SupabaseCreatorRepo,
     SupabaseGrowthSnapshotRepo,

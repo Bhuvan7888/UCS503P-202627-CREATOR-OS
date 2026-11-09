@@ -163,3 +163,13 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | move | `backend/tests/unit/test_deals.py` → `backend/tests/features/deals/test_deals_service.py` | tests mirror the feature |
 | add | `backend/features/deals/__init__.py` | public API (generated from names other packages import) |
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+
+## Phase 3.3 — Backend feature: `brands`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/domain/models/brand.py` → `backend/features/brands/models.py` | feature folder |
+| split | `SupabaseBrandRepo`, `SupabaseBrandMemberRepo` from `backend/infrastructure/supabase/repos.py` → `backend/features/brands/supabase_repository.py` | one repository/port per feature |
+| split | `BrandRepo`, `BrandMemberRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/brands/repository.py` | one repository/port per feature |
+| add | `backend/features/brands/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |

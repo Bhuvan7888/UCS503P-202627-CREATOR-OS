@@ -7,7 +7,6 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from domain.models.brand import Brand, BrandMember
 from domain.models.contract import Contract
 from domain.models.contract_intelligence import ClauseCardOut
 from domain.models.creator import Creator, GrowthSnapshot
@@ -15,6 +14,7 @@ from domain.models.negotiation import (
     ChecklistState,
     NegotiationSession,
 )
+from features.brands import Brand, BrandMember
 from features.deals import Deal
 from features.deliverables import Deliverable
 from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS

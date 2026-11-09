@@ -5,9 +5,9 @@ import pytest
 
 from application.services.contracts import ContractService
 from application.services.creators import CreatorService
-from domain.models.brand import Brand
 from domain.models.contract import Contract, ContractStatusUpdateRequest
 from domain.models.creator import Creator, CreatorOnboardRequest
+from features.brands import Brand
 from shared.errors import (
     InvalidStatusTransition,
     ValidationError,

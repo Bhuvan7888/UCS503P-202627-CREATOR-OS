@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 from uuid import UUID
 
-from domain.models.brand import Brand, BrandMember
 from domain.models.contract import Contract
 from domain.models.creator import Creator, GrowthSnapshot
 from domain.models.negotiation import (
@@ -12,18 +11,8 @@ from domain.models.negotiation import (
     NegotiationOffer,
     NegotiationSession,
 )
+from features.brands import Brand
 
-
-@runtime_checkable
-class BrandRepo(Protocol):
-    async def create(self, brand: Brand) -> Brand: ...
-    async def get(self, id: UUID) -> Brand | None: ...
-
-@runtime_checkable
-class BrandMemberRepo(Protocol):
-    async def create(self, member: BrandMember) -> BrandMember: ...
-    async def list_for_brand(self, brand_id: UUID) -> list[BrandMember]: ...
-    async def get_by_user_id(self, user_id: UUID) -> BrandMember | None: ...
 
 @runtime_checkable
 class CreatorRepo(Protocol):

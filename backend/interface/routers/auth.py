@@ -8,11 +8,8 @@ from domain.models.auth import (
     CreatorLoginRequest,
     CreatorSignupRequest,
 )
-from infrastructure.supabase.repos import (
-    SupabaseBrandMemberRepo,
-    SupabaseBrandRepo,
-    SupabaseCreatorRepo,
-)
+from features.brands import SupabaseBrandMemberRepo, SupabaseBrandRepo
+from infrastructure.supabase.repos import SupabaseCreatorRepo
 from shared.errors import ValidationError
 from shared.supabase_client import get_supabase_client
 

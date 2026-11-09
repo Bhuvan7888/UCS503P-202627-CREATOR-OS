@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from domain.models.brand import Brand, BrandMember
 from domain.models.contract import Contract
 from domain.models.creator import Creator
 from domain.models.negotiation import (
@@ -10,6 +9,7 @@ from domain.models.negotiation import (
     NegotiationSession,
 )
 from features.activity_log import ActivityLog
+from features.brands import Brand, BrandMember
 from features.deals import Deal
 from features.deliverables import Deliverable
 from features.payments import Payment
