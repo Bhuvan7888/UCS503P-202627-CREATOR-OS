@@ -14,15 +14,13 @@
 }
 
 .blob1 {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(90, 148, 226, 0.85) 0%, transparent 45%),
+  background: radial-gradient(circle at 30% 25%, rgba(90, 148, 226, 0.85) 0%, transparent 45%),
     radial-gradient(circle at 68% 60%, rgba(90, 148, 226, 0.7) 0%, transparent 40%);
   animation: drift1 22s ease-in-out infinite alternate;
 }
 
 .blob2 {
-  background:
-    radial-gradient(circle at 72% 20%, rgba(230, 176, 96, 0.9) 0%, transparent 42%),
+  background: radial-gradient(circle at 72% 20%, rgba(230, 176, 96, 0.9) 0%, transparent 42%),
     radial-gradient(circle at 20% 75%, rgba(230, 176, 96, 0.75) 0%, transparent 45%);
   animation: drift2 26s ease-in-out infinite alternate;
 }
@@ -41,18 +39,34 @@
 }
 
 @keyframes drift1 {
-  from { transform: translate(-3%, -2%) scale(1); }
-  to { transform: translate(3%, 4%) scale(1.08); }
+  from {
+    transform: translate(-3%, -2%) scale(1);
+  }
+  to {
+    transform: translate(3%, 4%) scale(1.08);
+  }
 }
 @keyframes drift2 {
-  from { transform: translate(2%, 3%) scale(1.05); }
-  to { transform: translate(-4%, -3%) scale(1); }
+  from {
+    transform: translate(2%, 3%) scale(1.05);
+  }
+  to {
+    transform: translate(-4%, -3%) scale(1);
+  }
 }
 @keyframes drift3 {
-  from { transform: translate(-2%, 2%) scale(1); }
-  to { transform: translate(3%, -3%) scale(1.1); }
+  from {
+    transform: translate(-2%, 2%) scale(1);
+  }
+  to {
+    transform: translate(3%, -3%) scale(1.1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blob1, .blob2, .blob3 { animation: none; }
+  .blob1,
+  .blob2,
+  .blob3 {
+    animation: none;
+  }
 }

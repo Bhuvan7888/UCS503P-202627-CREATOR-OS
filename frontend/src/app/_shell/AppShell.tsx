@@ -90,7 +90,14 @@ export function AppShell({ children, role }: AppShellProps) {
               href={item.href}
               className={`item ${pathname === item.href ? "on" : ""}`}
             >
-              <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <span
+                style={{
+                  position: "relative",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <Icon size={17} strokeWidth={2} />
                 {showDot && (
                   <span
@@ -112,11 +119,29 @@ export function AppShell({ children, role }: AppShellProps) {
           );
         })}
         <div style={{ flex: 1 }} />
-        <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "14px", marginTop: "12px" }}>
+        <div
+          style={{
+            borderTop: "1px solid var(--color-border)",
+            paddingTop: "14px",
+            marginTop: "12px",
+          }}
+        >
           <div style={{ marginBottom: "8px" }}>
-            <StatusPill status={effectiveRole === "brand" ? "BRAND" : "CREATOR"} variant={effectiveRole === "brand" ? "accent" : "success"} />
+            <StatusPill
+              status={effectiveRole === "brand" ? "BRAND" : "CREATOR"}
+              variant={effectiveRole === "brand" ? "accent" : "success"}
+            />
           </div>
-          <div style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--color-ink)", marginBottom: "8px" }}>{accountLabel}</div>
+          <div
+            style={{
+              fontSize: "13.5px",
+              fontWeight: 600,
+              color: "var(--color-ink)",
+              marginBottom: "8px",
+            }}
+          >
+            {accountLabel}
+          </div>
           <button
             onClick={logout}
             style={{
@@ -134,9 +159,7 @@ export function AppShell({ children, role }: AppShellProps) {
           </button>
         </div>
       </div>
-      <div style={{ flex: 1, padding: "20px 22px" }}>
-        {children}
-      </div>
+      <div style={{ flex: 1, padding: "20px 22px" }}>{children}</div>
     </div>
   );
 }

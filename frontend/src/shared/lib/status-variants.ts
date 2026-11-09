@@ -5,20 +5,29 @@ import type { StatusVariant } from "@/shared/components/ui/StatusPill";
 
 export function contractStatusVariant(status: string): StatusVariant {
   switch (status) {
-    case "signed": return "success";
-    case "pending_review": return "warning";
-    case "void": return "danger";
-    default: return "neutral";
+    case "signed":
+      return "success";
+    case "pending_review":
+      return "warning";
+    case "void":
+      return "danger";
+    default:
+      return "neutral";
   }
 }
 
 export function dealStatusVariant(status: string): StatusVariant {
   switch (status) {
-    case "negotiating": return "warning";
-    case "contracted": return "success";
-    case "completed": return "success";
-    case "cancelled": return "danger";
-    default: return "neutral";
+    case "negotiating":
+      return "warning";
+    case "contracted":
+      return "success";
+    case "completed":
+      return "success";
+    case "cancelled":
+      return "danger";
+    default:
+      return "neutral";
   }
 }
 

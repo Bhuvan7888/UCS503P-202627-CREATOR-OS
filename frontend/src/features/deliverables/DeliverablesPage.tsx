@@ -9,7 +9,12 @@ import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 import { DELIVERABLE_STATUS_LABEL } from "./constants/deliverable-status";
-import { dealStageVariant, getAvailableStatuses, getBrandAvailableStatuses, deliverableStatusVariant } from "./utils/deliverable-status.utils";
+import {
+  dealStageVariant,
+  getAvailableStatuses,
+  getBrandAvailableStatuses,
+  deliverableStatusVariant,
+} from "./utils/deliverable-status.utils";
 
 type Deliverable = components["schemas"]["Deliverable"];
 type Deal = components["schemas"]["Deal"];
@@ -30,7 +35,10 @@ export default function DeliverablesPage() {
 
   function reload() {
     client.GET("/deliverables").then(({ data, error: apiError }) => {
-      if (apiError) { setError(true); return; }
+      if (apiError) {
+        setError(true);
+        return;
+      }
       setItems(data ?? []);
     });
   }
@@ -40,10 +48,14 @@ export default function DeliverablesPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- see AppShell.tsx
     setIsBrand(brand);
     reload();
-    client.GET("/deals", { params: { query: { limit: 100 } } }).then(({ data }) => setDeals(data ?? []));
+    client
+      .GET("/deals", { params: { query: { limit: 100 } } })
+      .then(({ data }) => setDeals(data ?? []));
     client.GET("/contracts").then(({ data }) => setContracts(data ?? []));
     if (brand) {
-      client.GET("/creators", { params: { query: { limit: 100 } } }).then(({ data }) => setCreators(data ?? []));
+      client
+        .GET("/creators", { params: { query: { limit: 100 } } })
+        .then(({ data }) => setCreators(data ?? []));
     }
   }, []);
 
@@ -74,13 +86,17 @@ export default function DeliverablesPage() {
     if (newStatus === d.status) return;
     await client.PATCH("/deliverables/{id}/status", {
       params: { path: { id: d.id }, query: { deal_id: d.deal_id } },
-      body: { status: newStatus as components["schemas"]["DeliverableStatusUpdateRequest"]["status"] },
+      body: {
+        status: newStatus as components["schemas"]["DeliverableStatusUpdateRequest"]["status"],
+      },
     });
     reload();
   }
 
   if (error) {
-    return <EmptyState icon={PackageOpen} message="Couldn't load deliverables. Try signing in again." />;
+    return (
+      <EmptyState icon={PackageOpen} message="Couldn't load deliverables. Try signing in again." />
+    );
   }
   if (items === null) {
     return <div style={{ fontSize: "13px", color: "var(--color-ink-faint)" }}>Loading…</div>;
@@ -94,129 +110,223 @@ export default function DeliverablesPage() {
   const content = (
     <>
       {isBrand && (
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
-        <button className="btn" onClick={() => setShowForm((v) => !v)}>
-          {showForm ? "Cancel" : "+ New deliverable"}
-        </button>
-      </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
+          <button className="btn" onClick={() => setShowForm((v) => !v)}>
+            {showForm ? "Cancel" : "+ New deliverable"}
+          </button>
+        </div>
       )}
 
       {isBrand && showForm && (
-        <form onSubmit={createDeliverable} className="mtile" style={{ marginBottom: "14px", display: "grid", gap: "10px" }}>
-          <label className="text-label">Deal
+        <form
+          onSubmit={createDeliverable}
+          className="mtile"
+          style={{ marginBottom: "14px", display: "grid", gap: "10px" }}
+        >
+          <label className="text-label">
+            Deal
             <select
-              name="deal_id" required className="field"
-              value={selectedDealId} onChange={(e) => setSelectedDealId(e.target.value)}
+              name="deal_id"
+              required
+              className="field"
+              value={selectedDealId}
+              onChange={(e) => setSelectedDealId(e.target.value)}
             >
               <option value="">Select deal…</option>
-              {deals.map((d) => <option key={d.id} value={d.id}>{d.campaign_name}</option>)}
-            </select>
-          </label>
-          <label className="text-label">Contract (optional — leave blank to add one from your side)
-            <select name="contract_id" className="field" disabled={!selectedDealId}>
-              <option value="">— Not tied to a contract —</option>
-              {contracts.filter((c) => c.deal_id === selectedDealId).map((c) => (
-                <option key={c.id} value={c.id}>{c.id.slice(0, 8)} — {c.status}</option>
+              {deals.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.campaign_name}
+                </option>
               ))}
             </select>
           </label>
-          <label className="text-label">Title<input name="title" required className="field" /></label>
-          <label className="text-label">Description<input name="description" required className="field" /></label>
+          <label className="text-label">
+            Contract (optional — leave blank to add one from your side)
+            <select name="contract_id" className="field" disabled={!selectedDealId}>
+              <option value="">— Not tied to a contract —</option>
+              {contracts
+                .filter((c) => c.deal_id === selectedDealId)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.id.slice(0, 8)} — {c.status}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label className="text-label">
+            Title
+            <input name="title" required className="field" />
+          </label>
+          <label className="text-label">
+            Description
+            <input name="description" required className="field" />
+          </label>
           <div>
-            <button className="btn" disabled={busy} type="submit">Create</button>
+            <button className="btn" disabled={busy} type="submit">
+              Create
+            </button>
           </div>
         </form>
       )}
 
       {filteredItems.length === 0 ? (
-        <EmptyState icon={PackageOpen} message="No deliverables yet. They'll show up here once a deal has content in flight." />
+        <EmptyState
+          icon={PackageOpen}
+          message="No deliverables yet. They'll show up here once a deal has content in flight."
+        />
       ) : (
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
-        <thead>
-          <tr style={{ color: "var(--color-ink-faint)", textAlign: "left" }}>
-            <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Title</th>
-            <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Description</th>
-            <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Contract</th>
-            <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>Status</th>
-            <th style={{ fontWeight: 600, padding: "6px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredItems.map((d) => {
-            const availableStatuses = getAvailableStatuses(d);
-            const isCompleted = d.status === "approved" || d.status === "rejected";
-            return (
-              <tr key={d.id}>
-                <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>{d.title}</td>
-                <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", color: "var(--color-ink-soft)" }}>{d.description}</td>
-                <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", color: "var(--color-ink-soft)" }}>
-                  {d.contract_id ? `${d.contract_id.slice(0, 8)}` : "—"}
-                </td>
-                <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                  <StatusPill status={DELIVERABLE_STATUS_LABEL[d.status] ?? d.status} variant={deliverableStatusVariant(d.status)} />
-                </td>
-                <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}>
-                  {isBrand ? (
-                    <select
-                      className="field"
-                      style={{
-                        display: "inline-block",
-                        margin: 0,
-                        width: "auto",
-                        minWidth: "210px",
-                        fontSize: "12.5px",
-                        padding: "6px 10px",
-                        cursor: "pointer",
-                        background: "var(--color-surface-sunken)",
-                        borderColor: "var(--color-border)",
-                        color: "var(--color-ink)",
-                        borderRadius: "var(--radius-sm)",
-                        fontWeight: 500,
-                      }}
-                      value={d.status}
-                      onChange={(e) => handleStatusChange(d, e.target.value)}
-                    >
-                      {getBrandAvailableStatuses(d).map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  ) : isCompleted ? (
-                    <span style={{ fontSize: "12px", color: "var(--color-ink-faint)" }}>—</span>
-                  ) : (
-                    <select
-                      className="field"
-                      style={{
-                        display: "inline-block",
-                        margin: 0,
-                        width: "auto",
-                        minWidth: "210px",
-                        fontSize: "12.5px",
-                        padding: "6px 10px",
-                        cursor: "pointer",
-                        background: "var(--color-surface-sunken)",
-                        borderColor: "var(--color-border)",
-                        color: "var(--color-ink)",
-                        borderRadius: "var(--radius-sm)",
-                        fontWeight: 500,
-                      }}
-                      value={d.status}
-                      onChange={(e) => handleStatusChange(d, e.target.value)}
-                    >
-                      {availableStatuses.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
+          <thead>
+            <tr style={{ color: "var(--color-ink-faint)", textAlign: "left" }}>
+              <th
+                style={{
+                  fontWeight: 600,
+                  padding: "6px 4px",
+                  borderBottom: "1px solid var(--color-border)",
+                }}
+              >
+                Title
+              </th>
+              <th
+                style={{
+                  fontWeight: 600,
+                  padding: "6px 4px",
+                  borderBottom: "1px solid var(--color-border)",
+                }}
+              >
+                Description
+              </th>
+              <th
+                style={{
+                  fontWeight: 600,
+                  padding: "6px 4px",
+                  borderBottom: "1px solid var(--color-border)",
+                }}
+              >
+                Contract
+              </th>
+              <th
+                style={{
+                  fontWeight: 600,
+                  padding: "6px 4px",
+                  borderBottom: "1px solid var(--color-border)",
+                }}
+              >
+                Status
+              </th>
+              <th
+                style={{
+                  fontWeight: 600,
+                  padding: "6px 4px",
+                  borderBottom: "1px solid var(--color-border)",
+                  textAlign: "right",
+                }}
+              >
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredItems.map((d) => {
+              const availableStatuses = getAvailableStatuses(d);
+              const isCompleted = d.status === "approved" || d.status === "rejected";
+              return (
+                <tr key={d.id}>
+                  <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
+                    {d.title}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px 4px",
+                      borderBottom: "1px solid var(--color-border)",
+                      color: "var(--color-ink-soft)",
+                    }}
+                  >
+                    {d.description}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px 4px",
+                      borderBottom: "1px solid var(--color-border)",
+                      color: "var(--color-ink-soft)",
+                    }}
+                  >
+                    {d.contract_id ? `${d.contract_id.slice(0, 8)}` : "—"}
+                  </td>
+                  <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
+                    <StatusPill
+                      status={DELIVERABLE_STATUS_LABEL[d.status] ?? d.status}
+                      variant={deliverableStatusVariant(d.status)}
+                    />
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px 4px",
+                      borderBottom: "1px solid var(--color-border)",
+                      textAlign: "right",
+                    }}
+                  >
+                    {isBrand ? (
+                      <select
+                        className="field"
+                        style={{
+                          display: "inline-block",
+                          margin: 0,
+                          width: "auto",
+                          minWidth: "210px",
+                          fontSize: "12.5px",
+                          padding: "6px 10px",
+                          cursor: "pointer",
+                          background: "var(--color-surface-sunken)",
+                          borderColor: "var(--color-border)",
+                          color: "var(--color-ink)",
+                          borderRadius: "var(--radius-sm)",
+                          fontWeight: 500,
+                        }}
+                        value={d.status}
+                        onChange={(e) => handleStatusChange(d, e.target.value)}
+                      >
+                        {getBrandAvailableStatuses(d).map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : isCompleted ? (
+                      <span style={{ fontSize: "12px", color: "var(--color-ink-faint)" }}>—</span>
+                    ) : (
+                      <select
+                        className="field"
+                        style={{
+                          display: "inline-block",
+                          margin: 0,
+                          width: "auto",
+                          minWidth: "210px",
+                          fontSize: "12.5px",
+                          padding: "6px 10px",
+                          cursor: "pointer",
+                          background: "var(--color-surface-sunken)",
+                          borderColor: "var(--color-border)",
+                          color: "var(--color-ink)",
+                          borderRadius: "var(--radius-sm)",
+                          fontWeight: 500,
+                        }}
+                        value={d.status}
+                        onChange={(e) => handleStatusChange(d, e.target.value)}
+                      >
+                        {availableStatuses.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       )}
     </>
   );
@@ -226,12 +336,22 @@ export default function DeliverablesPage() {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: "16px" }}>
       <div className="mtile" style={{ padding: "8px", height: "fit-content" }}>
-        <div className="lbl" style={{ margin: "4px 6px 8px" }}>Creators</div>
+        <div className="lbl" style={{ margin: "4px 6px 8px" }}>
+          Creators
+        </div>
         <button
           onClick={() => setSelectedCreatorId(null)}
           style={{
-            display: "block", width: "100%", textAlign: "left", padding: "6px 6px", marginBottom: "4px",
-            borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 600,
+            display: "block",
+            width: "100%",
+            textAlign: "left",
+            padding: "6px 6px",
+            marginBottom: "4px",
+            borderRadius: "6px",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "12px",
+            fontWeight: 600,
             background: selectedCreatorId === null ? "var(--color-surface-sunken)" : "transparent",
           }}
         >
@@ -244,18 +364,33 @@ export default function DeliverablesPage() {
               key={cr.id}
               onClick={() => setSelectedCreatorId(cr.id)}
               style={{
-                display: "block", width: "100%", textAlign: "left", padding: "8px 6px", marginBottom: "2px",
-                borderRadius: "6px", border: "none", cursor: "pointer",
-                background: selectedCreatorId === cr.id ? "var(--color-surface-sunken)" : "transparent",
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                padding: "8px 6px",
+                marginBottom: "2px",
+                borderRadius: "6px",
+                border: "none",
+                cursor: "pointer",
+                background:
+                  selectedCreatorId === cr.id ? "var(--color-surface-sunken)" : "transparent",
               }}
             >
-              <div style={{ fontSize: "12.5px", color: "var(--color-ink)", marginBottom: "4px" }}>{cr.display_name}</div>
+              <div style={{ fontSize: "12.5px", color: "var(--color-ink)", marginBottom: "4px" }}>
+                {cr.display_name}
+              </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                 {creatorDeals.length === 0 ? (
-                  <span style={{ fontSize: "10.5px", color: "var(--color-ink-faint)" }}>No deals</span>
+                  <span style={{ fontSize: "10.5px", color: "var(--color-ink-faint)" }}>
+                    No deals
+                  </span>
                 ) : (
                   creatorDeals.map((d) => (
-                    <StatusPill key={d.id} status={DEAL_STAGE_LABEL[d.status] ?? d.status} variant={dealStageVariant(d.status)} />
+                    <StatusPill
+                      key={d.id}
+                      status={DEAL_STAGE_LABEL[d.status] ?? d.status}
+                      variant={dealStageVariant(d.status)}
+                    />
                   ))
                 )}
               </div>

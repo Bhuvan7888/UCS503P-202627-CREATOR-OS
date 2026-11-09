@@ -6,12 +6,18 @@ type Deliverable = components["schemas"]["Deliverable"];
 // Intentionally differs from the shared dealStatusVariant (contracted/in_production are "accent" here).
 export function dealStageVariant(status: string): StatusVariant {
   switch (status) {
-    case "negotiating": return "warning";
-    case "contracted": return "accent";
-    case "in_production": return "accent";
-    case "completed": return "success";
-    case "cancelled": return "danger";
-    default: return "neutral";
+    case "negotiating":
+      return "warning";
+    case "contracted":
+      return "accent";
+    case "in_production":
+      return "accent";
+    case "completed":
+      return "success";
+    case "cancelled":
+      return "danger";
+    default:
+      return "neutral";
   }
 }
 
@@ -49,10 +55,15 @@ export function getBrandAvailableStatuses(d: Deliverable): { value: string; labe
 
 export function deliverableStatusVariant(status: string): StatusVariant {
   switch (status) {
-    case "approved": return "success";
-    case "rejected": return "danger";
-    case "revision_requested": return "warning";
-    case "submitted": return "accent";
-    default: return "neutral";
+    case "approved":
+      return "success";
+    case "rejected":
+      return "danger";
+    case "revision_requested":
+      return "warning";
+    case "submitted":
+      return "accent";
+    default:
+      return "neutral";
   }
 }

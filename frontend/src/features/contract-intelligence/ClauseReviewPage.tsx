@@ -35,14 +35,19 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
       client.GET("/contracts/{id}", { params: { path: { id } } }),
       client.GET("/contracts/{contract_id}/clauses", { params: { path: { contract_id: id } } }),
     ]).then(([contractRes, clausesRes]) => {
-      if (contractRes.error) { setError(true); return; }
+      if (contractRes.error) {
+        setError(true);
+        return;
+      }
       setContract(contractRes.data ?? null);
       setClauses(clausesRes.data ?? []);
     });
   }, [id]);
 
   if (error) {
-    return <EmptyState icon={FileText} message="Couldn't load this contract. Try signing in again." />;
+    return (
+      <EmptyState icon={FileText} message="Couldn't load this contract. Try signing in again." />
+    );
   }
   if (contract === undefined) {
     return <div style={{ fontSize: "13px", color: "var(--color-ink-faint)" }}>Loading…</div>;
@@ -55,7 +60,14 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
   if (isBrand) {
     return (
       <div style={{ maxWidth: "840px", margin: "0 auto", paddingBottom: "32px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "16px",
+          }}
+        >
           <Link
             href="/contracts"
             style={{
@@ -70,11 +82,20 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
           >
             <ArrowLeft size={15} /> Back to contracts
           </Link>
-          <StatusPill status={contract.status.replace(/_/g, " ")} variant={contractStatusVariant(contract.status)} />
+          <StatusPill
+            status={contract.status.replace(/_/g, " ")}
+            variant={contractStatusVariant(contract.status)}
+          />
         </div>
 
         <div className="mtile" style={{ padding: "28px 32px" }}>
-          <div style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "12px", marginBottom: "20px" }}>
+          <div
+            style={{
+              borderBottom: "1px solid var(--color-border)",
+              paddingBottom: "12px",
+              marginBottom: "20px",
+            }}
+          >
             <h1 style={{ fontSize: "18px", fontWeight: 600, color: "var(--color-ink)", margin: 0 }}>
               Contract Agreement
             </h1>
@@ -95,7 +116,14 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
               {contract.raw_text}
             </div>
           ) : (
-            <div style={{ fontSize: "13px", color: "var(--color-ink-faint)", padding: "24px 0", textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "13px",
+                color: "var(--color-ink-faint)",
+                padding: "24px 0",
+                textAlign: "center",
+              }}
+            >
               Full text is not available for this contract.
             </div>
           )}
@@ -109,7 +137,15 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "10px",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <Link
             href="/contracts"
@@ -125,11 +161,22 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
           >
             <ArrowLeft size={15} /> Back to contracts
           </Link>
-          <StatusPill status={contract.status.replace(/_/g, " ")} variant={contractStatusVariant(contract.status)} />
+          <StatusPill
+            status={contract.status.replace(/_/g, " ")}
+            variant={contractStatusVariant(contract.status)}
+          />
         </div>
 
         {/* Option to toggle between Flagged Review and Clean Contract View */}
-        <div style={{ display: "flex", background: "var(--color-surface-sunken)", padding: "3px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)" }}>
+        <div
+          style={{
+            display: "flex",
+            background: "var(--color-surface-sunken)",
+            padding: "3px",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--color-border)",
+          }}
+        >
           <button
             type="button"
             style={{
@@ -145,7 +192,8 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
             }}
             onClick={() => setViewMode("flags")}
           >
-            🚩 Flagged Clauses Review {flaggedClauses.length > 0 ? `(${flaggedClauses.length})` : ""}
+            🚩 Flagged Clauses Review{" "}
+            {flaggedClauses.length > 0 ? `(${flaggedClauses.length})` : ""}
           </button>
           <button
             type="button"
@@ -168,8 +216,17 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
       </div>
 
       {viewMode === "clean" ? (
-        <div className="mtile" style={{ maxWidth: "840px", margin: "0 auto", width: "100%", padding: "28px 32px" }}>
-          <div style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "12px", marginBottom: "20px" }}>
+        <div
+          className="mtile"
+          style={{ maxWidth: "840px", margin: "0 auto", width: "100%", padding: "28px 32px" }}
+        >
+          <div
+            style={{
+              borderBottom: "1px solid var(--color-border)",
+              paddingBottom: "12px",
+              marginBottom: "20px",
+            }}
+          >
             <h1 style={{ fontSize: "18px", fontWeight: 600, color: "var(--color-ink)", margin: 0 }}>
               Contract Agreement
             </h1>
@@ -179,19 +236,39 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
           </div>
 
           {contract.raw_text ? (
-            <div style={{ fontSize: "13.5px", lineHeight: 1.8, whiteSpace: "pre-wrap", color: "var(--color-ink)" }}>
+            <div
+              style={{
+                fontSize: "13.5px",
+                lineHeight: 1.8,
+                whiteSpace: "pre-wrap",
+                color: "var(--color-ink)",
+              }}
+            >
               {contract.raw_text}
             </div>
           ) : (
-            <div style={{ fontSize: "13px", color: "var(--color-ink-faint)", padding: "24px 0", textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "13px",
+                color: "var(--color-ink-faint)",
+                padding: "24px 0",
+                textAlign: "center",
+              }}
+            >
               Full text is not available for this contract.
             </div>
           )}
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: "16px" }}>
-          <div className="mtile" style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "20px" }}>
-            <div className="lbl" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div
+            className="mtile"
+            style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "20px" }}
+          >
+            <div
+              className="lbl"
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+            >
               <span>Full contract text</span>
               {flaggedClauses.length > 0 && (
                 <span style={{ fontSize: "11px", color: "var(--color-danger)", fontWeight: 500 }}>
@@ -200,7 +277,15 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
               )}
             </div>
             {contract.raw_text ? (
-              <div style={{ fontSize: "13px", lineHeight: 1.7, whiteSpace: "pre-wrap", maxHeight: "70vh", overflowY: "auto" }}>
+              <div
+                style={{
+                  fontSize: "13px",
+                  lineHeight: 1.7,
+                  whiteSpace: "pre-wrap",
+                  maxHeight: "70vh",
+                  overflowY: "auto",
+                }}
+              >
                 <HighlightedText fullText={contract.raw_text} clauses={clauses} />
               </div>
             ) : (
@@ -224,12 +309,17 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
                     borderLeft: "4px solid var(--color-success)",
                   }}
                 >
-                  <CheckCircle2 size={20} style={{ color: "var(--color-success)", flexShrink: 0 }} />
+                  <CheckCircle2
+                    size={20}
+                    style={{ color: "var(--color-success)", flexShrink: 0 }}
+                  />
                   <div>
                     <div style={{ fontWeight: 600, fontSize: "13px", color: "var(--color-ink)" }}>
                       No Risky Clauses Detected
                     </div>
-                    <div style={{ fontSize: "12px", color: "var(--color-ink-soft)", marginTop: "2px" }}>
+                    <div
+                      style={{ fontSize: "12px", color: "var(--color-ink-soft)", marginTop: "2px" }}
+                    >
                       All clauses passed standard creator protection checks.
                     </div>
                   </div>
@@ -248,10 +338,20 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
             </div>
 
             <div className="mtile" style={{ padding: "16px" }}>
-              <div className="lbl" style={{ marginBottom: "6px" }}>About Creator Protection</div>
-              <p style={{ fontSize: "12px", color: "var(--color-ink-soft)", lineHeight: 1.5, margin: 0 }}>
+              <div className="lbl" style={{ marginBottom: "6px" }}>
+                About Creator Protection
+              </div>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "var(--color-ink-soft)",
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
                 Creator OS automatically highlights high-risk terms such as perpetual usage rights,
-                unlimited revisions, and unpaid whitelisting to help protect your creative rights before signing.
+                unlimited revisions, and unpaid whitelisting to help protect your creative rights
+                before signing.
               </p>
             </div>
           </div>
@@ -260,4 +360,3 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
     </div>
   );
 }
-

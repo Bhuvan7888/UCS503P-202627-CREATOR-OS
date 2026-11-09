@@ -35,21 +35,29 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
       client.GET("/deliverables"),
       client.GET("/payments", { params: { query: { limit: 200 } } }),
     ]).then(([dealsRes, contractsRes, deliverablesRes, paymentsRes]) => {
-      if (dealsRes.error) { setError(true); return; }
+      if (dealsRes.error) {
+        setError(true);
+        return;
+      }
       const foundDeal = (dealsRes.data ?? []).find((d) => d.id === id) ?? null;
       setDeal(foundDeal);
       if (foundDeal) {
-        client.GET("/creators/{id}", { params: { path: { id: foundDeal.creator_id } } })
+        client
+          .GET("/creators/{id}", { params: { path: { id: foundDeal.creator_id } } })
           .then(({ data }) => setCreator(data ?? null));
       }
       setContracts((contractsRes.data ?? []).filter((c) => c.deal_id === id));
       setDeliverables((deliverablesRes.data ?? []).filter((d) => d.deal_id === id));
-      const contractIds = new Set((contractsRes.data ?? []).filter((c) => c.deal_id === id).map((c) => c.id));
+      const contractIds = new Set(
+        (contractsRes.data ?? []).filter((c) => c.deal_id === id).map((c) => c.id),
+      );
       setPayments((paymentsRes.data ?? []).filter((p) => contractIds.has(p.contract_id)));
     });
   }
 
-  useEffect(() => { reload(); }, [id]);
+  useEffect(() => {
+    reload();
+  }, [id]);
 
   useEffect(() => {
     // Fire-and-forget: opening a deal's detail page marks it read for the brand.
@@ -65,7 +73,10 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
     setBusy(true);
     const res = await postWithSession(`/deals/${id}/contracts`, file);
     setBusy(false);
-    if (res.ok) { formEl.reset(); reload(); }
+    if (res.ok) {
+      formEl.reset();
+      reload();
+    }
   }
 
   async function createDeliverable(e: React.FormEvent<HTMLFormElement>) {
@@ -114,7 +125,9 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
     if (newStatus === d.status) return;
     await client.PATCH("/deliverables/{id}/status", {
       params: { path: { id: d.id }, query: { deal_id: id } },
-      body: { status: newStatus as components["schemas"]["DeliverableStatusUpdateRequest"]["status"] },
+      body: {
+        status: newStatus as components["schemas"]["DeliverableStatusUpdateRequest"]["status"],
+      },
     });
     reload();
   }
@@ -152,33 +165,64 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   if (error) return <EmptyState icon={ArrowLeft} message="Couldn't load this deal." />;
-  if (deal === undefined) return <div style={{ fontSize: "13px", color: "var(--color-ink-faint)" }}>Loading…</div>;
+  if (deal === undefined)
+    return <div style={{ fontSize: "13px", color: "var(--color-ink-faint)" }}>Loading…</div>;
   if (!deal) return <EmptyState icon={ArrowLeft} message="Deal not found." />;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       <div>
-        <Link href="/brand" style={{ fontSize: "12px", color: "var(--color-ink-soft)" }}>← Back to deals</Link>
+        <Link href="/brand" style={{ fontSize: "12px", color: "var(--color-ink-soft)" }}>
+          ← Back to deals
+        </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "6px" }}>
-          <h1 className="text-h2" style={{ margin: 0 }}>{deal.campaign_name}</h1>
+          <h1 className="text-h2" style={{ margin: 0 }}>
+            {deal.campaign_name}
+          </h1>
           <StatusPill status={DEAL_STAGE_LABEL[deal.status] ?? deal.status} variant="accent" />
         </div>
         <div style={{ fontSize: "12.5px", color: "var(--color-ink-soft)", marginTop: "4px" }}>
-          {creator ? <Link href={`/creators/${creator.id}`} style={{ color: "var(--color-accent)" }}>{creator.display_name}</Link> : "—"}
-          {" · "}{deal.contact_email}
+          {creator ? (
+            <Link href={`/creators/${creator.id}`} style={{ color: "var(--color-accent)" }}>
+              {creator.display_name}
+            </Link>
+          ) : (
+            "—"
+          )}
+          {" · "}
+          {deal.contact_email}
         </div>
       </div>
 
       <div className="mtile">
-        <div className="lbl" style={{ marginBottom: "8px" }}>Contracts</div>
+        <div className="lbl" style={{ marginBottom: "8px" }}>
+          Contracts
+        </div>
         {contracts.length === 0 ? (
-          <div style={{ fontSize: "12px", color: "var(--color-ink-faint)", marginBottom: "10px" }}>No contract uploaded yet.</div>
+          <div style={{ fontSize: "12px", color: "var(--color-ink-faint)", marginBottom: "10px" }}>
+            No contract uploaded yet.
+          </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "10px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "10px" }}
+          >
             {contracts.map((c) => (
-              <div key={c.id} style={{ fontSize: "12.5px", display: "flex", gap: "10px", alignItems: "center" }}>
+              <div
+                key={c.id}
+                style={{ fontSize: "12.5px", display: "flex", gap: "10px", alignItems: "center" }}
+              >
                 <StatusPill
-                  status={c.status === "signed" ? "Accepted" : c.status === "void" ? "Void" : c.status === "pending_review" ? "Pending review" : c.status === "draft" ? "Draft" : "Pending acceptance"}
+                  status={
+                    c.status === "signed"
+                      ? "Accepted"
+                      : c.status === "void"
+                        ? "Void"
+                        : c.status === "pending_review"
+                          ? "Pending review"
+                          : c.status === "draft"
+                            ? "Draft"
+                            : "Pending acceptance"
+                  }
                   variant={contractStatusVariant(c.status)}
                 />
                 <select
@@ -208,34 +252,59 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
                     <option value="pending_review">Pending review</option>
                   )}
                 </select>
-                <Link href={`/contracts/${c.id}/clauses`} style={{ color: "var(--color-accent)" }}>View clauses →</Link>
+                <Link href={`/contracts/${c.id}/clauses`} style={{ color: "var(--color-accent)" }}>
+                  View clauses →
+                </Link>
               </div>
             ))}
           </div>
         )}
         <form onSubmit={uploadContract} style={{ display: "flex", gap: "8px", alignItems: "end" }}>
-          <label className="text-label" style={{ flex: 1 }}>Upload contract (PDF)
+          <label className="text-label" style={{ flex: 1 }}>
+            Upload contract (PDF)
             <input name="file" type="file" accept="application/pdf" required className="field" />
           </label>
-          <button className="btn" disabled={busy} type="submit">Upload</button>
+          <button className="btn" disabled={busy} type="submit">
+            Upload
+          </button>
         </form>
       </div>
 
       <div className="mtile">
-        <div className="lbl" style={{ marginBottom: "8px" }}>Deliverables</div>
+        <div className="lbl" style={{ marginBottom: "8px" }}>
+          Deliverables
+        </div>
         {deliverables.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "10px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "10px" }}
+          >
             {deliverables.map((d) => {
               const linkedContract = contracts.find((c) => c.id === d.contract_id);
               return (
-                <div key={d.id} style={{ display: "flex", gap: "10px", alignItems: "center", fontSize: "12.5px" }}>
+                <div
+                  key={d.id}
+                  style={{ display: "flex", gap: "10px", alignItems: "center", fontSize: "12.5px" }}
+                >
                   <div style={{ flex: 1 }}>
                     <div>{d.title}</div>
                     <div style={{ fontSize: "11px", color: "var(--color-ink-faint)" }}>
-                      {linkedContract ? `Contract ${linkedContract.id.slice(0, 8)}` : "Not tied to a contract"}
+                      {linkedContract
+                        ? `Contract ${linkedContract.id.slice(0, 8)}`
+                        : "Not tied to a contract"}
                     </div>
                   </div>
-                  <StatusPill status={DELIVERABLE_STATUS_LABEL[d.status] ?? d.status} variant={d.status === "approved" ? "success" : d.status === "rejected" ? "danger" : d.status === "revision_requested" ? "warning" : "neutral"} />
+                  <StatusPill
+                    status={DELIVERABLE_STATUS_LABEL[d.status] ?? d.status}
+                    variant={
+                      d.status === "approved"
+                        ? "success"
+                        : d.status === "rejected"
+                          ? "danger"
+                          : d.status === "revision_requested"
+                            ? "warning"
+                            : "neutral"
+                    }
+                  />
                   <select
                     className="field"
                     style={{
@@ -268,29 +337,59 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
             })}
           </div>
         )}
-        <form onSubmit={createDeliverable} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: "8px", alignItems: "end" }}>
-          <label className="text-label">Contract
+        <form
+          onSubmit={createDeliverable}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 2fr auto",
+            gap: "8px",
+            alignItems: "end",
+          }}
+        >
+          <label className="text-label">
+            Contract
             <select name="contract_id" className="field">
               <option value="">— Not tied to a contract —</option>
-              {contracts.map((c) => <option key={c.id} value={c.id}>{c.id.slice(0, 8)} — {c.status}</option>)}
+              {contracts.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.id.slice(0, 8)} — {c.status}
+                </option>
+              ))}
             </select>
           </label>
-          <label className="text-label">Title<input name="title" required className="field" /></label>
-          <label className="text-label">Description<input name="description" required className="field" /></label>
-          <button className="btn" disabled={busy} type="submit">Add</button>
+          <label className="text-label">
+            Title
+            <input name="title" required className="field" />
+          </label>
+          <label className="text-label">
+            Description
+            <input name="description" required className="field" />
+          </label>
+          <button className="btn" disabled={busy} type="submit">
+            Add
+          </button>
         </form>
       </div>
 
       <div className="mtile">
-        <div className="lbl" style={{ marginBottom: "8px" }}>Payments</div>
+        <div className="lbl" style={{ marginBottom: "8px" }}>
+          Payments
+        </div>
         {payments.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "10px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "10px" }}
+          >
             {payments.map((p) => (
-              <div key={p.id} style={{ display: "flex", gap: "10px", alignItems: "center", fontSize: "12.5px" }}>
+              <div
+                key={p.id}
+                style={{ display: "flex", gap: "10px", alignItems: "center", fontSize: "12.5px" }}
+              >
                 <span>{p.invoice_number}</span>
                 <span>{formatInr(Number(p.amount_inr))}</span>
                 <StatusPill
-                  status={p.status === "paid" ? "Paid" : p.status === "overdue" ? "Overdue" : "Pending"}
+                  status={
+                    p.status === "paid" ? "Paid" : p.status === "overdue" ? "Overdue" : "Pending"
+                  }
                   variant={paymentStatusVariant(p.status)}
                 />
                 <select
@@ -310,7 +409,9 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
                     fontWeight: 500,
                   }}
                   value={p.status}
-                  onChange={(e) => handlePaymentStatusChange(p, e.target.value as "pending" | "paid" | "overdue")}
+                  onChange={(e) =>
+                    handlePaymentStatusChange(p, e.target.value as "pending" | "paid" | "overdue")
+                  }
                 >
                   <option value="pending">Pending</option>
                   <option value="paid">Paid</option>
@@ -321,19 +422,45 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         )}
         {contracts.length === 0 ? (
-          <div style={{ fontSize: "12px", color: "var(--color-ink-faint)" }}>Upload a contract before creating an invoice.</div>
+          <div style={{ fontSize: "12px", color: "var(--color-ink-faint)" }}>
+            Upload a contract before creating an invoice.
+          </div>
         ) : (
-          <form onSubmit={createInvoice} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "8px", alignItems: "end" }}>
-            <label className="text-label">Contract
+          <form
+            onSubmit={createInvoice}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr auto",
+              gap: "8px",
+              alignItems: "end",
+            }}
+          >
+            <label className="text-label">
+              Contract
               <select name="contract_id" required className="field">
                 <option value="">Select…</option>
-                {contracts.map((c) => <option key={c.id} value={c.id}>{c.id.slice(0, 8)} — {c.status}</option>)}
+                {contracts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.id.slice(0, 8)} — {c.status}
+                  </option>
+                ))}
               </select>
             </label>
-            <label className="text-label">Amount (₹)<input name="amount_inr" type="number" step="0.01" required className="field" /></label>
-            <label className="text-label">Platform fee (₹, optional)<input name="platform_fee_inr" type="number" step="0.01" min={0} className="field" /></label>
-            <label className="text-label">Due date<input name="due_date" type="date" className="field" /></label>
-            <button className="btn" disabled={busy} type="submit">Create invoice</button>
+            <label className="text-label">
+              Amount (₹)
+              <input name="amount_inr" type="number" step="0.01" required className="field" />
+            </label>
+            <label className="text-label">
+              Platform fee (₹, optional)
+              <input name="platform_fee_inr" type="number" step="0.01" min={0} className="field" />
+            </label>
+            <label className="text-label">
+              Due date
+              <input name="due_date" type="date" className="field" />
+            </label>
+            <button className="btn" disabled={busy} type="submit">
+              Create invoice
+            </button>
           </form>
         )}
       </div>

@@ -4,7 +4,13 @@ import { findHighlights } from "../utils/find-highlights.utils";
 
 type ClauseCardOut = components["schemas"]["ClauseCardOut"];
 
-export function HighlightedText({ fullText, clauses }: { fullText: string; clauses: ClauseCardOut[] }) {
+export function HighlightedText({
+  fullText,
+  clauses,
+}: {
+  fullText: string;
+  clauses: ClauseCardOut[];
+}) {
   const highlights = findHighlights(fullText, clauses);
   if (highlights.length === 0) {
     return <>{fullText}</>;
@@ -26,7 +32,7 @@ export function HighlightedText({ fullText, clauses }: { fullText: string; claus
         }}
       >
         {fullText.slice(h.start, h.end)}
-      </mark>
+      </mark>,
     );
     cursor = h.end;
   });

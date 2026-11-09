@@ -8,7 +8,9 @@ export function AuthPageFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className={styles.wrap}>
       <div className={styles.formCol}>
-        <Link href="/" className={styles.logo}>Creator OS</Link>
+        <Link href="/" className={styles.logo}>
+          Creator OS
+        </Link>
         <div className={styles.formBody}>{children}</div>
       </div>
       <GradientPanel className={styles.art} />

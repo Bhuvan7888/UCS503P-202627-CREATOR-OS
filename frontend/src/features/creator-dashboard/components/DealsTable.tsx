@@ -24,11 +24,23 @@ export function DealsTable({ deals }: { deals: Deal[] }) {
             style={{ cursor: "pointer" }}
             className="deal-row"
           >
-            <td style={{ padding: "10px 4px", borderBottom: "1px solid var(--color-border)" }}>{d.campaign_name}</td>
             <td style={{ padding: "10px 4px", borderBottom: "1px solid var(--color-border)" }}>
-              <StatusPill status={DEAL_STAGE_LABEL[d.status] ?? d.status} variant={dealStatusVariant(d.status)} />
+              {d.campaign_name}
             </td>
-            <td style={{ padding: "10px 4px", borderBottom: "1px solid var(--color-border)", color: "var(--color-accent)", textAlign: "right" }}>
+            <td style={{ padding: "10px 4px", borderBottom: "1px solid var(--color-border)" }}>
+              <StatusPill
+                status={DEAL_STAGE_LABEL[d.status] ?? d.status}
+                variant={dealStatusVariant(d.status)}
+              />
+            </td>
+            <td
+              style={{
+                padding: "10px 4px",
+                borderBottom: "1px solid var(--color-border)",
+                color: "var(--color-accent)",
+                textAlign: "right",
+              }}
+            >
               Negotiate →
             </td>
           </tr>

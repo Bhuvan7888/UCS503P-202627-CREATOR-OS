@@ -15,13 +15,16 @@ export function findHighlights(fullText: string, clauses: ClauseCardOut[]): High
     if (c.flag === "green") continue;
     const trimmed = c.raw_text.trim();
     if (!trimmed) continue;
-    const pattern = trimmed
-      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-      .replace(/\s+/g, "\\s+");
+    const pattern = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
     try {
       const match = fullText.match(new RegExp(pattern));
       if (match && match.index !== undefined) {
-        ranges.push({ start: match.index, end: match.index + match[0].length, flag: c.flag, reason: c.flag_reason_code ?? null });
+        ranges.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          flag: c.flag,
+          reason: c.flag_reason_code ?? null,
+        });
       }
     } catch {
       // Ignore regex issues

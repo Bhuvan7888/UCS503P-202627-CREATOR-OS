@@ -6,8 +6,18 @@ export function GradientPanel({ className }: { className?: string }) {
     <div className={`${styles.panel} ${className ?? ""}`} aria-hidden="true">
       <svg width="0" height="0" style={{ position: "absolute" }}>
         <filter id="gp-grain">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="noise" />
-          <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0" />
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.9"
+            numOctaves="2"
+            stitchTiles="stitch"
+            result="noise"
+          />
+          <feColorMatrix
+            in="noise"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0"
+          />
         </filter>
       </svg>
       <div className={styles.blob1} />

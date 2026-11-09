@@ -20,7 +20,10 @@ export default function ActivityLogPage() {
 
   useEffect(() => {
     client.GET("/activity-log").then(({ data, error: apiError }) => {
-      if (apiError) { setError(true); return; }
+      if (apiError) {
+        setError(true);
+        return;
+      }
       setItems(data ?? []);
     });
   }, []);
@@ -54,14 +57,27 @@ export default function ActivityLogPage() {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Log a manual note (e.g. a call with the brand)"
-          style={{ flex: 1, fontSize: "12.5px", padding: "8px 10px", border: "1px solid var(--color-border)", borderRadius: "6px" }}
+          style={{
+            flex: 1,
+            fontSize: "12.5px",
+            padding: "8px 10px",
+            border: "1px solid var(--color-border)",
+            borderRadius: "6px",
+          }}
         />
-        <button type="submit" disabled={pending || !note.trim()} style={{ fontSize: "12.5px", padding: "8px 14px", borderRadius: "6px" }}>
+        <button
+          type="submit"
+          disabled={pending || !note.trim()}
+          style={{ fontSize: "12.5px", padding: "8px 14px", borderRadius: "6px" }}
+        >
           {pending ? "Adding…" : "Add"}
         </button>
       </form>
       {items.length === 0 && (
-        <EmptyState icon={Activity} message="No activity yet. Every action across your deals will be logged here." />
+        <EmptyState
+          icon={Activity}
+          message="No activity yet. Every action across your deals will be logged here."
+        />
       )}
       {sorted.map((log) => (
         <div

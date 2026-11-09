@@ -17,11 +17,15 @@ export default function LandingPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.announce}>Phase 1 &amp; 2 in active build · Phase 3 fully specified</div>
+      <div className={styles.announce}>
+        Phase 1 &amp; 2 in active build · Phase 3 fully specified
+      </div>
 
       <nav className={styles.nav}>
         <div className={styles.wrap + " " + styles.navInner}>
-          <Link href="/" className={styles.logo}>Creator OS</Link>
+          <Link href="/" className={styles.logo}>
+            Creator OS
+          </Link>
           <div className={styles.navRight}>
             <a
               href="#how-it-works"
@@ -60,8 +64,8 @@ export default function LandingPage() {
           </h1>
           <p className={styles.lede}>
             Creator OS calculates fair rates before a creator sends a counter-offer, reads a
-            contract before anyone signs it, and scores a post before it goes out — three
-            systems, built in that order, on top of each other&apos;s data.
+            contract before anyone signs it, and scores a post before it goes out — three systems,
+            built in that order, on top of each other&apos;s data.
           </p>
           <div className={styles.heroCtas}>
             <a
@@ -87,12 +91,16 @@ export default function LandingPage() {
               <span className={styles.roleTag}>Brand</span>
               <div className={styles.roleTitle}>Run your campaigns</div>
               <p className={styles.roleDesc}>
-                Deals, contracts, clause scanning, payments, and activity — one place instead
-                of a hundred WhatsApp threads, direct with every creator.
+                Deals, contracts, clause scanning, payments, and activity — one place instead of a
+                hundred WhatsApp threads, direct with every creator.
               </p>
               <div className={styles.roleActions}>
-                <Link href="/brand/login" className={styles.secondary}>Log in</Link>
-                <Link href="/brand/signup" className={styles.primary}>Sign up</Link>
+                <Link href="/brand/login" className={styles.secondary}>
+                  Log in
+                </Link>
+                <Link href="/brand/signup" className={styles.primary}>
+                  Sign up
+                </Link>
               </div>
             </div>
 
@@ -100,12 +108,16 @@ export default function LandingPage() {
               <span className={styles.roleTag}>Creator</span>
               <div className={styles.roleTitle}>Negotiate with data</div>
               <p className={styles.roleDesc}>
-                Fair-rate ranges, a growth forecast, a pre-send checklist, and drafted
-                scripts — negotiation lives inside your dashboard.
+                Fair-rate ranges, a growth forecast, a pre-send checklist, and drafted scripts —
+                negotiation lives inside your dashboard.
               </p>
               <div className={styles.roleActions}>
-                <Link href="/creator/login" className={styles.secondary}>Log in</Link>
-                <Link href="/creator/signup" className={styles.primary}>Sign up</Link>
+                <Link href="/creator/login" className={styles.secondary}>
+                  Log in
+                </Link>
+                <Link href="/creator/signup" className={styles.primary}>
+                  Sign up
+                </Link>
               </div>
             </div>
           </div>
@@ -117,23 +129,35 @@ export default function LandingPage() {
           <div>
             <div className={styles.phaseNum}>01</div>
             <div className={styles.phaseTitle}>Foundation</div>
-            <p className={styles.phaseDesc}>Onboarding, negotiation, contracts, deliverables, and payments — the deal lifecycle end to end.</p>
+            <p className={styles.phaseDesc}>
+              Onboarding, negotiation, contracts, deliverables, and payments — the deal lifecycle
+              end to end.
+            </p>
           </div>
           <div>
             <div className={styles.phaseNum}>02</div>
             <div className={styles.phaseTitle}>Trust layer</div>
-            <p className={styles.phaseDesc}>Rule-based contract scanning flags risky clauses before anyone signs, with a human always deciding.</p>
+            <p className={styles.phaseDesc}>
+              Rule-based contract scanning flags risky clauses before anyone signs, with a human
+              always deciding.
+            </p>
           </div>
           <div>
             <div className={styles.phaseNum}>03</div>
             <div className={styles.phaseTitle}>Retention</div>
-            <p className={styles.phaseDesc}>A content health score closes the loop between what was promised and what actually performed.</p>
+            <p className={styles.phaseDesc}>
+              A content health score closes the loop between what was promised and what actually
+              performed.
+            </p>
           </div>
         </div>
       </section>
 
       <footer className={styles.footer}>
-        <div className={styles.wrap} style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+        <div
+          className={styles.wrap}
+          style={{ display: "flex", justifyContent: "space-between", width: "100%" }}
+        >
           <span>Creator OS</span>
           <div>
             <a href="mailto:support@creatoros.in">Contact</a>

@@ -147,7 +147,9 @@
   font-size: 13px;
   font-family: var(--font-sans), sans-serif;
   cursor: pointer;
-  transition: background 150ms ease-out, border-color 150ms ease-out;
+  transition:
+    background 150ms ease-out,
+    border-color 150ms ease-out;
 }
 
 .demoBtn:hover {

@@ -59,8 +59,12 @@
   border: 1px solid rgba(10, 10, 10, 0.15);
   color: #0a0a0a;
 }
-.dropdown summary::-webkit-details-marker { display: none; }
-.dropdown[open] summary { border-color: rgba(10, 10, 10, 0.35); }
+.dropdown summary::-webkit-details-marker {
+  display: none;
+}
+.dropdown[open] summary {
+  border-color: rgba(10, 10, 10, 0.35);
+}
 .dropdown.solid summary {
   background: #0a0a0a;
   color: #ffffff;
@@ -86,7 +90,9 @@
   color: #0a0a0a;
   text-decoration: none;
 }
-.dropdownMenu a:hover { background: #f4f3ef; }
+.dropdownMenu a:hover {
+  background: #f4f3ef;
+}
 .dropdownMenu .menuLabel {
   font-size: 10.5px;
   letter-spacing: 0.06em;
@@ -174,7 +180,9 @@
   margin-bottom: 88px;
 }
 @media (max-width: 780px) {
-  .roleGrid { grid-template-columns: 1fr; }
+  .roleGrid {
+    grid-template-columns: 1fr;
+  }
 }
 .roleCard {
   border: 1px solid rgba(10, 10, 10, 0.1);
@@ -240,7 +248,9 @@
   gap: 32px;
 }
 @media (max-width: 780px) {
-  .phases { grid-template-columns: 1fr; }
+  .phases {
+    grid-template-columns: 1fr;
+  }
 }
 .phaseNum {
   font-family: var(--font-editorial), serif;

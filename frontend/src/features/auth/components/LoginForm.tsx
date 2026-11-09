@@ -7,7 +7,12 @@ import client from "@/shared/lib/api-client";
 import { saveSession } from "@/shared/lib/session";
 import { AuthPageFrame } from "./AuthPageFrame";
 import { NETWORK_ERROR_MESSAGE } from "../constants/auth-messages";
-import { DEMO_BRAND_ACCOUNTS, DEMO_CREATOR_ACCOUNTS, DEMO_PASSWORD, type DemoAccount } from "../constants/demo-accounts";
+import {
+  DEMO_BRAND_ACCOUNTS,
+  DEMO_CREATOR_ACCOUNTS,
+  DEMO_PASSWORD,
+  type DemoAccount,
+} from "../constants/demo-accounts";
 import styles from "../auth.module.css";
 
 type Role = "brand" | "creator";
@@ -86,14 +91,20 @@ export function LoginForm({ role }: { role: Role }) {
       <p className={styles.eyebrow}>{copy.eyebrow}</p>
       <h1 className={styles.headline}>Sign in</h1>
       <p className={styles.subline}>
-        {`${copy.signupPrompt} `}<Link href={`/${role}/signup`}>{copy.signupLinkText}</Link>
+        {`${copy.signupPrompt} `}
+        <Link href={`/${role}/signup`}>{copy.signupLinkText}</Link>
       </p>
 
       <div className={styles.demoSection}>
         <span className={styles.demoLabel}>Try a demo account</span>
         <div className={styles.demoButtons}>
           {copy.demoAccounts.map((account) => (
-            <button key={account.email} type="button" className={styles.demoBtn} onClick={() => fillDemo(account.email)}>
+            <button
+              key={account.email}
+              type="button"
+              className={styles.demoBtn}
+              onClick={() => fillDemo(account.email)}
+            >
               {account.label}
             </button>
           ))}
@@ -129,7 +140,9 @@ export function LoginForm({ role }: { role: Role }) {
           <button type="submit" className={styles.btnPrimary} disabled={pending}>
             {pending ? "Signing in…" : "Sign in"}
           </button>
-          <Link href={`/${otherRole}/login`} className={styles.linkMuted}>{copy.switchLinkText}</Link>
+          <Link href={`/${otherRole}/login`} className={styles.linkMuted}>
+            {copy.switchLinkText}
+          </Link>
         </div>
       </form>
     </AuthPageFrame>

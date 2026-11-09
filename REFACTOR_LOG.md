@@ -540,3 +540,10 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | add | `frontend/prettier.config.mjs`, `frontend/.prettierignore`, `format` / `format:check` scripts | the frontend had no formatter; config follows the code's existing style (double quotes, semicolons), `printWidth: 100` to match the backend |
 | add | `prettier@3.3.3` devDependency (`frontend/package.json`) | same version the old root workspace used. Lockfile edited surgically (+17 lines, 0 removed): installing with local npm 10 or npm 11 rewrote unrelated `libc` / `@emnapi` entries, so only the prettier entries were added; `npm ci` verified |
 | move | root `prettier.config.js` → `_deprecated/root-workspace/` | belonged to the dead stack (single quotes, tailwind plugin, `apps/web` path) |
+
+## Phase 4.6 — Formatting-only commits
+
+| Action | Path | Reason |
+|---|---|---|
+| format | `backend/`: `ruff format` (99 files); Supabase repository call-chain probe identical afterwards; all checks pass |
+| format | `frontend/`: `prettier --write .` (37 files; generated `api-types.ts` excluded). **Proof:** visible markup of all 16 prerendered pages identical before and after |

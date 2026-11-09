@@ -19,25 +19,33 @@ export function ClauseCard({
   llmExplanation,
   escalationStatus,
   onEscalate,
-  onResolve
+  onResolve,
 }: ClauseCardProps) {
-  
   const getFlagVariant = (): StatusVariant => {
     switch (flagColor) {
-      case "red": return "danger";
-      case "yellow": return "warning";
-      case "green": return "success";
-      default: return "neutral";
+      case "red":
+        return "danger";
+      case "yellow":
+        return "warning";
+      case "green":
+        return "success";
+      default:
+        return "neutral";
     }
   };
-  
+
   const getEscalationVariant = (): StatusVariant => {
     switch (escalationStatus) {
-      case "open": return "warning";
-      case "cleared": return "success";
-      case "amended": return "accent";
-      case "rejected": return "danger";
-      default: return "neutral";
+      case "open":
+        return "warning";
+      case "cleared":
+        return "success";
+      case "amended":
+        return "accent";
+      case "rejected":
+        return "danger";
+      default:
+        return "neutral";
     }
   };
 
@@ -48,16 +56,19 @@ export function ClauseCard({
           <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
             <StatusPill status={`${flagColor.toUpperCase()} FLAG`} variant={getFlagVariant()} />
             {escalationStatus && (
-              <StatusPill status={`Escalation: ${escalationStatus.toUpperCase()}`} variant={getEscalationVariant()} />
+              <StatusPill
+                status={`Escalation: ${escalationStatus.toUpperCase()}`}
+                variant={getEscalationVariant()}
+              />
             )}
           </div>
           <p className="text-body text-[var(--color-ink)] italic border-l-2 border-[var(--color-border)] pl-[var(--spacing-3)] py-[var(--spacing-1)]">
             &quot;{clauseText}&quot;
           </p>
         </div>
-        
+
         {flagColor !== "green" && !escalationStatus && onEscalate && (
-          <button 
+          <button
             onClick={onEscalate}
             className="text-small font-medium bg-[var(--color-danger)] text-white px-[var(--spacing-3)] py-[var(--spacing-2)] rounded-[var(--radius-md)] hover:opacity-90 transition-opacity flex-shrink-0"
           >
@@ -65,7 +76,7 @@ export function ClauseCard({
           </button>
         )}
         {escalationStatus === "open" && onResolve && (
-          <button 
+          <button
             onClick={onResolve}
             className="text-small font-medium bg-[var(--color-accent)] text-white px-[var(--spacing-3)] py-[var(--spacing-2)] rounded-[var(--radius-md)] hover:opacity-90 transition-opacity flex-shrink-0"
           >
@@ -75,10 +86,19 @@ export function ClauseCard({
       </div>
 
       {(flagReason || llmExplanation) && (
-        <div className={`rounded-[var(--radius-md)] p-[var(--spacing-4)] ${flagColor === "red" ? "bg-[var(--color-danger-soft)]" : "bg-[var(--color-warning-soft)]"}`}>
+        <div
+          className={`rounded-[var(--radius-md)] p-[var(--spacing-4)] ${flagColor === "red" ? "bg-[var(--color-danger-soft)]" : "bg-[var(--color-warning-soft)]"}`}
+        >
           {flagReason && (
             <div className="flex items-start gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
-              <AlertCircle size={18} className={flagColor === "red" ? "text-[var(--color-danger)] mt-0.5" : "text-[var(--color-warning)] mt-0.5"} />
+              <AlertCircle
+                size={18}
+                className={
+                  flagColor === "red"
+                    ? "text-[var(--color-danger)] mt-0.5"
+                    : "text-[var(--color-warning)] mt-0.5"
+                }
+              />
               <p className="text-small font-semibold text-[var(--color-ink)]">{flagReason}</p>
             </div>
           )}

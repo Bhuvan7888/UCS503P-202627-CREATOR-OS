@@ -35,7 +35,11 @@ function niceNum(range: number, round: boolean): number {
   return niceFraction * 10 ** exponent;
 }
 
-function niceAxis(min: number, max: number, tickCount: number): { min: number; max: number; step: number } {
+function niceAxis(
+  min: number,
+  max: number,
+  tickCount: number,
+): { min: number; max: number; step: number } {
   if (max <= min) max = min + 1;
   const range = niceNum(max - min, false);
   const step = niceNum(range / (tickCount - 1), true);
@@ -92,15 +96,25 @@ export function ForecastChart({ forecast, referenceLow, referenceHigh }: Forecas
   const bandPath =
     forecast.map((f, i) => `${i === 0 ? "M" : "L"} ${xAt(i)} ${yAt(f.low)}`).join(" ") +
     " " +
-    [...forecast].reverse().map((f, j) => `L ${xAt(n - 1 - j)} ${yAt(f.high)}`).join(" ") +
+    [...forecast]
+      .reverse()
+      .map((f, j) => `L ${xAt(n - 1 - j)} ${yAt(f.high)}`)
+      .join(" ") +
     " Z";
   const midPoints = forecast.map((f, i) => `${xAt(i)},${yAt(f.mid)}`).join(" ");
 
   const yTicks: number[] = [];
   for (let v = yMin; v <= yMax + axis.step / 2; v += axis.step) yTicks.push(v);
-  const xTickIdxs = n <= 6
-    ? forecast.map((_, i) => i)
-    : [0, Math.round((n - 1) * 0.25), Math.round((n - 1) * 0.5), Math.round((n - 1) * 0.75), n - 1];
+  const xTickIdxs =
+    n <= 6
+      ? forecast.map((_, i) => i)
+      : [
+          0,
+          Math.round((n - 1) * 0.25),
+          Math.round((n - 1) * 0.5),
+          Math.round((n - 1) * 0.75),
+          n - 1,
+        ];
 
   function indexFromClientX(clientX: number): number | null {
     const svg = svgRef.current;
@@ -132,10 +146,14 @@ export function ForecastChart({ forecast, referenceLow, referenceHigh }: Forecas
   const active = activeIdx !== null ? forecast[activeIdx] : null;
   const first = forecast[0];
   const last = forecast[n - 1];
-  const tooltipW = 150, tooltipH = 66;
-  const tipX = activeIdx !== null
-    ? (xAt(activeIdx) > CHART_MARGIN.left + plotW / 2 ? xAt(activeIdx) - tooltipW - 10 : xAt(activeIdx) + 10)
-    : 0;
+  const tooltipW = 150,
+    tooltipH = 66;
+  const tipX =
+    activeIdx !== null
+      ? xAt(activeIdx) > CHART_MARGIN.left + plotW / 2
+        ? xAt(activeIdx) - tooltipW - 10
+        : xAt(activeIdx) + 10
+      : 0;
   const tipY = CHART_MARGIN.top + 4;
 
   return (
@@ -148,41 +166,115 @@ export function ForecastChart({ forecast, referenceLow, referenceHigh }: Forecas
         style={{ display: "block", touchAction: "none", cursor: "crosshair" }}
         onPointerMove={handlePointerMove}
         onPointerDown={handlePointerDown}
-        onPointerLeave={() => { if (!pinned) setHoverIdx(null); }}
+        onPointerLeave={() => {
+          if (!pinned) setHoverIdx(null);
+        }}
       >
         {yTicks.map((t) => (
           <g key={t}>
-            <line x1={CHART_MARGIN.left} x2={CHART_W - CHART_MARGIN.right} y1={yAt(t)} y2={yAt(t)} stroke="var(--color-border)" strokeWidth={1} />
-            <text x={CHART_MARGIN.left - 8} y={yAt(t) + 3} textAnchor="end" fontSize="10" fill="var(--color-ink-faint)">{moneyCompact(t)}</text>
+            <line
+              x1={CHART_MARGIN.left}
+              x2={CHART_W - CHART_MARGIN.right}
+              y1={yAt(t)}
+              y2={yAt(t)}
+              stroke="var(--color-border)"
+              strokeWidth={1}
+            />
+            <text
+              x={CHART_MARGIN.left - 8}
+              y={yAt(t) + 3}
+              textAnchor="end"
+              fontSize="10"
+              fill="var(--color-ink-faint)"
+            >
+              {moneyCompact(t)}
+            </text>
           </g>
         ))}
 
         {xTickIdxs.map((i) => (
-          <text key={i} x={xAt(i)} y={CHART_H - 10} textAnchor="middle" fontSize="10" fill="var(--color-ink-faint)">
+          <text
+            key={i}
+            x={xAt(i)}
+            y={CHART_H - 10}
+            textAnchor="middle"
+            fontSize="10"
+            fill="var(--color-ink-faint)"
+          >
             {dateAt(i).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
           </text>
         ))}
 
         {referenceLow != null && referenceHigh != null && (
           <>
-            <line x1={CHART_MARGIN.left} x2={CHART_W - CHART_MARGIN.right} y1={yAt(referenceHigh)} y2={yAt(referenceHigh)} stroke="var(--color-ink-faint)" strokeWidth={1} strokeDasharray="4,3" />
-            <line x1={CHART_MARGIN.left} x2={CHART_W - CHART_MARGIN.right} y1={yAt(referenceLow)} y2={yAt(referenceLow)} stroke="var(--color-ink-faint)" strokeWidth={1} strokeDasharray="4,3" />
-            <text x={CHART_W - CHART_MARGIN.right} y={yAt(referenceHigh) - 4} textAnchor="end" fontSize="9" fill="var(--color-ink-faint)">
+            <line
+              x1={CHART_MARGIN.left}
+              x2={CHART_W - CHART_MARGIN.right}
+              y1={yAt(referenceHigh)}
+              y2={yAt(referenceHigh)}
+              stroke="var(--color-ink-faint)"
+              strokeWidth={1}
+              strokeDasharray="4,3"
+            />
+            <line
+              x1={CHART_MARGIN.left}
+              x2={CHART_W - CHART_MARGIN.right}
+              y1={yAt(referenceLow)}
+              y2={yAt(referenceLow)}
+              stroke="var(--color-ink-faint)"
+              strokeWidth={1}
+              strokeDasharray="4,3"
+            />
+            <text
+              x={CHART_W - CHART_MARGIN.right}
+              y={yAt(referenceHigh) - 4}
+              textAnchor="end"
+              fontSize="9"
+              fill="var(--color-ink-faint)"
+            >
               today&apos;s suggested range
             </text>
           </>
         )}
 
         <path d={bandPath} fill="var(--color-accent-soft)" stroke="none" />
-        <polyline points={midPoints} fill="none" stroke="var(--color-accent)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        <polyline
+          points={midPoints}
+          fill="none"
+          stroke="var(--color-accent)"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
 
         {first && (
-          <circle cx={xAt(0)} cy={yAt(first.mid)} r={4} fill="var(--color-accent)" stroke="var(--color-surface)" strokeWidth={2} />
+          <circle
+            cx={xAt(0)}
+            cy={yAt(first.mid)}
+            r={4}
+            fill="var(--color-accent)"
+            stroke="var(--color-surface)"
+            strokeWidth={2}
+          />
         )}
         {last && (
           <>
-            <circle cx={xAt(n - 1)} cy={yAt(last.mid)} r={5} fill="var(--color-accent)" stroke="var(--color-surface)" strokeWidth={2} />
-            <text x={xAt(n - 1) - 4} y={yAt(last.mid) - 10} textAnchor="end" fontSize="11" fontWeight={600} fill="var(--color-ink)">
+            <circle
+              cx={xAt(n - 1)}
+              cy={yAt(last.mid)}
+              r={5}
+              fill="var(--color-accent)"
+              stroke="var(--color-surface)"
+              strokeWidth={2}
+            />
+            <text
+              x={xAt(n - 1) - 4}
+              y={yAt(last.mid) - 10}
+              textAnchor="end"
+              fontSize="11"
+              fontWeight={600}
+              fill="var(--color-ink)"
+            >
               {formatInr(last.mid)}
             </text>
           </>
@@ -190,11 +282,40 @@ export function ForecastChart({ forecast, referenceLow, referenceHigh }: Forecas
 
         {active && activeIdx !== null && (
           <>
-            <line x1={xAt(activeIdx)} x2={xAt(activeIdx)} y1={CHART_MARGIN.top} y2={CHART_MARGIN.top + plotH} stroke="var(--color-ink-faint)" strokeWidth={1} strokeDasharray="2,2" />
-            <circle cx={xAt(activeIdx)} cy={yAt(active.mid)} r={4} fill="var(--color-accent)" stroke="var(--color-surface)" strokeWidth={2} />
-            <rect x={tipX} y={tipY} width={tooltipW} height={tooltipH} rx={6} fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth={1} />
+            <line
+              x1={xAt(activeIdx)}
+              x2={xAt(activeIdx)}
+              y1={CHART_MARGIN.top}
+              y2={CHART_MARGIN.top + plotH}
+              stroke="var(--color-ink-faint)"
+              strokeWidth={1}
+              strokeDasharray="2,2"
+            />
+            <circle
+              cx={xAt(activeIdx)}
+              cy={yAt(active.mid)}
+              r={4}
+              fill="var(--color-accent)"
+              stroke="var(--color-surface)"
+              strokeWidth={2}
+            />
+            <rect
+              x={tipX}
+              y={tipY}
+              width={tooltipW}
+              height={tooltipH}
+              rx={6}
+              fill="var(--color-surface)"
+              stroke="var(--color-border)"
+              strokeWidth={1}
+            />
             <text x={tipX + 9} y={tipY + 16} fontSize="9.5" fill="var(--color-ink-soft)">
-              {dateAt(activeIdx).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · Week {active.week}
+              {dateAt(activeIdx).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}{" "}
+              · Week {active.week}
             </text>
             <text x={tipX + 9} y={tipY + 33} fontSize="12" fontWeight={700} fill="var(--color-ink)">
               Est. {formatInr(active.mid)}
@@ -206,7 +327,9 @@ export function ForecastChart({ forecast, referenceLow, referenceHigh }: Forecas
         )}
       </svg>
       <div style={{ fontSize: "10.5px", color: "var(--color-ink-faint)", marginTop: "4px" }}>
-        {pinned ? "Tap the same point again to unpin, or tap another point." : "Hover — or tap on a phone — any point for that week's exact numbers."}
+        {pinned
+          ? "Tap the same point again to unpin, or tap another point."
+          : "Hover — or tap on a phone — any point for that week's exact numbers."}
       </div>
     </div>
   );

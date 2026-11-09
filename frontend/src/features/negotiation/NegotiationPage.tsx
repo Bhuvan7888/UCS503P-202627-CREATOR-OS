@@ -55,7 +55,10 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
       client.GET("/negotiation/sessions", { params: { query: { limit: 20 } } }),
       client.GET("/creators/me/brands"),
     ]).then(([profileRes, dealsRes, sessionsRes, brandsRes]) => {
-      if (dealsRes.error) { setError(true); return; }
+      if (dealsRes.error) {
+        setError(true);
+        return;
+      }
       setProfile(profileRes.data ?? null);
       setLinkedBrands(brandsRes.data ?? []);
       const foundDeal = (dealsRes.data ?? []).find((d) => d.id === dealId) ?? null;
@@ -63,24 +66,32 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
       const foundSession = (sessionsRes.data ?? []).find((s) => s.deal_id === dealId) ?? null;
       setSession(foundSession);
       if (foundSession) {
-        client.GET("/negotiation/sessions/{id}/offers", { params: { path: { id: foundSession.id } } })
+        client
+          .GET("/negotiation/sessions/{id}/offers", { params: { path: { id: foundSession.id } } })
           .then(({ data }) => setOffers(data ?? []));
-        client.GET("/negotiation/sessions/{id}/conversations", { params: { path: { id: foundSession.id } } })
+        client
+          .GET("/negotiation/sessions/{id}/conversations", {
+            params: { path: { id: foundSession.id } },
+          })
           .then(({ data }) => setConversations(data ?? []));
       }
     });
   }
 
-  useEffect(() => { reload(); }, [dealId]);
+  useEffect(() => {
+    reload();
+  }, [dealId]);
 
   useEffect(() => {
     if (!session) return;
     // No explicit weekly_growth_rate — the backend auto-derives it from the
     // creator's recorded follower snapshots (see /creator "Know your worth"),
     // falling back to its own default assumption when there isn't enough history yet.
-    client.GET("/negotiation/sessions/{id}/forecast", {
-      params: { path: { id: session.id }, query: { weeks: 12 } },
-    }).then(({ data }) => setForecast(data ?? []));
+    client
+      .GET("/negotiation/sessions/{id}/forecast", {
+        params: { path: { id: session.id }, query: { weeks: 12 } },
+      })
+      .then(({ data }) => setForecast(data ?? []));
   }, [session]);
 
   async function createSession(e: React.FormEvent<HTMLFormElement>) {
@@ -107,10 +118,13 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
     if (!session || !name.trim() || !conversationText.trim()) return;
     setConvoBusy(true);
     try {
-      const { data, error: apiError } = await client.POST("/negotiation/sessions/{id}/conversations", {
-        params: { path: { id: session.id } },
-        body: { brand_name: name, conversation_text: conversationText },
-      });
+      const { data, error: apiError } = await client.POST(
+        "/negotiation/sessions/{id}/conversations",
+        {
+          params: { path: { id: session.id } },
+          body: { brand_name: name, conversation_text: conversationText },
+        },
+      );
       if (apiError || !data) return;
       setConversations((prev) => [data, ...prev]);
       setConversationText("");
@@ -126,70 +140,125 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
   if (!deal) return <EmptyState icon={ArrowLeft} message="Deal not found." />;
 
   const realBrandName = linkedBrands.find((b) => b.id === deal.brand_id)?.name;
-  const brandLabel = realBrandName ? `${realBrandName} — ${deal.campaign_name}` : deal.campaign_name;
+  const brandLabel = realBrandName
+    ? `${realBrandName} — ${deal.campaign_name}`
+    : deal.campaign_name;
   // For a linked deal the brand is already known; for a creator's own
   // unlinked project there's no brand on the platform yet, so the AI needs
   // the creator to type who they're actually talking to.
   const knownBrandName = realBrandName;
   const latestBrandOffer = [...offers].reverse().find((o) => o.sender === "brand");
   const week12 = forecast[forecast.length - 1];
-  const checklistDone = session ? CHECKLIST_LABELS.filter(([key]) => session.checklist[key]).length : 0;
+  const checklistDone = session
+    ? CHECKLIST_LABELS.filter(([key]) => session.checklist[key]).length
+    : 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
       <div>
-        <Link href="/creator" style={{ fontSize: "12px", color: "var(--color-ink-soft)" }}>← Back to dashboard</Link>
+        <Link href="/creator" style={{ fontSize: "12px", color: "var(--color-ink-soft)" }}>
+          ← Back to dashboard
+        </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "6px" }}>
-          <h1 className="text-h2" style={{ margin: 0 }}>{brandLabel}</h1>
+          <h1 className="text-h2" style={{ margin: 0 }}>
+            {brandLabel}
+          </h1>
           <StatusPill status={DEAL_STAGE_LABEL[deal.status] ?? deal.status} variant="accent" />
         </div>
       </div>
 
       {!session ? (
         <div className="mtile">
-          <div className="lbl" style={{ marginBottom: "8px" }}>Set up your rate calculator</div>
+          <div className="lbl" style={{ marginBottom: "8px" }}>
+            Set up your rate calculator
+          </div>
           <div style={{ fontSize: "12px", color: "var(--color-ink-soft)", marginBottom: "12px" }}>
-            Enter your numbers to get a suggested range, a 12-week forecast, and the AI negotiation chat for this deal.
+            Enter your numbers to get a suggested range, a 12-week forecast, and the AI negotiation
+            chat for this deal.
             {profile?.followers_count != null && (
-              <> Currently at <strong>{profile.followers_count.toLocaleString()}</strong> followers
-              {profile.engagement_rate != null && <> and <strong>{profile.engagement_rate}%</strong> engagement</>}.</>
+              <>
+                {" "}
+                Currently at <strong>{profile.followers_count.toLocaleString()}</strong> followers
+                {profile.engagement_rate != null && (
+                  <>
+                    {" "}
+                    and <strong>{profile.engagement_rate}%</strong> engagement
+                  </>
+                )}
+                .
+              </>
             )}
           </div>
-          <RateCalculatorForm defaultViewsPerWeek={profile?.avg_views_per_week ?? undefined} busy={busy} onSubmit={createSession} />
+          <RateCalculatorForm
+            defaultViewsPerWeek={profile?.avg_views_per_week ?? undefined}
+            busy={busy}
+            onSubmit={createSession}
+          />
         </div>
       ) : (
         <>
           <div className="mtile">
             <div className="lbl">Suggested range</div>
-            <div className="val" style={{ fontSize: "17px" }}>{formatInr(session.range_low)}–{formatInr(session.range_high)}</div>
+            <div className="val" style={{ fontSize: "17px" }}>
+              {formatInr(session.range_low)}–{formatInr(session.range_high)}
+            </div>
             <div style={{ fontSize: "11px", color: "var(--color-ink-faint)", marginTop: "4px" }}>
               Base rate {formatInr(session.base_rate)} (range is base ± 15–35%)
             </div>
-            <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid var(--color-border)" }}>
-              <div className="lbl" style={{ marginBottom: "6px" }}>Why this rate — the numbers behind it</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", fontSize: "12.5px" }}>
+            <div
+              style={{
+                marginTop: "10px",
+                paddingTop: "10px",
+                borderTop: "1px solid var(--color-border)",
+              }}
+            >
+              <div className="lbl" style={{ marginBottom: "6px" }}>
+                Why this rate — the numbers behind it
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: "8px",
+                  fontSize: "12.5px",
+                }}
+              >
                 <div>
-                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>Followers</div>
+                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>
+                    Followers
+                  </div>
                   <div>{profile?.followers_count?.toLocaleString() ?? "—"}</div>
                 </div>
                 <div>
-                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>Engagement rate</div>
-                  <div>{profile?.engagement_rate != null ? `${profile.engagement_rate}%` : "—"}</div>
+                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>
+                    Engagement rate
+                  </div>
+                  <div>
+                    {profile?.engagement_rate != null ? `${profile.engagement_rate}%` : "—"}
+                  </div>
                 </div>
                 <div>
-                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>Views/week (used)</div>
+                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>
+                    Views/week (used)
+                  </div>
                   <div>{session.views_per_week.toLocaleString()}</div>
                 </div>
                 <div>
-                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>Niche CPM</div>
+                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>
+                    Niche CPM
+                  </div>
                   <div>₹{session.niche_cpm} / 1,000 views</div>
                 </div>
                 <div>
-                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>Tier multiplier</div>
+                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>
+                    Tier multiplier
+                  </div>
                   <div>{formatInr(session.follower_tier_multiplier)}</div>
                 </div>
                 <div>
-                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>Engagement adjustment</div>
+                  <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>
+                    Engagement adjustment
+                  </div>
                   <div>{formatInr(session.engagement_rate_adjustment)}</div>
                 </div>
               </div>
@@ -197,24 +266,42 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
           </div>
 
           <div className="mtile">
-            <div className="lbl" style={{ marginBottom: "2px" }}>Forecast — next 12 weeks</div>
+            <div className="lbl" style={{ marginBottom: "2px" }}>
+              Forecast — next 12 weeks
+            </div>
             <div style={{ fontSize: "11px", color: "var(--color-ink-faint)", marginBottom: "8px" }}>
-              Estimated negotiable rate over time, based on your recorded follower growth (see the Dashboard&apos;s
-              &quot;Know your worth&quot; to log more data points). Dashed lines mark today&apos;s suggested range for comparison.
+              Estimated negotiable rate over time, based on your recorded follower growth (see the
+              Dashboard&apos;s &quot;Know your worth&quot; to log more data points). Dashed lines
+              mark today&apos;s suggested range for comparison.
             </div>
             {forecast.length > 0 ? (
-              <ForecastChart forecast={forecast} referenceLow={session.range_low} referenceHigh={session.range_high} />
+              <ForecastChart
+                forecast={forecast}
+                referenceLow={session.range_low}
+                referenceHigh={session.range_high}
+              />
             ) : (
-              <div style={{ fontSize: "12px", color: "var(--color-ink-faint)" }}>Forecast unavailable.</div>
+              <div style={{ fontSize: "12px", color: "var(--color-ink-faint)" }}>
+                Forecast unavailable.
+              </div>
             )}
             {week12 && (
               <div style={{ fontSize: "13px", lineHeight: 1.5, marginTop: "10px" }}>
-                At this pace, you&apos;ll be worth about <strong>{formatInr(week12.mid)}</strong> by week 12 (~3 months).
+                At this pace, you&apos;ll be worth about <strong>{formatInr(week12.mid)}</strong> by
+                week 12 (~3 months).
                 {latestBrandOffer ? (
                   week12.mid > latestBrandOffer.amount ? (
-                    <> The brand&apos;s offer of {formatInr(latestBrandOffer.amount)} is <strong>below</strong> that — you have room to negotiate up.</>
+                    <>
+                      {" "}
+                      The brand&apos;s offer of {formatInr(latestBrandOffer.amount)} is{" "}
+                      <strong>below</strong> that — you have room to negotiate up.
+                    </>
                   ) : (
-                    <> That&apos;s still under the brand&apos;s offer of {formatInr(latestBrandOffer.amount)} — their offer already looks fair.</>
+                    <>
+                      {" "}
+                      That&apos;s still under the brand&apos;s offer of{" "}
+                      {formatInr(latestBrandOffer.amount)} — their offer already looks fair.
+                    </>
                   )
                 ) : null}
               </div>
@@ -222,11 +309,19 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
           </div>
 
           <div className="mtile">
-            <div className="lbl" style={{ marginBottom: "8px" }}>Pre-send checklist · {checklistDone}/4</div>
-            <div style={{ fontSize: "12.5px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div className="lbl" style={{ marginBottom: "8px" }}>
+              Pre-send checklist · {checklistDone}/4
+            </div>
+            <div
+              style={{ fontSize: "12.5px", display: "flex", flexDirection: "column", gap: "6px" }}
+            >
               {CHECKLIST_LABELS.map(([key, label]) => (
-                <div key={key} style={!session.checklist[key] ? { color: "var(--color-warning)" } : undefined}>
-                  {session.checklist[key] ? "✓" : "○"}&nbsp; {label}{!session.checklist[key] ? " — not set" : ""}
+                <div
+                  key={key}
+                  style={!session.checklist[key] ? { color: "var(--color-warning)" } : undefined}
+                >
+                  {session.checklist[key] ? "✓" : "○"}&nbsp; {label}
+                  {!session.checklist[key] ? " — not set" : ""}
                 </div>
               ))}
             </div>

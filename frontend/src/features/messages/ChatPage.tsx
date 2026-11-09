@@ -67,7 +67,10 @@ export default function ChatPage() {
     }
     poll();
     const interval = setInterval(poll, MESSAGES_POLL_INTERVAL_MS);
-    return () => { cancelled = true; clearInterval(interval); };
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [selectedId]);
 
   useEffect(() => {
@@ -100,17 +103,31 @@ export default function ChatPage() {
     return (
       <EmptyState
         icon={MessageCircle}
-        message={isBrand ? "No creators yet. Onboard one from the Deals page to start chatting." : "You're not linked to any brands yet."}
+        message={
+          isBrand
+            ? "No creators yet. Onboard one from the Deals page to start chatting."
+            : "You're not linked to any brands yet."
+        }
       />
     );
   }
 
-  const isMine = (m: Message) => (isBrand ? m.sender_type === "brand" : m.sender_type === "creator");
+  const isMine = (m: Message) =>
+    isBrand ? m.sender_type === "brand" : m.sender_type === "creator";
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: "16px", height: "calc(100vh - 140px)" }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "220px 1fr",
+        gap: "16px",
+        height: "calc(100vh - 140px)",
+      }}
+    >
       <div className="mtile" style={{ overflowY: "auto", padding: "8px" }}>
-        <div className="lbl" style={{ margin: "4px 6px 8px" }}>{isBrand ? "Creators" : "Brands"}</div>
+        <div className="lbl" style={{ margin: "4px 6px 8px" }}>
+          {isBrand ? "Creators" : "Brands"}
+        </div>
         {contacts.map((c) => {
           const hasPending = (unreadByContact[c.id] || 0) > 0;
           return (
@@ -158,15 +175,30 @@ export default function ChatPage() {
           </div>
         ) : (
           <>
-            <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "8px", paddingBottom: "8px" }}>
+            <div
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+                paddingBottom: "8px",
+              }}
+            >
               {messages.length === 0 && (
-                <div style={{ margin: "auto", fontSize: "12.5px", color: "var(--color-ink-faint)" }}>No messages yet.</div>
+                <div
+                  style={{ margin: "auto", fontSize: "12.5px", color: "var(--color-ink-faint)" }}
+                >
+                  No messages yet.
+                </div>
               )}
               {messages.map((m) => (
                 <div
                   key={m.id}
                   style={{
-                    alignSelf: isMine(m) ? "flex-end" : "flex-start", maxWidth: "70%", fontSize: "12.5px",
+                    alignSelf: isMine(m) ? "flex-end" : "flex-start",
+                    maxWidth: "70%",
+                    fontSize: "12.5px",
                     background: isMine(m) ? "var(--color-ink)" : "var(--color-surface-sunken)",
                     color: isMine(m) ? "var(--color-surface)" : "var(--color-ink)",
                     borderRadius: isMine(m) ? "10px 10px 2px 10px" : "10px 10px 10px 2px",
@@ -180,13 +212,21 @@ export default function ChatPage() {
             </div>
             <form onSubmit={send} style={{ display: "flex", gap: "8px" }}>
               <input
-                className="field" style={{ flex: 1, margin: 0 }}
-                value={draft} onChange={(e) => setDraft(e.target.value)}
+                className="field"
+                style={{ flex: 1, margin: 0 }}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
                 placeholder="Message…"
               />
-              <button className="btn" disabled={busy || !draft.trim()} type="submit">Send</button>
+              <button className="btn" disabled={busy || !draft.trim()} type="submit">
+                Send
+              </button>
             </form>
-            {sendError && <div style={{ fontSize: "11.5px", color: "var(--color-danger)", marginTop: "6px" }}>{sendError}</div>}
+            {sendError && (
+              <div style={{ fontSize: "11.5px", color: "var(--color-danger)", marginTop: "6px" }}>
+                {sendError}
+              </div>
+            )}
           </>
         )}
       </div>
