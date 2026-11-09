@@ -33,3 +33,12 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | edit | `.gitignore` | dropped Prisma `apps/api` entries; added Python caches, Playwright output, `.env.*` with `!.env.example` |
 | edit | `frontend/.gitignore` | un-ignore `.env.example` (`.env*` was swallowing it) |
 | fix | `backend/tests/smoke/test_api_contract.py` | type annotation so the new file adds no mypy error |
+
+## Phase 3.2 — Skeleton
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/app/` → `frontend/src/app/`, `frontend/components/` → `frontend/src/components/`, `frontend/lib/` → `frontend/src/lib/` | Next 16 `src/` folder (Decision 2); contents unchanged |
+| edit | `frontend/tsconfig.json` | `@/*` → `./src/*` (every import already used `@/`, so no import edits were needed) |
+| edit | `frontend/package.json` | `generate:api` writes to `src/lib/api-types.ts` |
+| add | `backend/features/__init__.py`, `backend/shared/__init__.py` | target packages |
