@@ -11,6 +11,7 @@ import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 import { DELIVERABLE_STATUS_LABEL } from "@/features/deliverables";
 import { formatInr } from "@/shared/lib/format-currency";
+import { contractStatusVariant, paymentStatusVariant } from "@/shared/lib/status-variants";
 
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
@@ -191,7 +192,7 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
               <div key={c.id} style={{ fontSize: "12.5px", display: "flex", gap: "10px", alignItems: "center" }}>
                 <StatusPill
                   status={c.status === "signed" ? "Accepted" : c.status === "void" ? "Void" : c.status === "pending_review" ? "Pending review" : c.status === "draft" ? "Draft" : "Pending acceptance"}
-                  variant={c.status === "signed" ? "success" : c.status === "void" ? "danger" : c.status === "pending_review" ? "warning" : "neutral"}
+                  variant={contractStatusVariant(c.status)}
                 />
                 <select
                   className="field"
@@ -303,7 +304,7 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
                 <span>{formatInr(Number(p.amount_inr))}</span>
                 <StatusPill
                   status={p.status === "paid" ? "Paid" : p.status === "overdue" ? "Overdue" : "Pending"}
-                  variant={p.status === "paid" ? "success" : p.status === "overdue" ? "danger" : "warning"}
+                  variant={paymentStatusVariant(p.status)}
                 />
                 <select
                   className="field"

@@ -15,6 +15,7 @@ type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
 type Contract = components["schemas"]["Contract"];
 
+// Intentionally differs from the shared dealStatusVariant (contracted/in_production are "accent" here).
 function dealStageVariant(status: string): StatusVariant {
   switch (status) {
     case "negotiating": return "warning";
@@ -58,7 +59,7 @@ function getBrandAvailableStatuses(d: Deliverable): { value: string; label: stri
   return options;
 }
 
-function variantFor(status: string): StatusVariant {
+function deliverableStatusVariant(status: string): StatusVariant {
   switch (status) {
     case "approved": return "success";
     case "rejected": return "danger";
@@ -205,7 +206,7 @@ export default function DeliverablesPage() {
                   {d.contract_id ? `${d.contract_id.slice(0, 8)}` : "—"}
                 </td>
                 <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                  <StatusPill status={DELIVERABLE_STATUS_LABEL[d.status] ?? d.status} variant={variantFor(d.status)} />
+                  <StatusPill status={DELIVERABLE_STATUS_LABEL[d.status] ?? d.status} variant={deliverableStatusVariant(d.status)} />
                 </td>
                 <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}>
                   {isBrand ? (

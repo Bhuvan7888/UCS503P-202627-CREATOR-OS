@@ -7,6 +7,7 @@ import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
+import { paymentStatusVariant } from "@/shared/lib/status-variants";
 
 type Payment = components["schemas"]["Payment"];
 type Contract = components["schemas"]["Contract"];
@@ -167,7 +168,7 @@ export default function PaymentsPage() {
                   <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", alignItems: "center" }}>
                     <StatusPill
                       status={p.status === "paid" ? "Paid" : p.status === "overdue" ? "Overdue" : "Pending"}
-                      variant={p.status === "paid" ? "success" : p.status === "overdue" ? "danger" : "warning"}
+                      variant={paymentStatusVariant(p.status)}
                     />
                     <select
                       className="field"
@@ -196,7 +197,7 @@ export default function PaymentsPage() {
                 ) : (
                   <StatusPill
                     status={p.status === "paid" ? "Paid" : p.status === "overdue" ? "Overdue" : "Not paid yet"}
-                    variant={p.status === "paid" ? "success" : p.status === "overdue" ? "danger" : "warning"}
+                    variant={paymentStatusVariant(p.status)}
                   />
                 )}
               </td>

@@ -4,11 +4,12 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Briefcase } from "lucide-react";
 import client from "@/shared/lib/api-client";
-import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
+import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
+import { dealStatusVariant } from "@/shared/lib/status-variants";
 
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
@@ -20,16 +21,6 @@ const FOLLOWER_TIERS = [
   { value: "macro", label: "Macro (200K – 1M followers)" },
   { value: "mega", label: "Mega (1M+ followers)" },
 ];
-
-function variantFor(status: string): StatusVariant {
-  switch (status) {
-    case "negotiating": return "warning";
-    case "contracted": return "success";
-    case "completed": return "success";
-    case "cancelled": return "danger";
-    default: return "neutral";
-  }
-}
 
 export default function BrandDealsPage() {
   const [deals, setDeals] = useState<Deal[] | null>(null);
@@ -243,7 +234,7 @@ export default function BrandDealsPage() {
                 </td>
                 <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>{d.campaign_name}</td>
                 <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                  <StatusPill status={DEAL_STAGE_LABEL[d.status] ?? d.status} variant={variantFor(d.status)} />
+                  <StatusPill status={DEAL_STAGE_LABEL[d.status] ?? d.status} variant={dealStatusVariant(d.status)} />
                   {!d.brand_viewed_at && (
                     <span style={{ marginLeft: "6px" }}>
                       <StatusPill status="Unread" variant="warning" />

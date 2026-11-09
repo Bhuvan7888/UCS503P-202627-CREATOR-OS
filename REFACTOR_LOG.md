@@ -455,3 +455,9 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | Action | Path | Reason |
 |---|---|---|
 | F5 | new `frontend/src/shared/lib/format-currency.ts` (`formatInr`); 7 byte-identical `money()` helpers removed and calls renamed. Not touched: `PaymentsPage` (uses `toLocaleString()` without `en-IN`, different output, see Decision 6) and `ForecastChart`'s `moneyCompact` (single use) | CreatorDealBoardPage, NegotiationPage, CreatorDashboardPage, DealDetailPage, CreatorProfilePage, AnalyticsPage, ForecastChart |
+
+## Phase 4 — F6 status pill colours
+
+| Action | Path | Reason |
+|---|---|---|
+| F6 | new `frontend/src/shared/lib/status-variants.ts` (`contractStatusVariant`, `dealStatusVariant`, `paymentStatusVariant`); replaced 2 contract `variantFor` functions + 2 identical inline contract ternaries, 2 identical deal mappings (`variantFor`, `dealVariant`), 3 identical payment ternaries. Deliberately left local (they differ): deliverables page deal colours (`dealStageVariant`, commented) and deliverable colours (renamed `deliverableStatusVariant`), deal-detail deliverable ternary (no `submitted` case), creator-profile/creator-dashboard contract & payment ternaries | ContractsPage, ClauseReviewPage, DealDetailPage, BrandDealsPage, DealsTable, PaymentsPage |

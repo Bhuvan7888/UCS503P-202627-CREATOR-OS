@@ -4,23 +4,15 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import client from "@/shared/lib/api-client";
-import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
+import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
+import { contractStatusVariant } from "@/shared/lib/status-variants";
 
 type Contract = components["schemas"]["Contract"];
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
-
-function variantFor(status: string): StatusVariant {
-  switch (status) {
-    case "signed": return "success";
-    case "pending_review": return "warning";
-    case "void": return "danger";
-    default: return "neutral";
-  }
-}
 
 export default function ContractsPage() {
   const [items, setItems] = useState<Contract[] | null>(null);
@@ -319,7 +311,7 @@ export default function ContractsPage() {
               <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", alignItems: "center" }}>
                 <StatusPill
                   status={c.status === "signed" ? "Accepted" : c.status === "void" ? "Void" : c.status === "pending_review" ? "Pending review" : c.status === "draft" ? "Draft" : "Pending acceptance"}
-                  variant={c.status === "signed" ? "success" : c.status === "void" ? "danger" : c.status === "pending_review" ? "warning" : "neutral"}
+                  variant={contractStatusVariant(c.status)}
                 />
                 <select
                   className="field"
@@ -378,7 +370,7 @@ export default function ContractsPage() {
                 <StatusPill status={c.raw_text ? "Scanned" : "Pending"} variant={c.raw_text ? "success" : "neutral"} />
               </td>
               <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                <StatusPill status={c.status.replace(/_/g, " ")} variant={variantFor(c.status)} />
+                <StatusPill status={c.status.replace(/_/g, " ")} variant={contractStatusVariant(c.status)} />
               </td>
               <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", color: "var(--color-ink-soft)" }}>
                 {new Date(c.created_at).toLocaleDateString()}

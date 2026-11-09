@@ -6,9 +6,10 @@ import { ArrowLeft, CheckCircle2, FileText, ShieldAlert } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { ClauseCard } from "./components/ClauseCard";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
-import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
+import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
+import { contractStatusVariant } from "@/shared/lib/status-variants";
 
 type Contract = components["schemas"]["Contract"];
 type ClauseCardOut = components["schemas"]["ClauseCardOut"];
@@ -18,15 +19,6 @@ interface Highlight {
   end: number;
   flag: "red" | "yellow";
   reason: string | null;
-}
-
-function variantFor(status: string): StatusVariant {
-  switch (status) {
-    case "signed": return "success";
-    case "pending_review": return "warning";
-    case "void": return "danger";
-    default: return "neutral";
-  }
 }
 
 function findHighlights(fullText: string, clauses: ClauseCardOut[]): Highlight[] {
@@ -140,7 +132,7 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
           >
             <ArrowLeft size={15} /> Back to contracts
           </Link>
-          <StatusPill status={contract.status.replace(/_/g, " ")} variant={variantFor(contract.status)} />
+          <StatusPill status={contract.status.replace(/_/g, " ")} variant={contractStatusVariant(contract.status)} />
         </div>
 
         <div className="mtile" style={{ padding: "28px 32px" }}>
@@ -195,7 +187,7 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
           >
             <ArrowLeft size={15} /> Back to contracts
           </Link>
-          <StatusPill status={contract.status.replace(/_/g, " ")} variant={variantFor(contract.status)} />
+          <StatusPill status={contract.status.replace(/_/g, " ")} variant={contractStatusVariant(contract.status)} />
         </div>
 
         {/* Option to toggle between Flagged Review and Clean Contract View */}
