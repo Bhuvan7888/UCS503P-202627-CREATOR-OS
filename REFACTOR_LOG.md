@@ -547,3 +547,13 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 |---|---|---|
 | format | `backend/`: `ruff format` (99 files); Supabase repository call-chain probe identical afterwards; all checks pass |
 | format | `frontend/`: `prettier --write .` (37 files; generated `api-types.ts` excluded). **Proof:** visible markup of all 16 prerendered pages identical before and after |
+
+## Checkpoint 2 — Approved removals
+
+| Action | Path | Evidence |
+|---|---|---|
+| delete | `_deprecated/` (120 tracked files: old root pnpm/Turborepo/husky/commitlint/eslint/prettier/tsconfig config + lockfile, root `.env.example`, `docker-compose.yml`, `init-db.sql`, `.cursorrules`, `packages/shared` (92 files, 72 committed build output), 4 unused frontend components, `lib/supabase.ts`, 2 stale e2e specs, `tokens.py` + its test) | no reference from `backend/`, `frontend/` or CI (re-checked at Checkpoint 2); approved by owner. Note: `packages/shared` had 92/72 files, not the 85/66 estimated in AUDIT.md |
+| remove dep | `swr`, `@supabase/supabase-js` (frontend `dependencies`) | `swr` imported nowhere; `@supabase/supabase-js` only by the deleted `lib/supabase.ts`. Lockfile: exactly the 11 entries npm's graph drops (incl. transitive `dequal`, `use-sync-external-store`, `iceberg-js`, `@supabase/*`) removed surgically; `npm ci` OK; `npm ls` shows the same 6 pre-existing "extraneous" notices as before, 0 missing/invalid |
+| keep | `@playwright/test` | owner decision: kept for future e2e tests |
+| move | `pytest`, `pytest-asyncio`, `mypy`, `ruff`, `import-linter` → `[dependency-groups] dev` in `backend/pyproject.toml` | dev tools, not runtime deps. `uv.lock` regenerated with CI's pinned uv 0.11.19 (same lockfile revision, no version changes); `uv sync --frozen` + pytest pass under 0.11.19; `uv sync` installs the dev group by default, so CI is unaffected |
+| edit | `backend/pyproject.toml` description | was "Add your description here" |

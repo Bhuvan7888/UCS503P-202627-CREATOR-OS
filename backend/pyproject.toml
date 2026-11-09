@@ -1,24 +1,29 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "Creator OS API: FastAPI backend for brand-creator deal management"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.141.1",
     "google-genai>=2.18.1",
-    "import-linter>=2.13",
-    "mypy>=2.3.0",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.15.0",
     "pypdf>=6.16.1",
-    "pytest>=9.1.1",
-    "pytest-asyncio>=1.4.0",
     "python-multipart>=0.0.32",
     "resend>=2.36.0",
-    "ruff>=0.16.3",
     "supabase>=2.31.0",
     "uvicorn>=0.52.3",
+]
+
+[dependency-groups]
+# Installed by `uv sync` (and CI's `uv sync --frozen`) by default.
+dev = [
+    "import-linter>=2.13",
+    "mypy>=2.3.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.3",
 ]
 
 [tool.ruff]
