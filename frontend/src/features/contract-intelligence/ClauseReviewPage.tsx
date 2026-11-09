@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, FileText, ShieldAlert } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { ClauseCard } from "./components/ClauseCard";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
@@ -25,6 +25,7 @@ export default function ClauseReviewPage({ params }: { params: Promise<{ id: str
 
   useEffect(() => {
     const brand = loadSession()?.role === "brand";
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- see AppShell.tsx
     setIsBrand(brand);
     if (brand) {
       setViewMode("clean");

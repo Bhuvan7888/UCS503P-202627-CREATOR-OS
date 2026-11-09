@@ -92,7 +92,7 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
     if (newStatus === c.status) return;
     await client.PATCH("/contracts/{id}/status", {
       params: { path: { id: c.id } },
-      body: { status: newStatus as any },
+      body: { status: newStatus as components["schemas"]["ContractStatusUpdateRequest"]["status"] },
     });
     if (deal) {
       if (newStatus === "signed") {
@@ -114,7 +114,7 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
     if (newStatus === d.status) return;
     await client.PATCH("/deliverables/{id}/status", {
       params: { path: { id: d.id }, query: { deal_id: id } },
-      body: { status: newStatus as any },
+      body: { status: newStatus as components["schemas"]["DeliverableStatusUpdateRequest"]["status"] },
     });
     reload();
   }
@@ -148,13 +148,6 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
     });
     setBusy(false);
     formEl.reset();
-    reload();
-  }
-
-  async function markPaid(p: Payment) {
-    await client.PATCH("/payments/{contract_id}/mark-paid", {
-      params: { path: { contract_id: p.contract_id }, query: { payment_id: p.id, deal_id: id } },
-    });
     reload();
   }
 

@@ -74,7 +74,7 @@ export default function DeliverablesPage() {
     if (newStatus === d.status) return;
     await client.PATCH("/deliverables/{id}/status", {
       params: { path: { id: d.id }, query: { deal_id: d.deal_id } },
-      body: { status: newStatus as any },
+      body: { status: newStatus as components["schemas"]["DeliverableStatusUpdateRequest"]["status"] },
     });
     reload();
   }

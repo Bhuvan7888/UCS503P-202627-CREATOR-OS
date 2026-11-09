@@ -36,7 +36,7 @@ export default function BrandSignupPage() {
         saveSession(data);
         setSession(data);
       }
-    } catch (err) {
+    } catch {
       setError(NETWORK_ERROR_MESSAGE);
     } finally {
       setPending(false);

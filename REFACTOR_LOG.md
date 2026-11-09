@@ -507,3 +507,13 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | move | mid-file imports to the top: `contract_intelligence/router.py`, `negotiation/router.py`, `tests/fakes/fake_repos.py`, `tests/features/negotiation/test_negotiation_service.py` | ruff E402 |
 | remove | assistant "thinking out loud" comments (`# Wait, let me check LLMPort…`, `# We'll create a dependency injection helper.`) | stale notes, not documentation |
 | keep | `print` in `backend/scripts/*` | intentional CLI progress output |
+
+## Phase 4.4 — Frontend unused code and lint
+
+| Action | Path | Reason |
+|---|---|---|
+| remove | unused `markPaid` in `DealDetailPage.tsx` | its definition was the only reference (closure inside the component); replaced earlier by the payment status dropdown |
+| remove | unused `ShieldAlert` import (`ClauseReviewPage`), unused `err` catch bindings (sign-up pages) | lint warnings |
+| fix | 4× `newStatus as any` → the generated `ContractStatusUpdateRequest`/`DeliverableStatusUpdateRequest` status types | type-only, removes 4 `no-explicit-any` errors |
+| edit | `ClauseReviewPage` session hydration | same documented `eslint-disable-next-line react-hooks/set-state-in-effect` used at the 8 other identical sites |
+| edit | `frontend/playwright.config.ts` | ~40 lines of commented-out create-playwright boilerplate removed; active settings unchanged |

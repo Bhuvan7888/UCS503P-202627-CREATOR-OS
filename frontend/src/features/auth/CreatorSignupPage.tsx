@@ -46,7 +46,7 @@ export default function CreatorSignupPage() {
         saveSession(data);
         router.push("/creator");
       }
-    } catch (err) {
+    } catch {
       setError(NETWORK_ERROR_MESSAGE);
     } finally {
       setPending(false);

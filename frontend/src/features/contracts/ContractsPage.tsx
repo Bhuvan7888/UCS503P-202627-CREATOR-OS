@@ -68,7 +68,7 @@ export default function ContractsPage() {
 
     const { error: patchError } = await client.PATCH("/contracts/{id}/status", {
       params: { path: { id: c.id } },
-      body: { status: newStatus as any },
+      body: { status: newStatus as components["schemas"]["ContractStatusUpdateRequest"]["status"] },
     });
     if (patchError) {
       setAcceptError("Couldn't update contract status — it may have an open review flag that needs resolving first.");
