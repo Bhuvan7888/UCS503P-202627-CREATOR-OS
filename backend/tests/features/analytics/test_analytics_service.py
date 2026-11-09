@@ -5,8 +5,8 @@ import pytest
 
 from domain.models.contract import Contract
 from domain.models.creator import Creator
-from domain.models.deal import Deal
 from features.analytics import AnalyticsService
+from features.deals import Deal
 from features.payments import Payment
 from tests.fakes.fake_repos import (
     FakeContractRepo,

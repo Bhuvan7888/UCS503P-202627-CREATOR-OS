@@ -2,17 +2,17 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from application.services.deals import DealService
-from domain.models.deal import (
+from features.activity_log import SupabaseActivityLogRepo
+from features.deals.models import (
     Deal,
     DealCreateRequest,
     DealStatusUpdateRequest,
     WeeklyValuePoint,
 )
-from features.activity_log import SupabaseActivityLogRepo
+from features.deals.service import DealService
+from features.deals.supabase_repository import SupabaseDealRepo
 from infrastructure.supabase.repos import (
     SupabaseCreatorRepo,
-    SupabaseDealRepo,
     SupabaseNegotiationSessionRepo,
 )
 from interface.dependencies import ActorContext, get_current_actor

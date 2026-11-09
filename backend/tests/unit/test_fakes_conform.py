@@ -3,9 +3,9 @@ from domain.interfaces.repositories import (
     BrandRepo,
     ContractRepo,
     CreatorRepo,
-    DealRepo,
 )
 from features.activity_log import ActivityLogRepo
+from features.deals import DealRepo
 from features.deliverables import DeliverableRepo
 from features.payments import PaymentRepo
 from tests.fakes.fake_repos import (

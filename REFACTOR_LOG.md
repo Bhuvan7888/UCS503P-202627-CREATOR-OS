@@ -150,3 +150,16 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | split | `test_deliverable_valid_transition`, `test_deliverable_status_role_gating`, `test_deliverable_revert_transitions` from `backend/tests/unit/test_services.py` → `backend/tests/features/deliverables/test_deliverables_service.py` | tests mirror the feature |
 | add | `backend/features/deliverables/__init__.py` | public API (generated from names other packages import) |
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+
+## Phase 3.3 — Backend feature: `deals`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/deals.py` → `backend/features/deals/router.py` | feature folder |
+| move | `backend/application/services/deals.py` → `backend/features/deals/service.py` | feature folder |
+| move | `backend/domain/models/deal.py` → `backend/features/deals/models.py` | feature folder |
+| split | `SupabaseDealRepo` from `backend/infrastructure/supabase/repos.py` → `backend/features/deals/supabase_repository.py` | one repository/port per feature |
+| split | `DealRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/deals/repository.py` | one repository/port per feature |
+| move | `backend/tests/unit/test_deals.py` → `backend/tests/features/deals/test_deals_service.py` | tests mirror the feature |
+| add | `backend/features/deals/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |

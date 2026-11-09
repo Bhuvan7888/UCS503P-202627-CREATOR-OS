@@ -4,13 +4,13 @@ from uuid import UUID
 from domain.models.brand import Brand, BrandMember
 from domain.models.contract import Contract
 from domain.models.creator import Creator
-from domain.models.deal import Deal
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationOffer,
     NegotiationSession,
 )
 from features.activity_log import ActivityLog
+from features.deals import Deal
 from features.deliverables import Deliverable
 from features.payments import Payment
 

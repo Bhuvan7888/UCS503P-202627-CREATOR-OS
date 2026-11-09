@@ -3,9 +3,8 @@ from uuid import uuid4
 
 import pytest
 
-from application.services.deals import DealService
-from domain.models.deal import DealCreateRequest
 from domain.models.negotiation import ChecklistState, NegotiationSession
+from features.deals import DealCreateRequest, DealService
 from shared.errors import NotFoundError, PermissionDeniedError
 from tests.fakes.fake_repos import (
     FakeActivityLogRepo,

@@ -147,8 +147,12 @@ async def test_generate_script_llm_complete_checklist():
     assert script == "Drafted script."
 
 
-from domain.models.deal import Deal
-from tests.fakes.fake_repos import FakeActivityLogRepo, FakeDealRepo, FakeNegotiationSessionRepo
+from features.deals import Deal
+from tests.fakes.fake_repos import (
+    FakeActivityLogRepo,
+    FakeDealRepo,
+    FakeNegotiationSessionRepo,
+)
 
 
 def _deal_repo_for(deal_id, brand_id) -> FakeDealRepo:

@@ -60,8 +60,8 @@ async def test_negotiation_counter_offer_409():
     from datetime import datetime
 
     from application.services.negotiation import NegotiationService
-    from domain.models.deal import Deal
     from domain.models.negotiation import ChecklistState, NegotiationSession
+    from features.deals import Deal
     from interface.dependencies import ActorContext, get_current_actor
     from interface.routers.negotiation import get_negotiation_service
     from tests.fakes.fake_repos import (

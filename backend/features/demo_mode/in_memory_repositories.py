@@ -7,7 +7,6 @@ from domain.models.brand import Brand, BrandMember
 from domain.models.contract import Contract
 from domain.models.contract_intelligence import ClauseCardOut, EscalationOut
 from domain.models.creator import Creator, GrowthSnapshot
-from domain.models.deal import Deal
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationConversation,
@@ -15,6 +14,7 @@ from domain.models.negotiation import (
     NegotiationSession,
 )
 from features.activity_log import ActivityLog
+from features.deals import Deal
 from features.deliverables import Deliverable
 from features.messages import Message
 from features.payments import Payment

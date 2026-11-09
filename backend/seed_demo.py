@@ -28,18 +28,17 @@ from application.services.clause_explanation import ClauseExplanationService
 from application.services.contract_intelligence import ContractIntelligenceService
 from application.services.contracts import ContractService
 from application.services.creators import CreatorService
-from application.services.deals import DealService
 from application.services.negotiation import NegotiationService
 from domain.models.auth import BrandSignupRequest, CreatorSignupRequest
 from domain.models.contract import ContractStatusUpdateRequest
 from domain.models.creator import GrowthSnapshot
-from domain.models.deal import DealCreateRequest
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationConversation,
     NegotiationSessionCreate,
 )
 from features.activity_log import SupabaseActivityLogRepo
+from features.deals import DealCreateRequest, DealService, SupabaseDealRepo
 from features.deliverables import (
     DeliverableCreateRequest,
     DeliverableService,
@@ -59,7 +58,6 @@ from infrastructure.supabase.repos import (
     SupabaseBrandRepo,
     SupabaseContractRepo,
     SupabaseCreatorRepo,
-    SupabaseDealRepo,
     SupabaseGrowthSnapshotRepo,
     SupabaseNegotiationConversationRepo,
     SupabaseNegotiationSessionRepo,
