@@ -2,12 +2,9 @@
 
 import React, { useRef, useState } from "react";
 import type { components } from "@/shared/lib/api-types";
+import { formatInr } from "@/shared/lib/format-currency";
 
 type ForecastPoint = components["schemas"]["ForecastPoint"];
-
-function money(n: number) {
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
-}
 
 function moneyCompact(n: number): string {
   if (n >= 1e7) return `₹${(n / 1e7).toFixed(1)}Cr`;
@@ -186,7 +183,7 @@ export function ForecastChart({ forecast, referenceLow, referenceHigh }: Forecas
           <>
             <circle cx={xAt(n - 1)} cy={yAt(last.mid)} r={5} fill="var(--color-accent)" stroke="var(--color-surface)" strokeWidth={2} />
             <text x={xAt(n - 1) - 4} y={yAt(last.mid) - 10} textAnchor="end" fontSize="11" fontWeight={600} fill="var(--color-ink)">
-              {money(last.mid)}
+              {formatInr(last.mid)}
             </text>
           </>
         )}
@@ -200,10 +197,10 @@ export function ForecastChart({ forecast, referenceLow, referenceHigh }: Forecas
               {dateAt(activeIdx).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · Week {active.week}
             </text>
             <text x={tipX + 9} y={tipY + 33} fontSize="12" fontWeight={700} fill="var(--color-ink)">
-              Est. {money(active.mid)}
+              Est. {formatInr(active.mid)}
             </text>
             <text x={tipX + 9} y={tipY + 49} fontSize="9.5" fill="var(--color-ink-soft)">
-              Range {money(active.low)}–{money(active.high)}
+              Range {formatInr(active.low)}–{formatInr(active.high)}
             </text>
           </>
         )}

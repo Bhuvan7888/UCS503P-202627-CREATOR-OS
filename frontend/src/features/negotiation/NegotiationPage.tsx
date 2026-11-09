@@ -12,6 +12,7 @@ import { NegotiationChat } from "./components/NegotiationChat";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
+import { formatInr } from "@/shared/lib/format-currency";
 
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
@@ -27,10 +28,6 @@ const CHECKLIST_LABELS: [keyof NegotiationSession["checklist"], string][] = [
   ["revision_limit_set", "Revision limit"],
   ["payment_timeline_set", "Payment timeline"],
 ];
-
-function money(n: number) {
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
-}
 
 export default function NegotiationPage({ params }: { params: Promise<{ dealId: string }> }) {
   const { dealId } = use(params);
@@ -164,9 +161,9 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
         <>
           <div className="mtile">
             <div className="lbl">Suggested range</div>
-            <div className="val" style={{ fontSize: "17px" }}>{money(session.range_low)}–{money(session.range_high)}</div>
+            <div className="val" style={{ fontSize: "17px" }}>{formatInr(session.range_low)}–{formatInr(session.range_high)}</div>
             <div style={{ fontSize: "11px", color: "var(--color-ink-faint)", marginTop: "4px" }}>
-              Base rate {money(session.base_rate)} (range is base ± 15–35%)
+              Base rate {formatInr(session.base_rate)} (range is base ± 15–35%)
             </div>
             <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid var(--color-border)" }}>
               <div className="lbl" style={{ marginBottom: "6px" }}>Why this rate — the numbers behind it</div>
@@ -189,11 +186,11 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
                 </div>
                 <div>
                   <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>Tier multiplier</div>
-                  <div>{money(session.follower_tier_multiplier)}</div>
+                  <div>{formatInr(session.follower_tier_multiplier)}</div>
                 </div>
                 <div>
                   <div style={{ color: "var(--color-ink-faint)", fontSize: "10.5px" }}>Engagement adjustment</div>
-                  <div>{money(session.engagement_rate_adjustment)}</div>
+                  <div>{formatInr(session.engagement_rate_adjustment)}</div>
                 </div>
               </div>
             </div>
@@ -212,12 +209,12 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
             )}
             {week12 && (
               <div style={{ fontSize: "13px", lineHeight: 1.5, marginTop: "10px" }}>
-                At this pace, you&apos;ll be worth about <strong>{money(week12.mid)}</strong> by week 12 (~3 months).
+                At this pace, you&apos;ll be worth about <strong>{formatInr(week12.mid)}</strong> by week 12 (~3 months).
                 {latestBrandOffer ? (
                   week12.mid > latestBrandOffer.amount ? (
-                    <> The brand&apos;s offer of {money(latestBrandOffer.amount)} is <strong>below</strong> that — you have room to negotiate up.</>
+                    <> The brand&apos;s offer of {formatInr(latestBrandOffer.amount)} is <strong>below</strong> that — you have room to negotiate up.</>
                   ) : (
-                    <> That&apos;s still under the brand&apos;s offer of {money(latestBrandOffer.amount)} — their offer already looks fair.</>
+                    <> That&apos;s still under the brand&apos;s offer of {formatInr(latestBrandOffer.amount)} — their offer already looks fair.</>
                   )
                 ) : null}
               </div>

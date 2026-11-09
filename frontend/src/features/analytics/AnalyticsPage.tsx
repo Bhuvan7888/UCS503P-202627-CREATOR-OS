@@ -6,12 +6,9 @@ import client from "@/shared/lib/api-client";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
+import { formatInr } from "@/shared/lib/format-currency";
 
 type BrandAnalytics = components["schemas"]["BrandAnalytics"];
-
-function money(n: number) {
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
-}
 
 function BarRow({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.max((value / max) * 100, value > 0 ? 3 : 0) : 0;
@@ -100,7 +97,7 @@ export default function AnalyticsPage() {
           <RevenueChart data={data.revenue_by_month} />
           {data.overdue_payments_count > 0 && (
             <div style={{ fontSize: "11.5px", color: "var(--color-danger)", marginTop: "8px" }}>
-              {data.overdue_payments_count} overdue · {money(data.overdue_payments_total)} outstanding
+              {data.overdue_payments_count} overdue · {formatInr(data.overdue_payments_total)} outstanding
             </div>
           )}
         </div>
@@ -127,7 +124,7 @@ export default function AnalyticsPage() {
                   <div style={{ background: "var(--color-surface-sunken)", borderRadius: "4px", height: "10px" }}>
                     <div style={{ width: `${Math.max((b.total_value / maxBrandValue) * 100, b.total_value > 0 ? 3 : 0)}%`, height: "100%", background: "var(--color-ink)", borderRadius: "4px" }} />
                   </div>
-                  <div style={{ textAlign: "right", color: "var(--color-ink-soft)" }}>{money(b.total_value)}</div>
+                  <div style={{ textAlign: "right", color: "var(--color-ink-soft)" }}>{formatInr(b.total_value)}</div>
                 </div>
               ))}
             </div>
@@ -154,7 +151,7 @@ export default function AnalyticsPage() {
                     <td style={{ padding: "4px" }}>{c.display_name}</td>
                     <td style={{ padding: "4px", color: "var(--color-ink-soft)" }}>{c.niche} · {c.follower_tier}</td>
                     <td style={{ padding: "4px" }}>{c.deal_count}</td>
-                    <td style={{ padding: "4px" }}>{money(c.total_value)}</td>
+                    <td style={{ padding: "4px" }}>{formatInr(c.total_value)}</td>
                   </tr>
                 ))}
               </tbody>

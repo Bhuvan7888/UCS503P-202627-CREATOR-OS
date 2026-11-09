@@ -449,3 +449,9 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | Action | Path | Reason |
 |---|---|---|
 | F4 | new `frontend/src/features/deliverables/constants/deliverable-status.ts`, exported from `features/deliverables/index.ts`; 2 identical copies removed (`STATUS_LABEL` renamed) | DeliverablesPage, DealDetailPage (via the deliverables index) |
+
+## Phase 4 — F5 INR formatting
+
+| Action | Path | Reason |
+|---|---|---|
+| F5 | new `frontend/src/shared/lib/format-currency.ts` (`formatInr`); 7 byte-identical `money()` helpers removed and calls renamed. Not touched: `PaymentsPage` (uses `toLocaleString()` without `en-IN`, different output, see Decision 6) and `ForecastChart`'s `moneyCompact` (single use) | CreatorDealBoardPage, NegotiationPage, CreatorDashboardPage, DealDetailPage, CreatorProfilePage, AnalyticsPage, ForecastChart |

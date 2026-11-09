@@ -6,16 +6,13 @@ import client from "@/shared/lib/api-client";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
+import { formatInr } from "@/shared/lib/format-currency";
 
 type Deal = components["schemas"]["Deal"];
 type WeeklyValuePoint = components["schemas"]["WeeklyValuePoint"];
 
 // Kanban columns, in pipeline order.
 const STAGES: { key: string; label: string }[] = Object.entries(DEAL_STAGE_LABEL).map(([key, label]) => ({ key, label }));
-
-function money(n: number) {
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
-}
 
 export default function CreatorDealBoardPage() {
   const [deals, setDeals] = useState<Deal[] | null>(null);
@@ -84,7 +81,7 @@ export default function CreatorDealBoardPage() {
                   </text>
                   {w.value > 0 && (
                     <text x={x + barW / 2} y={y - 4} textAnchor="middle" fontSize="9" fill="var(--color-ink-soft)">
-                      {money(w.value)}
+                      {formatInr(w.value)}
                     </text>
                   )}
                 </g>

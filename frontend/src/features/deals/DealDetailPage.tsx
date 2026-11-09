@@ -10,16 +10,13 @@ import { ArrowLeft } from "lucide-react";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 import { DELIVERABLE_STATUS_LABEL } from "@/features/deliverables";
+import { formatInr } from "@/shared/lib/format-currency";
 
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
 type Contract = components["schemas"]["Contract"];
 type Deliverable = components["schemas"]["Deliverable"];
 type Payment = components["schemas"]["Payment"];
-
-function money(n: number) {
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
-}
 
 export default function DealDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -303,7 +300,7 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
             {payments.map((p) => (
               <div key={p.id} style={{ display: "flex", gap: "10px", alignItems: "center", fontSize: "12.5px" }}>
                 <span>{p.invoice_number}</span>
-                <span>{money(Number(p.amount_inr))}</span>
+                <span>{formatInr(Number(p.amount_inr))}</span>
                 <StatusPill
                   status={p.status === "paid" ? "Paid" : p.status === "overdue" ? "Overdue" : "Pending"}
                   variant={p.status === "paid" ? "success" : p.status === "overdue" ? "danger" : "warning"}

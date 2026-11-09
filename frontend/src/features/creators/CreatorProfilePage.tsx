@@ -9,6 +9,7 @@ import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
+import { formatInr } from "@/shared/lib/format-currency";
 
 type Creator = components["schemas"]["Creator"];
 type Deal = components["schemas"]["Deal"];
@@ -17,10 +18,6 @@ type Contract = components["schemas"]["Contract"];
 type Message = components["schemas"]["Message"];
 
 const POLL_MS = 4000;
-
-function money(n: number) {
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
-}
 
 export default function CreatorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -135,8 +132,8 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
         <div className="mtile"><div className="lbl">Deals</div><div className="val">{deals.length}</div></div>
         <div className="mtile"><div className="lbl">Active</div><div className="val">{active}</div></div>
         <div className="mtile"><div className="lbl">Completed</div><div className="val">{completed}</div></div>
-        <div className="mtile"><div className="lbl">Paid to date</div><div className="val" style={{ fontSize: "16px" }}>{money(totalPaid)}</div></div>
-        <div className="mtile"><div className="lbl">Outstanding</div><div className="val" style={{ fontSize: "16px" }}>{money(totalPending)}</div></div>
+        <div className="mtile"><div className="lbl">Paid to date</div><div className="val" style={{ fontSize: "16px" }}>{formatInr(totalPaid)}</div></div>
+        <div className="mtile"><div className="lbl">Outstanding</div><div className="val" style={{ fontSize: "16px" }}>{formatInr(totalPending)}</div></div>
       </div>
 
       <div className="mtile">
@@ -235,7 +232,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
               {payments.map((p) => (
                 <tr key={p.id}>
                   <td style={{ padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>{p.invoice_number}</td>
-                  <td style={{ padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>{money(Number(p.amount_inr))}</td>
+                  <td style={{ padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>{formatInr(Number(p.amount_inr))}</td>
                   <td style={{ padding: "6px 4px", borderBottom: "1px solid var(--color-border)" }}>
                     <StatusPill status={p.status} variant={p.status === "paid" ? "success" : "warning"} />
                   </td>

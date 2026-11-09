@@ -9,6 +9,7 @@ import { GrowthTracker } from "@/features/creators";
 import { DealsTable } from "./components/DealsTable";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
+import { formatInr } from "@/shared/lib/format-currency";
 
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
@@ -19,10 +20,6 @@ type Contract = components["schemas"]["Contract"];
 type DealStats = { completed_count: number; total_earnings: number; earnings_per_project: number };
 
 const CONTRACT_STATUS_OPTIONS = ["unread", "read", "ongoing", "completed"] as const;
-
-function money(n: number) {
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
-}
 
 export default function CreatorDashboardPage() {
   const [error, setError] = useState(false);
@@ -255,11 +252,11 @@ export default function CreatorDashboardPage() {
           </div>
           <div className="mtile">
             <div className="lbl">Total earnings</div>
-            <div className="val" style={{ fontSize: "17px" }}>{money(stats.total_earnings)}</div>
+            <div className="val" style={{ fontSize: "17px" }}>{formatInr(stats.total_earnings)}</div>
           </div>
           <div className="mtile">
             <div className="lbl">Earnings / project</div>
-            <div className="val" style={{ fontSize: "17px" }}>{money(stats.earnings_per_project)}</div>
+            <div className="val" style={{ fontSize: "17px" }}>{formatInr(stats.earnings_per_project)}</div>
           </div>
         </div>
       )}
@@ -319,7 +316,7 @@ export default function CreatorDashboardPage() {
                     background: i === 2 ? "var(--color-ink)" : i === 1 ? "var(--color-accent)" : "var(--color-accent-dim)",
                     borderRadius: "4px 4px 0 0",
                   }} />
-                  <div style={{ fontSize: "10.5px", color: "var(--color-ink-faint)", marginTop: "4px" }}>{label} {money(val ?? 0)}</div>
+                  <div style={{ fontSize: "10.5px", color: "var(--color-ink-faint)", marginTop: "4px" }}>{label} {formatInr(val ?? 0)}</div>
                 </div>
               ))}
             </div>
