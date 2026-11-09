@@ -5,6 +5,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.auth.dependencies import (
+    ActorContext,
+    get_current_actor,
+    get_current_brand,
+)
 from features.contract_intelligence import ClauseInput, ContractIntelligenceService
 from features.contract_intelligence.dependencies import (
     get_contract_intelligence_service,
@@ -19,7 +24,6 @@ from features.contracts.models import (
 from features.contracts.service import ContractService
 from features.contracts.supabase_repository import SupabaseContractRepo
 from features.deals.supabase_repository import SupabaseDealRepo
-from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 from shared.llm.gemini_adapter import GeminiAdapter
 from shared.supabase_client import get_supabase_client

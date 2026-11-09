@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.auth.dependencies import ActorContext, get_current_actor
 from features.creators.supabase_repository import SupabaseGrowthSnapshotRepo
 from features.deals.supabase_repository import SupabaseDealRepo
 from features.negotiation.models import (
@@ -23,7 +24,6 @@ from features.negotiation.supabase_repository import (
     SupabaseNegotiationConversationRepo,
     SupabaseNegotiationSessionRepo,
 )
-from interface.dependencies import ActorContext, get_current_actor
 from shared.llm.gemini_adapter import GeminiAdapter
 from shared.supabase_client import get_supabase_client
 

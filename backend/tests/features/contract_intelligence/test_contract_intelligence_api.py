@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
+from features.auth.dependencies import ActorContext, get_current_brand
 from features.contract_intelligence import (
     ClauseCardOut,
     ClauseExplanationService,
@@ -13,7 +14,6 @@ from features.contract_intelligence.dependencies import (
     get_contract_intelligence_service,
 )
 from features.contracts import Contract
-from interface.dependencies import ActorContext, get_current_brand
 from main import app
 from tests.fakes.fake_repos import (
     FakeClauseCardRepo,

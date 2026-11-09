@@ -251,3 +251,16 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | add | `backend/features/contracts/__init__.py` | public API (generated from names other packages import) |
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
 | remove | `backend/domain/logic/transitions.py`, `backend/tests/integration/test_routers.py`, `backend/tests/unit/test_services.py` | empty after their contents were split into the feature folders |
+
+## Phase 3.3 — Backend feature: `auth`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/auth.py` → `backend/features/auth/router.py` | feature folder |
+| move | `backend/application/services/auth.py` → `backend/features/auth/service.py` | feature folder |
+| move | `backend/domain/models/auth.py` → `backend/features/auth/models.py` | feature folder |
+| move | `backend/interface/dependencies.py` → `backend/features/auth/dependencies.py` | feature folder |
+| move | `backend/tests/unit/test_auth.py` → `backend/tests/features/auth/test_auth_service.py` | tests mirror the feature |
+| move | `backend/tests/integration/test_rls_role_matrix.py` → `backend/tests/features/auth/test_auth_rls_role_matrix.py` | tests mirror the feature |
+| add | `backend/features/auth/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |

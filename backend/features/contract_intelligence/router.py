@@ -19,7 +19,7 @@ from features.contract_intelligence.service import ContractIntelligenceService
 
 router = APIRouter(prefix="/contracts", tags=["contract_intelligence"])
 
-from interface.dependencies import ActorContext, get_current_brand
+from features.auth.dependencies import ActorContext, get_current_brand
 
 
 @router.get("/{contract_id}/clauses", response_model=list[ClauseCardOut])

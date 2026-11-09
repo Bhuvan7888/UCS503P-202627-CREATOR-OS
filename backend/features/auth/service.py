@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 from supabase import Client
 
-from domain.models.auth import (
+from features.auth.models import (
     AuthSession,
     BrandLoginRequest,
     BrandSignupRequest,

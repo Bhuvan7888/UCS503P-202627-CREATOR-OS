@@ -1,6 +1,6 @@
 """Passwordless demo login and demo-token resolution. Active in every environment today; see AUDIT.md section 1.5 (security)."""
 
-from domain.models.auth import AuthSession
+from features.auth import AuthSession
 from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS
 from features.demo_mode.demo_store import store
 
@@ -38,7 +38,7 @@ def authenticate_demo_creator(email: str) -> AuthSession | None:
 
 def resolve_demo_actor(token: str):
     store.seed_if_needed()
-    from interface.dependencies import ActorContext
+    from features.auth.dependencies import ActorContext
 
     # Check brand tokens
     for info in DEMO_BRANDS.values():

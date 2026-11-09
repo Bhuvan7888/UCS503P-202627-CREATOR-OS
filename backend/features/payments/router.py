@@ -3,6 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.auth.dependencies import (
+    ActorContext,
+    get_current_actor,
+    get_current_brand,
+)
 from features.payments.models import (
     Payment,
     PaymentCreateRequest,
@@ -10,7 +15,6 @@ from features.payments.models import (
 )
 from features.payments.service import PaymentService
 from features.payments.supabase_repository import SupabasePaymentRepo
-from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from shared.errors import InvalidStatusTransition
 from shared.supabase_client import get_supabase_client
 

@@ -3,11 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from features.auth.dependencies import ActorContext, get_current_actor
 from features.creators.supabase_repository import SupabaseCreatorRepo
 from features.messages.models import Message, MessageCreateRequest
 from features.messages.service import MessageService
 from features.messages.supabase_repository import SupabaseMessageRepo
-from interface.dependencies import ActorContext, get_current_actor
 from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/messages", tags=["messages"])

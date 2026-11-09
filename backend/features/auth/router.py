@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from application.services.auth import AuthService
-from domain.models.auth import (
+from features.auth.models import (
     AuthSession,
     BrandLoginRequest,
     BrandSignupRequest,
     CreatorLoginRequest,
     CreatorSignupRequest,
 )
+from features.auth.service import AuthService
 from features.brands.supabase_repository import (
     SupabaseBrandMemberRepo,
     SupabaseBrandRepo,

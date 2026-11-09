@@ -23,9 +23,8 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from application.services.auth import AuthService
-from domain.models.auth import BrandSignupRequest, CreatorSignupRequest
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.auth import AuthService, BrandSignupRequest, CreatorSignupRequest
 from features.brands.supabase_repository import (
     SupabaseBrandMemberRepo,
     SupabaseBrandRepo,

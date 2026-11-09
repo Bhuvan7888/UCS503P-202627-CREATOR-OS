@@ -3,6 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.auth.dependencies import (
+    ActorContext,
+    get_current_actor,
+    get_current_brand,
+)
 from features.deliverables.models import (
     Deliverable,
     DeliverableCreateRequest,
@@ -10,7 +15,6 @@ from features.deliverables.models import (
 )
 from features.deliverables.service import DeliverableService
 from features.deliverables.supabase_repository import SupabaseDeliverableRepo
-from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 from shared.supabase_client import get_supabase_client
 

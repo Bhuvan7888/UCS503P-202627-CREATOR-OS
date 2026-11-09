@@ -13,6 +13,7 @@ client = TestClient(app)
 async def test_negotiation_counter_offer_409():
     from datetime import datetime
 
+    from features.auth.dependencies import ActorContext, get_current_actor
     from features.deals import Deal
     from features.negotiation import (
         ChecklistState,
@@ -20,7 +21,6 @@ async def test_negotiation_counter_offer_409():
         NegotiationSession,
     )
     from features.negotiation.router import get_negotiation_service
-    from interface.dependencies import ActorContext, get_current_actor
     from tests.fakes.fake_repos import (
         FakeActivityLogRepo,
         FakeDealRepo,

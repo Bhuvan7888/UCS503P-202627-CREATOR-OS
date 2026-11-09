@@ -14,9 +14,9 @@ async def test_payment_mark_paid_400():
     from datetime import datetime
     from decimal import Decimal
 
+    from features.auth.dependencies import ActorContext, get_current_brand
     from features.payments import Payment, PaymentService
     from features.payments.router import get_payment_service
-    from interface.dependencies import ActorContext, get_current_brand
     from tests.fakes.fake_repos import FakeActivityLogRepo, FakePaymentRepo
 
     repo = FakePaymentRepo()

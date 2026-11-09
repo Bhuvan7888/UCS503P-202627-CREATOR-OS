@@ -2,8 +2,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from domain.models.auth import LinkBrandRequest
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.auth import LinkBrandRequest
+from features.auth.dependencies import (
+    ActorContext,
+    get_current_actor,
+    get_current_brand,
+)
 from features.brands import Brand
 from features.brands.supabase_repository import SupabaseBrandRepo
 from features.creators.models import (
@@ -18,7 +23,6 @@ from features.creators.supabase_repository import (
     SupabaseCreatorRepo,
     SupabaseGrowthSnapshotRepo,
 )
-from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from shared.errors import ValidationError
 from shared.supabase_client import get_supabase_client
 

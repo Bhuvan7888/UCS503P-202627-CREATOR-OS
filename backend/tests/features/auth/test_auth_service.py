@@ -3,8 +3,8 @@ from uuid import uuid4
 
 import pytest
 
-from application.services.auth import AuthService
-from domain.models.auth import (
+from features.auth import (
+    AuthService,
     BrandLoginRequest,
     BrandSignupRequest,
     CreatorSignupRequest,
