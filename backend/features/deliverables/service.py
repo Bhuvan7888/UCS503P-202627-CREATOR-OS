@@ -11,8 +11,22 @@ from features.deliverables.repository import DeliverableRepo
 from features.deliverables.rules import is_valid_deliverable_transition
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 
-_CREATOR_ALLOWED_STATUSES = {"pending", "in_production", "editing", "submitted", "revision_requested"}
-_BRAND_ALLOWED_STATUSES = {"pending", "in_production", "editing", "submitted", "approved", "revision_requested", "rejected"}
+_CREATOR_ALLOWED_STATUSES = {
+    "pending",
+    "in_production",
+    "editing",
+    "submitted",
+    "revision_requested",
+}
+_BRAND_ALLOWED_STATUSES = {
+    "pending",
+    "in_production",
+    "editing",
+    "submitted",
+    "approved",
+    "revision_requested",
+    "rejected",
+}
 
 
 class DeliverableService:
@@ -21,11 +35,7 @@ class DeliverableService:
         self.activity_log_repo = activity_log_repo
 
     async def create_deliverable(
-        self,
-        request: DeliverableCreateRequest,
-        brand_id: UUID,
-        actor_id: UUID,
-        actor_type: str
+        self, request: DeliverableCreateRequest, brand_id: UUID, actor_id: UUID, actor_type: str
     ) -> Deliverable:
         deliverable = Deliverable(
             id=uuid4(),
@@ -37,10 +47,10 @@ class DeliverableService:
             previous_status=None,
             file_path=None,
             created_at=datetime.now(UTC),
-            updated_at=datetime.now(UTC)
+            updated_at=datetime.now(UTC),
         )
         created = await self.deliverable_repo.create(deliverable)
-        
+
         log = ActivityLog(
             id=uuid4(),
             brand_id=brand_id,
@@ -49,16 +59,20 @@ class DeliverableService:
             actor_label=str(actor_id),
             action="deliverable_created",
             metadata={"deliverable_id": str(created.id), "title": created.title},
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         await self.activity_log_repo.create(log)
-        
+
         return created
 
-    async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[Deliverable]:
+    async def list_for_brand(
+        self, brand_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Deliverable]:
         return await self.deliverable_repo.list_for_brand(brand_id, limit, offset)
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[Deliverable]:
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Deliverable]:
         return await self.deliverable_repo.list_for_creator(creator_id, limit, offset)
 
     async def update_status(
@@ -88,7 +102,10 @@ class DeliverableService:
             raise InvalidStatusTransition("Deliverable", deliverable.status, request.status)
 
         new_previous_status = deliverable.previous_status
-        if deliverable.status in ("in_production", "revision_requested") and request.status in ("editing", "submitted"):
+        if deliverable.status in ("in_production", "revision_requested") and request.status in (
+            "editing",
+            "submitted",
+        ):
             new_previous_status = deliverable.status
         elif deliverable.status == "pending" and request.status in ("in_production", "editing"):
             new_previous_status = "pending"
@@ -98,7 +115,7 @@ class DeliverableService:
         updated = await self.deliverable_repo.update_status(
             deliverable_id, request.status, previous_status=new_previous_status
         )
-        
+
         log = ActivityLog(
             id=uuid4(),
             brand_id=brand_id,
@@ -107,13 +124,13 @@ class DeliverableService:
             actor_label=str(actor_id),
             action="deliverable_status_updated",
             metadata={
-                "deliverable_id": str(deliverable.id), 
-                "from_status": deliverable.status, 
+                "deliverable_id": str(deliverable.id),
+                "from_status": deliverable.status,
                 "to_status": request.status,
-                "note": request.note
+                "note": request.note,
             },
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         await self.activity_log_repo.create(log)
-        
+
         return updated

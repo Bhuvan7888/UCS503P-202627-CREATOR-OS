@@ -21,11 +21,11 @@ async def test_deliverable_valid_transition():
     deliverable_repo = FakeDeliverableRepo()
     activity_log_repo = FakeActivityLogRepo()
     service = DeliverableService(deliverable_repo, activity_log_repo)
-    
+
     brand_id = uuid4()
     deal_id = uuid4()
     actor_id = uuid4()
-    
+
     # Create deliverable
     req_create = DeliverableCreateRequest(deal_id=deal_id, title="Test", description="Desc")
     created = await service.create_deliverable(req_create, brand_id, actor_id, "creator")
@@ -34,7 +34,9 @@ async def test_deliverable_valid_transition():
     # Walk the full production pipeline — the creator drives their own progress
     for status in ("in_production", "editing", "submitted"):
         req_update = DeliverableStatusUpdateRequest(status=status, note="Here it is")
-        updated = await service.update_status(created.id, req_update, actor_id, "creator", brand_id, deal_id, actor_id)
+        updated = await service.update_status(
+            created.id, req_update, actor_id, "creator", brand_id, deal_id, actor_id
+        )
         assert updated.status == status
 
     # Assert activity logs (1 for create, 3 for the status updates)
@@ -46,7 +48,9 @@ async def test_deliverable_valid_transition():
 
     # Approving is the brand's call, not the creator's
     approve_req = DeliverableStatusUpdateRequest(status="approved")
-    approved = await service.update_status(created.id, approve_req, brand_id, "brand", brand_id, deal_id)
+    approved = await service.update_status(
+        created.id, approve_req, brand_id, "brand", brand_id, deal_id
+    )
     assert approved.status == "approved"
 
 
@@ -62,14 +66,25 @@ async def test_deliverable_status_role_rules():
 
     # The brand may set any status (including production progress) since the status-dropdown change
     moved = await service.update_status(
-        created.id, DeliverableStatusUpdateRequest(status="in_production"), brand_id, "brand", brand_id, deal_id
+        created.id,
+        DeliverableStatusUpdateRequest(status="in_production"),
+        brand_id,
+        "brand",
+        brand_id,
+        deal_id,
     )
     assert moved.status == "in_production"
 
     # Creator can't approve their own submission — that's the brand's review call
     with pytest.raises(PermissionDeniedError):
         await service.update_status(
-            created.id, DeliverableStatusUpdateRequest(status="approved"), creator_id, "creator", brand_id, deal_id, creator_id
+            created.id,
+            DeliverableStatusUpdateRequest(status="approved"),
+            creator_id,
+            "creator",
+            brand_id,
+            deal_id,
+            creator_id,
         )
 
 
@@ -84,39 +99,134 @@ async def test_deliverable_revert_transitions():
     created = await service.create_deliverable(req_create, brand_id, creator_id, "creator")
 
     # Advance to in_production -> editing -> submitted
-    await service.update_status(created.id, DeliverableStatusUpdateRequest(status="in_production"), creator_id, "creator", brand_id, deal_id, creator_id)
-    await service.update_status(created.id, DeliverableStatusUpdateRequest(status="editing"), creator_id, "creator", brand_id, deal_id, creator_id)
-    s = await service.update_status(created.id, DeliverableStatusUpdateRequest(status="submitted"), creator_id, "creator", brand_id, deal_id, creator_id)
+    await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="in_production"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
+    await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="editing"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
+    s = await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="submitted"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
     assert s.status == "submitted"
     assert s.previous_status == "in_production"
 
     # Revert submitted -> editing
-    r1 = await service.update_status(created.id, DeliverableStatusUpdateRequest(status="editing"), creator_id, "creator", brand_id, deal_id, creator_id)
+    r1 = await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="editing"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
     assert r1.status == "editing"
     assert r1.previous_status == "in_production"
 
     # Revert editing -> in_production
-    r2 = await service.update_status(created.id, DeliverableStatusUpdateRequest(status="in_production"), creator_id, "creator", brand_id, deal_id, creator_id)
+    r2 = await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="in_production"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
     assert r2.status == "in_production"
     assert r2.previous_status is None
 
     # Revert in_production -> pending
-    r3 = await service.update_status(created.id, DeliverableStatusUpdateRequest(status="pending"), creator_id, "creator", brand_id, deal_id, creator_id)
+    r3 = await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="pending"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
     assert r3.status == "pending"
     assert r3.previous_status is None
 
     # Brand requests revision loop
-    await service.update_status(created.id, DeliverableStatusUpdateRequest(status="in_production"), creator_id, "creator", brand_id, deal_id, creator_id)
-    await service.update_status(created.id, DeliverableStatusUpdateRequest(status="editing"), creator_id, "creator", brand_id, deal_id, creator_id)
-    await service.update_status(created.id, DeliverableStatusUpdateRequest(status="submitted"), creator_id, "creator", brand_id, deal_id, creator_id)
-    rev = await service.update_status(created.id, DeliverableStatusUpdateRequest(status="revision_requested"), brand_id, "brand", brand_id, deal_id)
+    await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="in_production"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
+    await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="editing"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
+    await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="submitted"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
+    rev = await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="revision_requested"),
+        brand_id,
+        "brand",
+        brand_id,
+        deal_id,
+    )
     assert rev.status == "revision_requested"
 
     # Creator mistakenly marks editing, then reverts back to revision_requested
-    m = await service.update_status(created.id, DeliverableStatusUpdateRequest(status="editing"), creator_id, "creator", brand_id, deal_id, creator_id)
+    m = await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="editing"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
     assert m.status == "editing"
     assert m.previous_status == "revision_requested"
 
-    rev_back = await service.update_status(created.id, DeliverableStatusUpdateRequest(status="revision_requested"), creator_id, "creator", brand_id, deal_id, creator_id)
+    rev_back = await service.update_status(
+        created.id,
+        DeliverableStatusUpdateRequest(status="revision_requested"),
+        creator_id,
+        "creator",
+        brand_id,
+        deal_id,
+        creator_id,
+    )
     assert rev_back.status == "revision_requested"
     assert rev_back.previous_status is None

@@ -45,7 +45,10 @@ def fallback_segment_clauses(text: str) -> list[ClauseInput]:
 
     def classify_clause(clause_text: str) -> str:
         lower = clause_text.lower()
-        if any(k in lower for k in ["usage right", "licens", "perpetu", "intellectual property", "ownership"]):
+        if any(
+            k in lower
+            for k in ["usage right", "licens", "perpetu", "intellectual property", "ownership"]
+        ):
             return "usage_rights"
         if any(k in lower for k in ["revision", "edit", "reshoot"]):
             return "revisions"
@@ -66,6 +69,7 @@ def fallback_segment_clauses(text: str) -> list[ClauseInput]:
         clauses.append(ClauseInput(clause_type=classify_clause(part), raw_text=part))
     return clauses
 
+
 def get_contract_service() -> ContractService:
     client = get_supabase_client(service_role=True)
     return ContractService(
@@ -73,8 +77,10 @@ def get_contract_service() -> ContractService:
         activity_log_repo=SupabaseActivityLogRepo(client),
     )
 
+
 def get_storage() -> SupabaseStorage:
     return SupabaseStorage(get_supabase_client(service_role=True))
+
 
 @router.get("/contracts/sample-contract-pdf")
 async def download_sample_contract_pdf():
@@ -84,6 +90,7 @@ async def download_sample_contract_pdf():
         media_type="application/pdf",
         headers={"Content-Disposition": 'attachment; filename="creator_os_sample_contract.pdf"'},
     )
+
 
 @router.post("/contracts/upload-sample", response_model=Contract)
 async def upload_sample_contract(
@@ -106,7 +113,9 @@ async def upload_sample_contract(
         deal_id = deals[0].id if deals else UUID(int=1)
         path = f"contracts/{deal_id}/sample-contract.pdf"
         uploaded_path = await storage.upload_file("creator-os-assets", path, pdf_bytes)
-        contract = await service.create_contract(deal_id, uploaded_path, actor.brand_id, actor.actor_id, actor.actor_type)
+        contract = await service.create_contract(
+            deal_id, uploaded_path, actor.brand_id, actor.actor_id, actor.actor_type
+        )
 
     if text.strip():
         contract = await service.save_raw_text(contract.id, text)
@@ -115,6 +124,7 @@ async def upload_sample_contract(
             await ci_service.scan_contract(contract.id, clauses)
 
     return contract
+
 
 @router.post("/deals/{deal_id}/contracts", response_model=Contract)
 async def upload_contract(
@@ -128,7 +138,9 @@ async def upload_contract(
     content = await file.read()
     path = f"contracts/{deal_id}/{file.filename}"
     uploaded_path = await storage.upload_file("creator-os-assets", path, content)
-    contract = await service.create_contract(deal_id, uploaded_path, actor.brand_id, actor.actor_id, actor.actor_type)
+    contract = await service.create_contract(
+        deal_id, uploaded_path, actor.brand_id, actor.actor_id, actor.actor_type
+    )
 
     # Automatic contract scan: best-effort. A PDF with no extractable text
     # (scanned image) or an LLM/segmentation failure must never fail the upload —
@@ -143,7 +155,9 @@ async def upload_contract(
             try:
                 clauses = await GeminiAdapter().segment_clauses(text)
             except Exception:
-                logger.warning("Gemini clause segmentation unavailable; using fallback segmentation")
+                logger.warning(
+                    "Gemini clause segmentation unavailable; using fallback segmentation"
+                )
             if not clauses:
                 clauses = fallback_segment_clauses(text)
             if clauses:
@@ -152,6 +166,7 @@ async def upload_contract(
         logger.exception("Automatic contract scan failed for contract %s", contract.id)
 
     return contract
+
 
 @router.post("/creators/me/contracts", response_model=Contract)
 async def upload_personal_contract(
@@ -178,7 +193,9 @@ async def upload_personal_contract(
             try:
                 clauses = await GeminiAdapter().segment_clauses(text)
             except Exception:
-                logger.warning("Gemini clause segmentation unavailable; using fallback segmentation")
+                logger.warning(
+                    "Gemini clause segmentation unavailable; using fallback segmentation"
+                )
             if not clauses:
                 clauses = fallback_segment_clauses(text)
             if clauses:
@@ -188,47 +205,53 @@ async def upload_personal_contract(
 
     return contract
 
+
 @router.get("/contracts/{id}", response_model=Contract)
 async def get_contract(
     id: UUID,
     actor: ActorContext = Depends(get_current_actor),
-    service: ContractService = Depends(get_contract_service)
+    service: ContractService = Depends(get_contract_service),
 ):
     contract = await service.get(id)
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
     return contract
 
+
 @router.get("/contracts", response_model=list[Contract])
 async def list_contracts(
     limit: int = 50,
     offset: int = 0,
     actor: ActorContext = Depends(get_current_actor),
-    service: ContractService = Depends(get_contract_service)
+    service: ContractService = Depends(get_contract_service),
 ):
     limit = clamp_page_size(limit)
     if actor.actor_type == "creator":
         return await service.list_for_creator(actor.creator_id, limit, offset)
     return await service.list_for_brand(actor.brand_id, limit, offset)
 
+
 @router.patch("/contracts/{id}/creator-status", response_model=Contract)
 async def update_contract_creator_status(
     id: UUID,
     request: ContractCreatorStatusUpdateRequest,
     actor: ActorContext = Depends(get_current_actor),
-    service: ContractService = Depends(get_contract_service)
+    service: ContractService = Depends(get_contract_service),
 ):
     if not actor.creator_id:
         raise HTTPException(status_code=403, detail="This action requires a creator account")
     with map_errors({PermissionDeniedError: 403}):
         return await service.update_creator_status(id, request.creator_status, actor.creator_id)
 
+
 @router.patch("/contracts/{id}/status", response_model=Contract)
 async def update_contract_status(
     id: UUID,
     request: ContractStatusUpdateRequest,
     actor: ActorContext = Depends(get_current_brand),
-    service: ContractService = Depends(get_contract_service)
+    service: ContractService = Depends(get_contract_service),
 ):
     with map_errors({InvalidStatusTransition: 400, ValueError: 404}):
-        return await service.update_status(id, request, actor.actor_id, actor.actor_type, actor.brand_id)
+        return await service.update_status(
+            id, request, actor.actor_id, actor.actor_type, actor.brand_id
+        )

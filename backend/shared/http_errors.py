@@ -34,5 +34,7 @@ def map_errors(
         message = str(exc)
         status = (by_message or {}).get(message)
         if status is None:
-            status = next(code for exc_type, code in status_by_type.items() if isinstance(exc, exc_type))
+            status = next(
+                code for exc_type, code in status_by_type.items() if isinstance(exc, exc_type)
+            )
         raise HTTPException(status_code=status, detail=message) from exc

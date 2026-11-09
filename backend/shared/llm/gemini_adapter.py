@@ -17,9 +17,10 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+
 class GeminiAdapter(LLMPort):
     def __init__(self):
-        # We assume the API key is passed directly or read from env by the SDK, 
+        # We assume the API key is passed directly or read from env by the SDK,
         # but the prompt says to read it from config:
         # "Add GEMINI_API_KEY, GEMINI_MODEL_FLASH... to backend/config.py Settings"
         self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
@@ -31,7 +32,7 @@ class GeminiAdapter(LLMPort):
             f"The flagged reason is: {flag_reason}\n\n"
             f"Clause text: {clause_text}"
         )
-        
+
         # Depending on whether google-genai supports async natively in this version:
         # For this prototype we will use the async client if available or wrap it.
         # google.genai has `aio` for async: `client.aio.models.generate_content`
@@ -39,7 +40,7 @@ class GeminiAdapter(LLMPort):
             model=self.model,
             contents=prompt,
         )
-        
+
         return response.text
 
     async def draft_script(self, session: NegotiationSession, kind: str) -> str:
@@ -50,7 +51,7 @@ class GeminiAdapter(LLMPort):
             "All amounts are in Indian Rupees — always write them with the ₹ symbol exactly "
             "as given above, never $ or USD."
         )
-        
+
         response = await self.client.aio.models.generate_content(
             # Flash, not Pro — a short, grounded advisory reply doesn't need
             # Pro's extra reasoning depth, and Flash's free-tier quota is much
@@ -62,19 +63,20 @@ class GeminiAdapter(LLMPort):
         return response.text
 
     async def suggest_negotiation_move(
-        self, session: NegotiationSession, brand_name: str, conversation_text: str,
+        self,
+        session: NegotiationSession,
+        brand_name: str,
+        conversation_text: str,
         history: list[tuple[str, str]],
     ) -> str:
         history_block = ""
         if history:
-            turns = "\n\n".join(
-                f"Creator asked: {q}\nYou replied: {a}" for q, a in history
-            )
+            turns = "\n\n".join(f"Creator asked: {q}\nYou replied: {a}" for q, a in history)
             history_block = f"Earlier in this same negotiation chat:\n{turns}\n\n"
 
         prompt = (
             "You are a negotiation advisor chatting with a creator about their brand deal. "
-            f"The brand they named is \"{brand_name}\". Before advising, use search to identify which "
+            f'The brand they named is "{brand_name}". Before advising, use search to identify which '
             "real company this is — their industry, size, and the kind of creator campaigns they run — "
             "so your advice is grounded in who you're actually negotiating with. If this is the first "
             "message in the chat and you cannot confidently identify the brand from the name alone "
@@ -102,7 +104,9 @@ class GeminiAdapter(LLMPort):
             # higher, which is what actually keeps this chat feature available.
             model=settings.GEMINI_MODEL_FLASH,
             contents=prompt,
-            config=types.GenerateContentConfig(tools=[types.Tool(google_search=types.GoogleSearch())]),
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())]
+            ),
         )
 
         return response.text

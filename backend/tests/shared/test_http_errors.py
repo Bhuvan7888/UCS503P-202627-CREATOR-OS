@@ -13,17 +13,26 @@ def test_maps_listed_exception_to_status_with_message():
 
 
 def test_first_matching_type_wins_like_ordered_except_clauses():
-    with pytest.raises(HTTPException) as info, map_errors({InvalidStatusTransition: 400, Exception: 500}):
+    with (
+        pytest.raises(HTTPException) as info,
+        map_errors({InvalidStatusTransition: 400, Exception: 500}),
+    ):
         raise InvalidStatusTransition("Payment", "paid", "refunded")
     assert info.value.status_code == 400
 
 
 def test_by_message_overrides_status():
     mapping = {ValueError: 400}
-    with pytest.raises(HTTPException) as info, map_errors(mapping, by_message={"Payment not found": 404}):
+    with (
+        pytest.raises(HTTPException) as info,
+        map_errors(mapping, by_message={"Payment not found": 404}),
+    ):
         raise ValueError("Payment not found")
     assert info.value.status_code == 404
-    with pytest.raises(HTTPException) as info, map_errors(mapping, by_message={"Payment not found": 404}):
+    with (
+        pytest.raises(HTTPException) as info,
+        map_errors(mapping, by_message={"Payment not found": 404}),
+    ):
         raise ValueError("Amount must be positive")
     assert info.value.status_code == 400
 

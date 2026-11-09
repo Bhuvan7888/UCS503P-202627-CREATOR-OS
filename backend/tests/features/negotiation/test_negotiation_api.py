@@ -35,16 +35,29 @@ async def test_negotiation_counter_offer_409():
     session_id = uuid4()
     deal_id = uuid4()
     deal_repo.data[deal_id] = Deal(
-        id=deal_id, brand_id=uuid4(), creator_id=uuid4(), campaign_name="Test Campaign",
-        contact_email="a@a.com", status="negotiating",
-        created_at=datetime.now(UTC), updated_at=datetime.now(UTC)
+        id=deal_id,
+        brand_id=uuid4(),
+        creator_id=uuid4(),
+        campaign_name="Test Campaign",
+        contact_email="a@a.com",
+        status="negotiating",
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
     # Incomplete checklist
     repo.data[session_id] = NegotiationSession(
-        id=session_id, deal_id=deal_id, status="active",
-        views_per_week=10000, niche_cpm=50.0, follower_tier_multiplier=1.0, engagement_rate_adjustment=0.0,
-        base_rate=500.0, range_low=425.0, range_high=675.0,
-        checklist=ChecklistState(), created_at=datetime.now(UTC)
+        id=session_id,
+        deal_id=deal_id,
+        status="active",
+        views_per_week=10000,
+        niche_cpm=50.0,
+        follower_tier_multiplier=1.0,
+        engagement_rate_adjustment=0.0,
+        base_rate=500.0,
+        range_low=425.0,
+        range_high=675.0,
+        checklist=ChecklistState(),
+        created_at=datetime.now(UTC),
     )
 
     app.dependency_overrides[get_negotiation_service] = lambda: service
@@ -61,8 +74,10 @@ async def test_negotiation_counter_offer_409():
 
     # Complete the checklist
     repo.data[session_id].checklist = ChecklistState(
-        usage_rights_duration_set=True, exclusivity_scope_set=True,
-        revision_limit_set=True, payment_timeline_set=True
+        usage_rights_duration_set=True,
+        exclusivity_scope_set=True,
+        revision_limit_set=True,
+        payment_timeline_set=True,
     )
 
     res2 = client.post(

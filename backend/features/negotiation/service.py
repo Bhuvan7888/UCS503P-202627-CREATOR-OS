@@ -30,8 +30,11 @@ DEFAULT_WEEKLY_GROWTH_RATE = 0.05
 
 class NegotiationService:
     def __init__(
-        self, session_repo: NegotiationSessionRepo, activity_log_repo: ActivityLogRepo,
-        llm_port: LLMPort | None = None, deal_repo: DealRepo | None = None,
+        self,
+        session_repo: NegotiationSessionRepo,
+        activity_log_repo: ActivityLogRepo,
+        llm_port: LLMPort | None = None,
+        deal_repo: DealRepo | None = None,
         growth_snapshot_repo: GrowthSnapshotRepo | None = None,
         conversation_repo: NegotiationConversationRepo | None = None,
     ):
@@ -47,10 +50,10 @@ class NegotiationService:
             request.views_per_week,
             request.niche_cpm,
             request.follower_tier_multiplier,
-            request.engagement_rate_adjustment
+            request.engagement_rate_adjustment,
         )
         low, high = calculate_range(base_rate)
-        
+
         session = NegotiationSession(
             id=uuid4(),
             deal_id=request.deal_id,
@@ -63,7 +66,7 @@ class NegotiationService:
             range_low=low,
             range_high=high,
             checklist=ChecklistState(),
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         return await self.session_repo.create(session)
 
@@ -87,13 +90,19 @@ class NegotiationService:
 
         return calculate_forecast(session.base_rate, rate, weeks)
 
-    async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[NegotiationSession]:
+    async def list_for_brand(
+        self, brand_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[NegotiationSession]:
         return await self.session_repo.list_for_brand(brand_id, limit, offset)
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[NegotiationSession]:
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[NegotiationSession]:
         return await self.session_repo.list_for_creator(creator_id, limit, offset)
 
-    async def update_checklist(self, session_id: UUID, checklist: ChecklistState) -> NegotiationSession:
+    async def update_checklist(
+        self, session_id: UUID, checklist: ChecklistState
+    ) -> NegotiationSession:
         return await self.session_repo.update_checklist(session_id, checklist)
 
     async def create_counter_offer(
@@ -122,7 +131,7 @@ class NegotiationService:
             amount=amount,
             message=message,
             sender=actor_type,
-            sent_at=datetime.now(UTC)
+            sent_at=datetime.now(UTC),
         )
         saved = await self.session_repo.save_offer(offer)
 
@@ -134,7 +143,7 @@ class NegotiationService:
             actor_label=str(actor_id),
             action="counter_offer_sent",
             metadata={"amount": amount, "message": message, "sender": offer.sender},
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         await self.activity_log_repo.create(log)
 
@@ -148,13 +157,20 @@ class NegotiationService:
             raise ValueError("Session not found")
 
         prior = await self.conversation_repo.list_for_session(session_id)
-        history = [(c.conversation_text, c.ai_suggestion) for c in reversed(prior) if c.ai_suggestion]
+        history = [
+            (c.conversation_text, c.ai_suggestion) for c in reversed(prior) if c.ai_suggestion
+        ]
 
-        suggestion = await self.llm_port.suggest_negotiation_move(session, brand_name, conversation_text, history)
+        suggestion = await self.llm_port.suggest_negotiation_move(
+            session, brand_name, conversation_text, history
+        )
 
         conversation = NegotiationConversation(
-            id=uuid4(), session_id=session_id, brand_name=brand_name,
-            conversation_text=conversation_text, ai_suggestion=suggestion,
+            id=uuid4(),
+            session_id=session_id,
+            brand_name=brand_name,
+            conversation_text=conversation_text,
+            ai_suggestion=suggestion,
             created_at=datetime.now(UTC),
         )
         return await self.conversation_repo.create(conversation)
@@ -167,12 +183,13 @@ class NegotiationService:
 
     async def generate_script(self, session_id: UUID, kind: str) -> str:
         from features.negotiation.rules import generate_script as pure_generate_script
+
         session = await self.session_repo.get(session_id)
         if not session:
             raise ValueError("Session not found")
         if not checklist_is_complete(session.checklist):
             raise ValueError("Checklist is not complete")
-        return pure_generate_script(kind, session) # type: ignore
+        return pure_generate_script(kind, session)  # type: ignore
 
     async def generate_script_llm(self, session_id: UUID, kind: str) -> str:
         session = await self.session_repo.get(session_id)
@@ -180,9 +197,8 @@ class NegotiationService:
             raise ValueError("Session not found")
         if not checklist_is_complete(session.checklist):
             raise ValueError("Checklist is not complete")
-            
+
         if not self.llm_port:
             raise ValueError("LLM port not configured")
-            
-        return await self.llm_port.draft_script(session, kind)
 
+        return await self.llm_port.draft_script(session, kind)

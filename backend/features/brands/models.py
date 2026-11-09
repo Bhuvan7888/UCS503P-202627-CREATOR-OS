@@ -13,6 +13,7 @@ class Brand(BaseModel):
     pan_number: str | None = None
     created_at: datetime
 
+
 class BrandMember(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID

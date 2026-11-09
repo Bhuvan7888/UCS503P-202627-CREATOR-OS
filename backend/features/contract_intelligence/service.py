@@ -31,7 +31,7 @@ class ContractIntelligenceService:
         contract_repo: ContractRepo,
         email_port: EmailPort,
         clause_explanation_service: ClauseExplanationService,
-        compliance_email: str = "compliance@creatoros.com"
+        compliance_email: str = "compliance@creatoros.com",
     ):
         self.clause_card_repo = clause_card_repo
         self.escalation_repo = escalation_repo
@@ -46,7 +46,9 @@ class ContractIntelligenceService:
             raise NotFoundError("Contract not found.")
         return await self.clause_card_repo.list_for_contract(contract_id)
 
-    async def scan_contract(self, contract_id: UUID, clauses: list[ClauseInput]) -> list[ClauseCardOut]:
+    async def scan_contract(
+        self, contract_id: UUID, clauses: list[ClauseInput]
+    ) -> list[ClauseCardOut]:
         contract = await self.contract_repo.get(contract_id)
         if not contract:
             raise NotFoundError("Contract not found.")
@@ -68,14 +70,18 @@ class ContractIntelligenceService:
                 raw_text=clause.raw_text,
                 flag=result.flag,
                 flag_reason_code=result.reason_code,
-                llm_explanation=DEFAULT_FLAG_EXPLANATIONS.get(result.reason_code) if result.flag == "red" else None,
-                created_at=now
+                llm_explanation=DEFAULT_FLAG_EXPLANATIONS.get(result.reason_code)
+                if result.flag == "red"
+                else None,
+                created_at=now,
             )
             cards.append(await self.clause_card_repo.create(card))
 
         if any_red:
             new_status = open_case(contract.status)
-            previous = contract.previous_status if contract.status == "pending_review" else contract.status
+            previous = (
+                contract.previous_status if contract.status == "pending_review" else contract.status
+            )
             await self.contract_repo.update_status_and_previous(contract_id, new_status, previous)
 
         return cards
@@ -95,28 +101,30 @@ class ContractIntelligenceService:
 
         # Logic to open case
         new_status = open_case(contract.status)
-        
+
         # We must save previous status when moving to pending_review
         # If it's already pending_review, we don't overwrite previous_status
-        previous = contract.previous_status if contract.status == "pending_review" else contract.status
-        
+        previous = (
+            contract.previous_status if contract.status == "pending_review" else contract.status
+        )
+
         await self.contract_repo.update_status_and_previous(contract_id, new_status, previous)
 
         now = datetime.now(UTC)
-        
+
         escalation = EscalationOut(
-            id=UUID(int=0), # Repo generates
+            id=UUID(int=0),  # Repo generates
             contract_id=contract_id,
             clause_card_id=card.id,
             status="open",
             opened_at=now,
             resolved_at=None,
             resolved_by=None,
-            resolution_note=None
+            resolution_note=None,
         )
-        
+
         escalation_record = await self.escalation_repo.create(escalation)
-        
+
         # Send notification email to compliance
         try:
             subject = f"Action Required: Escalation #{escalation_record.id}"
@@ -127,14 +135,16 @@ class ContractIntelligenceService:
             # But the prompt said: "unit test with a fake EmailPort asserting exactly one send per escalation open".
             # So the call happens.
             pass
-            
+
         return escalation_record
 
-    async def resolve_escalation(self, escalation_id: UUID, req: ResolveEscalationRequest, user_id: UUID) -> EscalationOut:
+    async def resolve_escalation(
+        self, escalation_id: UUID, req: ResolveEscalationRequest, user_id: UUID
+    ) -> EscalationOut:
         escalation = await self.escalation_repo.get(escalation_id)
         if not escalation:
             raise NotFoundError("Escalation not found.")
-            
+
         if escalation.status != "open":
             raise ValidationError("Escalation is already resolved.")
 
@@ -144,10 +154,10 @@ class ContractIntelligenceService:
 
         # Logic to resolve
         new_contract_status = resolve(req.decision, contract.previous_status or "draft")
-        
+
         # If we transition back to prior status, we clear previous_status (or leave it, but it doesn't matter much)
         # We should probably clear it to keep state clean, but the logic functions just dictate the next state.
-        
+
         # Update contract
         await self.contract_repo.update_status(contract.id, new_contract_status)
 

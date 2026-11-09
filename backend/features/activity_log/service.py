@@ -16,7 +16,7 @@ class ActivityLogService:
         actor_label: str,
         action: str,
         metadata: dict,
-        deal_id: str | None = None
+        deal_id: str | None = None,
     ) -> ActivityLog:
         log = ActivityLog(
             id=uuid4(),
@@ -26,15 +26,21 @@ class ActivityLogService:
             actor_label=actor_label,
             action=action,
             metadata=metadata,
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         return await self.repo.create(log)
 
-    async def get_logs_for_deal(self, deal_id: str, limit: int = 50, offset: int = 0) -> list[ActivityLog]:
+    async def get_logs_for_deal(
+        self, deal_id: str, limit: int = 50, offset: int = 0
+    ) -> list[ActivityLog]:
         return await self.repo.list_for_deal(deal_id, limit, offset)
 
-    async def get_logs_for_brand(self, brand_id: str, limit: int = 50, offset: int = 0) -> list[ActivityLog]:
+    async def get_logs_for_brand(
+        self, brand_id: str, limit: int = 50, offset: int = 0
+    ) -> list[ActivityLog]:
         return await self.repo.list_for_brand(brand_id, limit, offset)
 
-    async def get_logs_for_creator(self, creator_id: str, limit: int = 50, offset: int = 0) -> list[ActivityLog]:
+    async def get_logs_for_creator(
+        self, creator_id: str, limit: int = 50, offset: int = 0
+    ) -> list[ActivityLog]:
         return await self.repo.list_for_creator(creator_id, limit, offset)

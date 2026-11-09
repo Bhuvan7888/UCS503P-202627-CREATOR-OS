@@ -14,6 +14,7 @@ from tests.fakes.fake_repos import FakeBrandMemberRepo, FakeBrandRepo, FakeCreat
 
 class StubAdminAuth:
     """Minimal stand-in for supabase Client.auth, enough to unit-test AuthService."""
+
     def __init__(self):
         self.users_by_email: dict[str, str] = {}
         self.deleted_user_ids: set[str] = set()
@@ -21,10 +22,12 @@ class StubAdminAuth:
     class _Admin:
         def __init__(self, outer):
             self.outer = outer
+
         def create_user(self, payload):
             user_id = str(uuid4())
             self.outer.users_by_email[payload["email"]] = user_id
             return SimpleNamespace(user=SimpleNamespace(id=user_id))
+
         def delete_user(self, user_id):
             self.outer.deleted_user_ids.add(str(user_id))
             self.outer.users_by_email = {
@@ -67,7 +70,11 @@ async def test_brand_signup_creates_brand_and_member():
 @pytest.mark.asyncio
 async def test_brand_login_after_signup():
     client = StubClient()
-    brand_repo, member_repo, creator_repo = FakeBrandRepo(), FakeBrandMemberRepo(), FakeCreatorRepo()
+    brand_repo, member_repo, creator_repo = (
+        FakeBrandRepo(),
+        FakeBrandMemberRepo(),
+        FakeCreatorRepo(),
+    )
     service = AuthService(client, brand_repo, member_repo, creator_repo)
 
     await service.brand_signup(
@@ -82,13 +89,22 @@ async def test_brand_login_after_signup():
 @pytest.mark.asyncio
 async def test_creator_signup_creates_standalone_creator():
     client = StubClient()
-    brand_repo, member_repo, creator_repo = FakeBrandRepo(), FakeBrandMemberRepo(), FakeCreatorRepo()
+    brand_repo, member_repo, creator_repo = (
+        FakeBrandRepo(),
+        FakeBrandMemberRepo(),
+        FakeCreatorRepo(),
+    )
     service = AuthService(client, brand_repo, member_repo, creator_repo)
 
     creator_session = await service.creator_signup(
         CreatorSignupRequest(
-            display_name="Meera", instagram_handle="@meera", niche="beauty", follower_tier="50k-100k",
-            followers_count=75000, email="c@c.com", password="password123",
+            display_name="Meera",
+            instagram_handle="@meera",
+            niche="beauty",
+            follower_tier="50k-100k",
+            followers_count=75000,
+            email="c@c.com",
+            password="password123",
         )
     )
 
@@ -115,8 +131,13 @@ async def test_creator_signup_rolls_back_auth_user_on_failure():
     with pytest.raises(RuntimeError):
         await service.creator_signup(
             CreatorSignupRequest(
-                display_name="Meera", instagram_handle="@meera", niche="beauty", follower_tier="50k-100k",
-                followers_count=75000, email="c@c.com", password="password123",
+                display_name="Meera",
+                instagram_handle="@meera",
+                niche="beauty",
+                follower_tier="50k-100k",
+                followers_count=75000,
+                email="c@c.com",
+                password="password123",
             )
         )
 

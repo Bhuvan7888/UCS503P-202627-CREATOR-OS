@@ -10,6 +10,7 @@ RED_FLAG_PATTERNS = [
     (r"\b(exclusivity beyond|perpetual exclusivity)\b", "extended_exclusivity"),
 ]
 
+
 def detect_flags(clause_text: str, clause_type: str) -> list[FlagResult]:
     """
     Scans the given clause text for fixed red-flag patterns.
@@ -17,14 +18,14 @@ def detect_flags(clause_text: str, clause_type: str) -> list[FlagResult]:
     """
     results = []
     lower_text = clause_text.lower()
-    
+
     for pattern, reason_code in RED_FLAG_PATTERNS:
         # Simple regex matching for now. The requirement is strict rule-based matching.
         # Replacing non-word characters in case we want flexibility, but strict regex matching fits the bill.
         # "whitelisting/boosting" contains a slash, so \b might behave differently depending on engine.
         if re.search(pattern, lower_text):
             results.append(FlagResult(flag="red", reason_code=reason_code))
-            
+
     return results
 
 

@@ -28,28 +28,34 @@ def get_payment_service() -> PaymentService:
         activity_log_repo=SupabaseActivityLogRepo(client),
     )
 
+
 router = APIRouter(prefix="/payments", tags=["Payments"])
+
 
 @router.post("", response_model=Payment)
 async def create_payment(
     request: PaymentCreateRequest,
     deal_id: UUID,
     actor: ActorContext = Depends(get_current_brand),
-    service: PaymentService = Depends(get_payment_service)
+    service: PaymentService = Depends(get_payment_service),
 ):
-    return await service.create_payment(request, actor.brand_id, actor.actor_id, actor.actor_type, deal_id)
+    return await service.create_payment(
+        request, actor.brand_id, actor.actor_id, actor.actor_type, deal_id
+    )
+
 
 @router.get("", response_model=list[Payment])
 async def list_payments(
     limit: int = 50,
     offset: int = 0,
     actor: ActorContext = Depends(get_current_actor),
-    service: PaymentService = Depends(get_payment_service)
+    service: PaymentService = Depends(get_payment_service),
 ):
     limit = clamp_page_size(limit)
     if actor.actor_type == "creator":
         return await service.list_for_creator(actor.creator_id, limit, offset)
     return await service.list_for_brand(actor.brand_id, limit, offset)
+
 
 @router.patch("/{contract_id}/mark-paid", response_model=Payment)
 async def mark_paid(
@@ -57,10 +63,15 @@ async def mark_paid(
     payment_id: UUID,
     deal_id: UUID,
     actor: ActorContext = Depends(get_current_brand),
-    service: PaymentService = Depends(get_payment_service)
+    service: PaymentService = Depends(get_payment_service),
 ):
-    with map_errors({ValueError: 400, InvalidStatusTransition: 400}, by_message={"Payment not found": 404}):
-        return await service.mark_paid(payment_id, actor.brand_id, actor.actor_id, actor.actor_type, deal_id)
+    with map_errors(
+        {ValueError: 400, InvalidStatusTransition: 400}, by_message={"Payment not found": 404}
+    ):
+        return await service.mark_paid(
+            payment_id, actor.brand_id, actor.actor_id, actor.actor_type, deal_id
+        )
+
 
 @router.patch("/{contract_id}/status", response_model=Payment)
 async def update_payment_status(
@@ -69,9 +80,11 @@ async def update_payment_status(
     payment_id: UUID,
     deal_id: UUID,
     actor: ActorContext = Depends(get_current_brand),
-    service: PaymentService = Depends(get_payment_service)
+    service: PaymentService = Depends(get_payment_service),
 ):
-    with map_errors({ValueError: 400, InvalidStatusTransition: 400}, by_message={"Payment not found": 404}):
+    with map_errors(
+        {ValueError: 400, InvalidStatusTransition: 400}, by_message={"Payment not found": 404}
+    ):
         return await service.update_status(
             payment_id, request.status, actor.brand_id, actor.actor_id, actor.actor_type, deal_id
         )

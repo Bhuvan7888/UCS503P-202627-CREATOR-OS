@@ -64,8 +64,12 @@ class DemoCreatorRepo:
     async def get_by_user_id(self, user_id: UUID) -> Creator | None:
         return next((c for c in self.data.values() if c.user_id == user_id), None)
 
-    async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[Creator]:
-        matches = [self.data[cid] for cid, bid in self.links if bid == brand_id and cid in self.data]
+    async def list_for_brand(
+        self, brand_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Creator]:
+        matches = [
+            self.data[cid] for cid, bid in self.links if bid == brand_id and cid in self.data
+        ]
         return matches[offset : offset + limit]
 
     async def link_brand(self, creator_id: UUID, brand_id: UUID) -> None:
@@ -75,7 +79,9 @@ class DemoCreatorRepo:
         return (creator_id, brand_id) in self.links
 
     async def list_linked_brands(self, creator_id: UUID) -> list[Brand]:
-        return [self.brands[bid] for cid, bid in self.links if cid == creator_id and bid in self.brands]
+        return [
+            self.brands[bid] for cid, bid in self.links if cid == creator_id and bid in self.brands
+        ]
 
     async def update_profile(
         self,
@@ -122,7 +128,9 @@ class DemoDealRepo:
         matches.sort(key=lambda d: d.created_at, reverse=True)
         return matches[offset : offset + limit]
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[Deal]:
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Deal]:
         matches = [d for d in self.data.values() if d.creator_id == creator_id]
         matches.sort(key=lambda d: d.created_at, reverse=True)
         return matches[offset : offset + limit]
@@ -155,14 +163,19 @@ class DemoContractRepo:
     async def get(self, id: UUID) -> Contract | None:
         return self.data.get(id)
 
-    async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[Contract]:
+    async def list_for_brand(
+        self, brand_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Contract]:
         matches = [c for c in self.data.values() if self.deal_brand_map.get(c.deal_id) == brand_id]
         matches.sort(key=lambda c: c.created_at, reverse=True)
         return matches[offset : offset + limit]
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[Contract]:
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Contract]:
         matches = [
-            c for c in self.data.values()
+            c
+            for c in self.data.values()
             if c.creator_id == creator_id
             or self.deal_creator_map.get(c.deal_id) == creator_id
             or self.contract_creator_map.get(c.id) == creator_id
@@ -176,7 +189,9 @@ class DemoContractRepo:
         contract.updated_at = datetime.now(UTC)
         return contract
 
-    async def update_status_and_previous(self, id: UUID, status: str, previous_status: str | None) -> Contract:
+    async def update_status_and_previous(
+        self, id: UUID, status: str, previous_status: str | None
+    ) -> Contract:
         contract = self.data[id]
         contract.status = status
         contract.previous_status = previous_status
@@ -208,14 +223,20 @@ class DemoDeliverableRepo:
     async def get(self, id: UUID) -> Deliverable | None:
         return self.data.get(id)
 
-    async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[Deliverable]:
+    async def list_for_brand(
+        self, brand_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Deliverable]:
         matches = [d for d in self.data.values() if self.deal_brand_map.get(d.deal_id) == brand_id]
         return matches[offset : offset + limit]
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[Deliverable]:
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Deliverable]:
         return list(self.data.values())[offset : offset + limit]
 
-    async def update_status(self, id: UUID, status: str, previous_status: str | None = None) -> Deliverable:
+    async def update_status(
+        self, id: UUID, status: str, previous_status: str | None = None
+    ) -> Deliverable:
         d = self.data[id]
         d.status = status
         d.previous_status = previous_status
@@ -234,17 +255,23 @@ class DemoActivityLogRepo:
     async def get(self, id: UUID) -> ActivityLog | None:
         return self.data.get(id)
 
-    async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[ActivityLog]:
+    async def list_for_brand(
+        self, brand_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[ActivityLog]:
         matches = [l for l in self.data.values() if l.brand_id == brand_id]
         matches.sort(key=lambda l: l.created_at, reverse=True)
         return matches[offset : offset + limit]
 
-    async def list_for_deal(self, deal_id: UUID, limit: int = 50, offset: int = 0) -> list[ActivityLog]:
+    async def list_for_deal(
+        self, deal_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[ActivityLog]:
         matches = [l for l in self.data.values() if l.deal_id == deal_id]
         matches.sort(key=lambda l: l.created_at, reverse=True)
         return matches[offset : offset + limit]
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[ActivityLog]:
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[ActivityLog]:
         return []
 
 
@@ -261,13 +288,23 @@ class DemoPaymentRepo:
     async def get(self, id: UUID) -> Payment | None:
         return self.data.get(id)
 
-    async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[Payment]:
-        matches = [p for p in self.data.values() if self.contract_brand_map.get(p.contract_id) == brand_id]
+    async def list_for_brand(
+        self, brand_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Payment]:
+        matches = [
+            p for p in self.data.values() if self.contract_brand_map.get(p.contract_id) == brand_id
+        ]
         matches.sort(key=lambda p: p.created_at, reverse=True)
         return matches[offset : offset + limit]
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[Payment]:
-        matches = [p for p in self.data.values() if self.contract_creator_map.get(p.contract_id) == creator_id]
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Payment]:
+        matches = [
+            p
+            for p in self.data.values()
+            if self.contract_creator_map.get(p.contract_id) == creator_id
+        ]
         matches.sort(key=lambda p: p.created_at, reverse=True)
         return matches[offset : offset + limit]
 
@@ -304,12 +341,18 @@ class DemoNegotiationSessionRepo:
     async def get(self, id: UUID) -> NegotiationSession | None:
         return self.data.get(id)
 
-    async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[NegotiationSession]:
+    async def list_for_brand(
+        self, brand_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[NegotiationSession]:
         matches = [s for s in self.data.values() if self.deal_brand_map.get(s.deal_id) == brand_id]
         return matches[offset : offset + limit]
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[NegotiationSession]:
-        matches = [s for s in self.data.values() if self.deal_creator_map.get(s.deal_id) == creator_id]
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[NegotiationSession]:
+        matches = [
+            s for s in self.data.values() if self.deal_creator_map.get(s.deal_id) == creator_id
+        ]
         return matches[offset : offset + limit]
 
     async def update_checklist(self, id: UUID, checklist: ChecklistState) -> NegotiationSession:
@@ -350,7 +393,9 @@ class DemoMessageRepo:
         self.data[msg.id] = msg
         return msg
 
-    async def list_for_thread(self, brand_id: UUID, creator_id: UUID, limit: int = 200) -> list[Message]:
+    async def list_for_thread(
+        self, brand_id: UUID, creator_id: UUID, limit: int = 200
+    ) -> list[Message]:
         matches = [
             m for m in self.data.values() if m.brand_id == brand_id and m.creator_id == creator_id
         ]
@@ -373,7 +418,11 @@ class DemoMessageRepo:
             if getattr(m, "read_at", None) is None:
                 if actor_type == "brand" and m.brand_id == actor_id and m.sender_type == "creator":
                     count += 1
-                elif actor_type == "creator" and m.creator_id == actor_id and m.sender_type == "brand":
+                elif (
+                    actor_type == "creator"
+                    and m.creator_id == actor_id
+                    and m.sender_type == "brand"
+                ):
                     count += 1
         return count
 
@@ -384,7 +433,11 @@ class DemoMessageRepo:
                 if actor_type == "brand" and m.brand_id == actor_id and m.sender_type == "creator":
                     cid = str(m.creator_id)
                     counts[cid] = counts.get(cid, 0) + 1
-                elif actor_type == "creator" and m.creator_id == actor_id and m.sender_type == "brand":
+                elif (
+                    actor_type == "creator"
+                    and m.creator_id == actor_id
+                    and m.sender_type == "brand"
+                ):
                     bid = str(m.brand_id)
                     counts[bid] = counts.get(bid, 0) + 1
         return counts
@@ -426,7 +479,9 @@ class DemoClauseCardRepo:
         return card
 
     async def list_for_brand(self, brand_id: UUID) -> list[ClauseCardOut]:
-        return [c for c in self.data.values() if self.contract_brand_map.get(c.contract_id) == brand_id]
+        return [
+            c for c in self.data.values() if self.contract_brand_map.get(c.contract_id) == brand_id
+        ]
 
 
 class DemoEscalationRepo:
@@ -442,7 +497,9 @@ class DemoEscalationRepo:
         return self.data.get(id)
 
     async def get_open_for_contract(self, contract_id: UUID) -> list[EscalationOut]:
-        return [e for e in self.data.values() if e.contract_id == contract_id and e.status == "open"]
+        return [
+            e for e in self.data.values() if e.contract_id == contract_id and e.status == "open"
+        ]
 
     async def resolve(self, id: UUID, status: str, resolved_by: UUID, note: str) -> EscalationOut:
         esc = self.data[id]
@@ -453,4 +510,6 @@ class DemoEscalationRepo:
         return esc
 
     async def list_for_brand(self, brand_id: UUID) -> list[EscalationOut]:
-        return [e for e in self.data.values() if self.contract_brand_map.get(e.contract_id) == brand_id]
+        return [
+            e for e in self.data.values() if self.contract_brand_map.get(e.contract_id) == brand_id
+        ]

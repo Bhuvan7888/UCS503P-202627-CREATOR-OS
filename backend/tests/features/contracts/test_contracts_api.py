@@ -31,7 +31,7 @@ def _contract_api_setup():
         revision_limit=None,
         payment_timeline_days=None,
         created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC)
+        updated_at=datetime.now(UTC),
     )
     repo.data[contract_id] = contract
 

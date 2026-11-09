@@ -43,7 +43,9 @@ def resolve_demo_actor(token: str):
     # Check brand tokens
     for info in DEMO_BRANDS.values():
         if token in (f"demo-token-brand-{info['brand_id']}", str(info["user_id"])):
-            return ActorContext(user_id=info["user_id"], actor_type="brand", brand_id=info["brand_id"])
+            return ActorContext(
+                user_id=info["user_id"], actor_type="brand", brand_id=info["brand_id"]
+            )
 
     # Check creator tokens
     for info in DEMO_CREATORS.values():

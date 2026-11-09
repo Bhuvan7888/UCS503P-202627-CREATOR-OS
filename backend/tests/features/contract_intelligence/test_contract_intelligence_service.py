@@ -28,13 +28,9 @@ async def test_escalate_clause_sends_email():
     escalation_repo = FakeEscalationRepo()
     llm_port = FakeLLMPort()
     clause_explanation_service = ClauseExplanationService(llm_port, clause_repo)
-    
+
     service = ContractIntelligenceService(
-        clause_repo,
-        escalation_repo,
-        contract_repo,
-        email_port,
-        clause_explanation_service
+        clause_repo, escalation_repo, contract_repo, email_port, clause_explanation_service
     )
 
     contract_id = uuid4()
@@ -43,7 +39,7 @@ async def test_escalate_clause_sends_email():
         deal_id=uuid4(),
         status="uploaded",
         created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC)
+        updated_at=datetime.now(UTC),
     )
 
     card_id = uuid4()
@@ -54,14 +50,14 @@ async def test_escalate_clause_sends_email():
         raw_text="perpetual usage rights",
         flag="red",
         flag_reason_code="perpetual_usage_rights",
-        created_at=datetime.now(UTC)
+        created_at=datetime.now(UTC),
     )
     await clause_repo.create(card)
 
     req = EscalateRequest(clause_card_id=card_id, reason_code="perpetual_usage_rights")
-    
+
     escalation = await service.escalate_clause(contract_id, req)
-    
+
     assert escalation.status == "open"
     assert len(email_port.sent_emails) == 1
     assert email_port.sent_emails[0]["to"] == "compliance@creatoros.com"
@@ -87,13 +83,19 @@ async def test_scan_contract_flags_red_clause_and_locks_review():
         deal_id=uuid4(),
         status="uploaded",
         created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC)
+        updated_at=datetime.now(UTC),
     )
 
-    cards = await service.scan_contract(contract_id, [
-        ClauseInput(clause_type="usage_rights", raw_text="This grants perpetual usage rights to the brand."),
-        ClauseInput(clause_type="payment", raw_text="Payment due within 15 days of delivery."),
-    ])
+    cards = await service.scan_contract(
+        contract_id,
+        [
+            ClauseInput(
+                clause_type="usage_rights",
+                raw_text="This grants perpetual usage rights to the brand.",
+            ),
+            ClauseInput(clause_type="payment", raw_text="Payment due within 15 days of delivery."),
+        ],
+    )
 
     assert len(cards) == 2
     assert cards[0].flag == "red"
@@ -124,12 +126,15 @@ async def test_scan_contract_no_red_flags_leaves_status_unchanged():
         deal_id=uuid4(),
         status="uploaded",
         created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC)
+        updated_at=datetime.now(UTC),
     )
 
-    await service.scan_contract(contract_id, [
-        ClauseInput(clause_type="payment", raw_text="Payment due within 15 days of delivery."),
-    ])
+    await service.scan_contract(
+        contract_id,
+        [
+            ClauseInput(clause_type="payment", raw_text="Payment due within 15 days of delivery."),
+        ],
+    )
 
     updated_contract = await contract_repo.get(contract_id)
     assert updated_contract.status == "uploaded"

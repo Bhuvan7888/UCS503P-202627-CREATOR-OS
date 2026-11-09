@@ -18,12 +18,22 @@ class Deliverable(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
 class DeliverableCreateRequest(BaseModel):
     deal_id: UUID
     contract_id: UUID | None = None
     title: str
     description: str
 
+
 class DeliverableStatusUpdateRequest(BaseModel):
-    status: Literal['pending', 'in_production', 'editing', 'submitted', 'approved', 'rejected', 'revision_requested']
+    status: Literal[
+        "pending",
+        "in_production",
+        "editing",
+        "submitted",
+        "approved",
+        "rejected",
+        "revision_requested",
+    ]
     note: str | None = None

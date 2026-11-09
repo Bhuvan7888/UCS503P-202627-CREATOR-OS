@@ -23,7 +23,9 @@ async def test_create_contract_persists_and_logs():
     brand_id = uuid4()
     actor_id = uuid4()
 
-    contract = await service.create_contract(deal_id, "contracts/abc.pdf", brand_id, actor_id, "brand")
+    contract = await service.create_contract(
+        deal_id, "contracts/abc.pdf", brand_id, actor_id, "brand"
+    )
 
     assert contract.deal_id == deal_id
     assert contract.status == "draft"
@@ -40,7 +42,7 @@ async def test_contract_valid_transition():
     contract_repo = FakeContractRepo()
     activity_log_repo = FakeActivityLogRepo()
     service = ContractService(contract_repo, activity_log_repo)
-    
+
     brand_id = uuid4()
     contract_id = uuid4()
     contract = Contract(
@@ -53,16 +55,16 @@ async def test_contract_valid_transition():
         revision_limit=None,
         payment_timeline_days=None,
         created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC)
+        updated_at=datetime.now(UTC),
     )
     contract_repo.data[contract_id] = contract
-    
+
     actor_id = uuid4()
     req = ContractStatusUpdateRequest(status="uploaded")
     updated = await service.update_status(contract_id, req, actor_id, "brand", brand_id)
-    
+
     assert updated.status == "uploaded"
-    
+
     # Assert activity log
     logs = await activity_log_repo.list_for_deal(contract.deal_id)
     assert len(logs) == 1
@@ -77,7 +79,7 @@ async def test_contract_rejected_transition_raises_and_does_not_log(monkeypatch)
     contract_repo = FakeContractRepo()
     activity_log_repo = FakeActivityLogRepo()
     service = ContractService(contract_repo, activity_log_repo)
-    
+
     brand_id = uuid4()
     contract_id = uuid4()
     contract = Contract(
@@ -90,14 +92,14 @@ async def test_contract_rejected_transition_raises_and_does_not_log(monkeypatch)
         revision_limit=None,
         payment_timeline_days=None,
         created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC)
+        updated_at=datetime.now(UTC),
     )
     contract_repo.data[contract_id] = contract
-    
+
     req = ContractStatusUpdateRequest(status="signed")
     with pytest.raises(InvalidStatusTransition):
         await service.update_status(contract_id, req, uuid4(), "brand", brand_id)
-    
+
     # Assert NO activity log
     logs = await activity_log_repo.list_for_deal(contract.deal_id)
     assert len(logs) == 0

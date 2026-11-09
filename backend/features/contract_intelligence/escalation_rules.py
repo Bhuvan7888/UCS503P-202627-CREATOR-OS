@@ -9,16 +9,16 @@ def open_case(contract_status: str) -> str:
     """
     if contract_status == "void":
         raise InvalidStatusTransition("Contract", "void", "pending_review")
-        
+
     return "pending_review"
 
 
-def resolve(decision: Literal['cleared', 'amended', 'rejected'], previous_status: str) -> str:
+def resolve(decision: Literal["cleared", "amended", "rejected"], previous_status: str) -> str:
     """
     Resolves an escalation case based on the decision.
     - 'cleared' restores the previous status.
     - 'rejected' voids the contract.
-    - 'amended' can either restore the previous status or keep it in pending_review 
+    - 'amended' can either restore the previous status or keep it in pending_review
       (assuming it restores the previous status and relies on other processes to update clauses).
     """
     if decision == "rejected":
@@ -27,5 +27,5 @@ def resolve(decision: Literal['cleared', 'amended', 'rejected'], previous_status
         if not previous_status:
             return "draft"  # Fallback if no previous status exists
         return previous_status
-        
+
     raise InvalidStatusTransition("Escalation", decision, "resolved")

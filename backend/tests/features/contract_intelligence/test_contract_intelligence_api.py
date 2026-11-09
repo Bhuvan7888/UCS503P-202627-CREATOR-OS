@@ -25,6 +25,7 @@ from tests.fakes.fake_repos import (
 
 client = TestClient(app)
 
+
 @pytest.fixture
 def fake_ci_service():
     contract_repo = FakeContractRepo()
@@ -33,7 +34,7 @@ def fake_ci_service():
     email_port = FakeEmailPort()
     llm_port = FakeLLMPort(explanation="LLM explanation output.")
     clause_explanation_service = ClauseExplanationService(llm_port, clause_card_repo)
-    
+
     # Seed data
     contract_id = uuid4()
     contract = Contract(
@@ -47,7 +48,7 @@ def fake_ci_service():
         revision_limit=None,
         payment_timeline_days=None,
         created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC)
+        updated_at=datetime.now(UTC),
     )
     contract_repo.data[contract_id] = contract
 
@@ -60,18 +61,15 @@ def fake_ci_service():
         flag="red",
         flag_reason_code="perpetual_usage_rights",
         llm_explanation=None,
-        created_at=datetime.now(UTC)
+        created_at=datetime.now(UTC),
     )
     clause_card_repo.data[card_id] = card
 
     service = ContractIntelligenceService(
-        clause_card_repo, 
-        escalation_repo, 
-        contract_repo,
-        email_port,
-        clause_explanation_service
+        clause_card_repo, escalation_repo, contract_repo, email_port, clause_explanation_service
     )
     return service, contract_id, card_id, email_port
+
 
 @pytest.mark.asyncio
 async def test_escalation_lifecycle(fake_ci_service):
@@ -91,15 +89,15 @@ async def test_escalation_lifecycle(fake_ci_service):
     assert clauses[0]["llm_explanation"] is None
 
     # 2. Escalate clause
-    res = client.post(f"/contracts/{contract_id}/escalate", json={
-        "clause_card_id": str(card_id),
-        "reason_code": "perpetual_usage_rights"
-    })
+    res = client.post(
+        f"/contracts/{contract_id}/escalate",
+        json={"clause_card_id": str(card_id), "reason_code": "perpetual_usage_rights"},
+    )
     assert res.status_code == 200
     escalation = res.json()
     escalation_id = escalation["id"]
     assert escalation["status"] == "open"
-    
+
     # Verify contract status changed to pending_review and previous_status is uploaded
     contract = service.contract_repo.data[contract_id]
     assert contract.status == "pending_review"
@@ -114,10 +112,10 @@ async def test_escalation_lifecycle(fake_ci_service):
     assert email_port.sent_emails[0]["to"] == "compliance@creatoros.com"
 
     # 3. Resolve escalation (cleared)
-    res = client.post(f"/escalations/{escalation_id}/resolve", json={
-        "decision": "cleared",
-        "note": "Discussed with brand, they agree to 30 days."
-    })
+    res = client.post(
+        f"/escalations/{escalation_id}/resolve",
+        json={"decision": "cleared", "note": "Discussed with brand, they agree to 30 days."},
+    )
     assert res.status_code == 200
     resolved = res.json()
     assert resolved["status"] == "cleared"

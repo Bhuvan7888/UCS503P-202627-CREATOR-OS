@@ -7,6 +7,7 @@ def test_compute_percentiles_insufficient_data():
     assert result.insufficient_data is True
     assert result.p25_rate is None
 
+
 def test_compute_percentiles_sufficient_data():
     rates = [100.0, 200.0, 300.0, 400.0, 500.0]
     result = compute_percentiles(rates)

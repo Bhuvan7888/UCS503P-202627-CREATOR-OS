@@ -18,7 +18,10 @@ def is_demo_mode() -> bool:
         return not _supabase_available
 
     # If keys are dummy, treat as demo mode immediately
-    if "dummy" in settings.SUPABASE_ANON_KEY.lower() or "dummy" in settings.SUPABASE_SERVICE_ROLE_KEY.lower():
+    if (
+        "dummy" in settings.SUPABASE_ANON_KEY.lower()
+        or "dummy" in settings.SUPABASE_SERVICE_ROLE_KEY.lower()
+    ):
         _supabase_available = False
         return True
 

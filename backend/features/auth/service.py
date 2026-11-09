@@ -33,7 +33,7 @@ class AuthService:
         try:
             res = await asyncio.to_thread(
                 self.admin_client.auth.admin.create_user,
-                {"email": email, "password": password, "email_confirm": True}
+                {"email": email, "password": password, "email_confirm": True},
             )
         except Exception as e:
             raise ValidationError(f"Could not create account: {e}") from e
@@ -42,8 +42,7 @@ class AuthService:
     async def _sign_in(self, email: str, password: str):
         try:
             return await asyncio.to_thread(
-                self.admin_client.auth.sign_in_with_password,
-                {"email": email, "password": password}
+                self.admin_client.auth.sign_in_with_password, {"email": email, "password": password}
             )
         except Exception as e:
             raise ValidationError(f"Invalid email or password: {e}") from e
@@ -63,15 +62,21 @@ class AuthService:
 
         try:
             brand = Brand(
-                id=uuid4(), name=request.brand_name, description=request.description,
-                gst_number=None, pan_number=None,
-                created_at=datetime.now(UTC)
+                id=uuid4(),
+                name=request.brand_name,
+                description=request.description,
+                gst_number=None,
+                pan_number=None,
+                created_at=datetime.now(UTC),
             )
             created_brand = await self.brand_repo.create(brand)
 
             member = BrandMember(
-                id=uuid4(), brand_id=created_brand.id, user_id=user_id, role="owner",
-                created_at=datetime.now(UTC)
+                id=uuid4(),
+                brand_id=created_brand.id,
+                user_id=user_id,
+                role="owner",
+                created_at=datetime.now(UTC),
             )
             await self.brand_member_repo.create(member)
         except Exception:
@@ -109,11 +114,16 @@ class AuthService:
 
         try:
             creator = Creator(
-                id=uuid4(), brand_id=None, user_id=user_id,
-                display_name=request.display_name, instagram_handle=request.instagram_handle,
-                niche=request.niche, follower_tier=request.follower_tier,
-                followers_count=request.followers_count, engagement_rate=request.engagement_rate,
-                created_at=datetime.now(UTC)
+                id=uuid4(),
+                brand_id=None,
+                user_id=user_id,
+                display_name=request.display_name,
+                instagram_handle=request.instagram_handle,
+                niche=request.niche,
+                follower_tier=request.follower_tier,
+                followers_count=request.followers_count,
+                engagement_rate=request.engagement_rate,
+                created_at=datetime.now(UTC),
             )
             created = await self.creator_repo.create(creator)
         except Exception:

@@ -1,4 +1,3 @@
-
 from features.demo_mode.in_memory_repositories import (
     DemoActivityLogRepo,
     DemoBrandMemberRepo,

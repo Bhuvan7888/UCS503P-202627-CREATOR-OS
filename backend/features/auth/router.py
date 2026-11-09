@@ -35,19 +35,16 @@ def get_auth_service() -> AuthService:
 
 @router.post("/brand/signup", response_model=AuthSession)
 async def brand_signup(
-    request: BrandSignupRequest,
-    service: AuthService = Depends(get_auth_service)
+    request: BrandSignupRequest, service: AuthService = Depends(get_auth_service)
 ):
     with map_errors({ValidationError: 400}):
         return await service.brand_signup(request)
 
 
 @router.post("/brand/login", response_model=AuthSession)
-async def brand_login(
-    request: BrandLoginRequest,
-    service: AuthService = Depends(get_auth_service)
-):
+async def brand_login(request: BrandLoginRequest, service: AuthService = Depends(get_auth_service)):
     from features.demo_mode import authenticate_demo_brand
+
     demo_session = authenticate_demo_brand(request.email)
     if demo_session:
         return demo_session
@@ -58,8 +55,7 @@ async def brand_login(
 
 @router.post("/creator/signup", response_model=AuthSession)
 async def creator_signup(
-    request: CreatorSignupRequest,
-    service: AuthService = Depends(get_auth_service)
+    request: CreatorSignupRequest, service: AuthService = Depends(get_auth_service)
 ):
     with map_errors({ValidationError: 400}):
         return await service.creator_signup(request)
@@ -67,10 +63,10 @@ async def creator_signup(
 
 @router.post("/creator/login", response_model=AuthSession)
 async def creator_login(
-    request: CreatorLoginRequest,
-    service: AuthService = Depends(get_auth_service)
+    request: CreatorLoginRequest, service: AuthService = Depends(get_auth_service)
 ):
     from features.demo_mode import authenticate_demo_creator
+
     demo_session = authenticate_demo_creator(request.email)
     if demo_session:
         return demo_session

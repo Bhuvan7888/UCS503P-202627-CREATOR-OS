@@ -27,8 +27,10 @@ class Payment(BaseModel):
         """What the creator actually receives — the brand's invoice shows amount_inr, the creator's shows this."""
         return self.amount_inr - self.platform_fee_inr
 
+
 class PaymentStatusUpdateRequest(BaseModel):
-    status: Literal['pending', 'paid', 'overdue']
+    status: Literal["pending", "paid", "overdue"]
+
 
 class PaymentCreateRequest(BaseModel):
     contract_id: UUID

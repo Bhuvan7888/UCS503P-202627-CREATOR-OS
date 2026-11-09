@@ -18,6 +18,7 @@ class Creator(BaseModel):
     avg_views_per_week: int | None = None
     created_at: datetime
 
+
 class CreatorOnboardRequest(BaseModel):
     display_name: str
     instagram_handle: str
@@ -27,10 +28,12 @@ class CreatorOnboardRequest(BaseModel):
     engagement_rate: float | None = None
     avg_views_per_week: int | None = None
 
+
 class CreatorProfileUpdateRequest(BaseModel):
     followers_count: int
     engagement_rate: float
     avg_views_per_week: int | None = None
+
 
 class GrowthSnapshot(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -40,6 +43,7 @@ class GrowthSnapshot(BaseModel):
     followers_count: int
     engagement_rate: float | None = None
     created_at: datetime
+
 
 class GrowthSnapshotCreateRequest(BaseModel):
     recorded_at: date

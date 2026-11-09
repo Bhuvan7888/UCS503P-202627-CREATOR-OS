@@ -19,15 +19,15 @@ def get_contract_intelligence_service() -> ContractIntelligenceService:
     clause_card_repo = SupabaseClauseCardRepo(client)
     escalation_repo = SupabaseEscalationRepo(client)
     contract_repo = SupabaseContractRepo(client)
-    
+
     email_port = ResendAdapter()
     llm_port = GeminiAdapter()
     clause_explanation_service = ClauseExplanationService(llm_port, clause_card_repo)
-    
+
     return ContractIntelligenceService(
         clause_card_repo=clause_card_repo,
         escalation_repo=escalation_repo,
         contract_repo=contract_repo,
         email_port=email_port,
-        clause_explanation_service=clause_explanation_service
+        clause_explanation_service=clause_explanation_service,
     )

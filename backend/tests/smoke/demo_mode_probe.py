@@ -67,7 +67,11 @@ def collect(client: TestClient) -> dict[str, Any]:
         if sessions:
             sid = sessions[0]["id"]
             for leaf in ("rate-range", "forecast", "conversations", "offers"):
-                get(f"{role} GET /negotiation/sessions/{{id}}/{leaf}", f"/negotiation/sessions/{sid}/{leaf}", h)
+                get(
+                    f"{role} GET /negotiation/sessions/{{id}}/{leaf}",
+                    f"/negotiation/sessions/{sid}/{leaf}",
+                    h,
+                )
         if deals:
             result[f"{role} deals statuses"] = sorted(d["status"] for d in deals)
 

@@ -22,7 +22,7 @@ class PaymentService:
         brand_id: UUID,
         actor_id: UUID,
         actor_type: str,
-        deal_id: UUID
+        deal_id: UUID,
     ) -> Payment:
         payment = Payment(
             id=uuid4(),
@@ -34,7 +34,7 @@ class PaymentService:
             invoice_number=create_invoice(),
             due_date=request.due_date,
             created_at=datetime.now(UTC),
-            updated_at=datetime.now(UTC)
+            updated_at=datetime.now(UTC),
         )
         created = await self.payment_repo.create(payment)
 
@@ -46,38 +46,37 @@ class PaymentService:
             actor_label=str(actor_id),
             action="payment_created",
             metadata={"payment_id": str(created.id), "invoice_number": created.invoice_number},
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         await self.activity_log_repo.create(log)
 
         return created
 
-    async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[Payment]:
+    async def list_for_brand(
+        self, brand_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Payment]:
         return await self.payment_repo.list_for_brand(brand_id, limit, offset)
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[Payment]:
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Payment]:
         return await self.payment_repo.list_for_creator(creator_id, limit, offset)
 
     async def mark_paid(
-        self, 
-        payment_id: UUID, 
-        brand_id: UUID, 
-        actor_id: UUID, 
-        actor_type: str,
-        deal_id: UUID
+        self, payment_id: UUID, brand_id: UUID, actor_id: UUID, actor_type: str, deal_id: UUID
     ) -> Payment:
         payment = await self.payment_repo.get(payment_id)
         if not payment:
             raise ValueError("Payment not found")
-            
+
         validate_mark_paid(payment.status)
-        
+
         invoice_number = payment.invoice_number
         if not invoice_number:
             invoice_number = create_invoice()
-            
+
         updated = await self.payment_repo.mark_paid(payment_id, invoice_number)
-        
+
         log = ActivityLog(
             id=uuid4(),
             brand_id=brand_id,
@@ -86,7 +85,7 @@ class PaymentService:
             actor_label=str(actor_id),
             action="payment_marked_paid",
             metadata={"payment_id": str(payment.id), "invoice_number": invoice_number},
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         await self.activity_log_repo.create(log)
 
@@ -99,7 +98,7 @@ class PaymentService:
         brand_id: UUID,
         actor_id: UUID,
         actor_type: str,
-        deal_id: UUID
+        deal_id: UUID,
     ) -> Payment:
         payment = await self.payment_repo.get(payment_id)
         if not payment:
@@ -117,7 +116,7 @@ class PaymentService:
             actor_label=str(actor_id),
             action="payment_status_changed",
             metadata={"payment_id": str(payment.id), "status": status},
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         await self.activity_log_repo.create(log)
 

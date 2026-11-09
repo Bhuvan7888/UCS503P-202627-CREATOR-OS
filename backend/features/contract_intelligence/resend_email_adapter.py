@@ -8,6 +8,7 @@ from shared.config import settings
 
 logger = logging.getLogger(__name__)
 
+
 class ResendAdapter(EmailPort):
     def __init__(self):
         resend.api_key = settings.TRANSACTIONAL_EMAIL_API_KEY
@@ -21,7 +22,7 @@ class ResendAdapter(EmailPort):
             "subject": subject,
             "html": f"<p>{body}</p>",
         }
-        
+
         # Resend SDK is synchronous, so we run it in a threadpool to not block the event loop
         try:
             loop = asyncio.get_running_loop()

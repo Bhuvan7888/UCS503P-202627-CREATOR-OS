@@ -10,6 +10,7 @@ from shared.llm.llm_port import LLMPort
 
 logger = logging.getLogger(__name__)
 
+
 class ClauseExplanationService:
     def __init__(self, llm: LLMPort, clause_card_repo: ClauseCardRepo):
         self.llm = llm
@@ -20,7 +21,7 @@ class ClauseExplanationService:
         Orchestrates red_flag_engine and LLMPort to attach llm_explanation to a ClauseCardRepo row.
         """
         flags = detect_flags(card.raw_text, card.clause_type)
-        
+
         flag_status = "green"
         flag_reason = None
         if flags:
@@ -40,7 +41,7 @@ class ClauseExplanationService:
         card.flag = flag_status
         card.flag_reason_code = flag_reason
         card.llm_explanation = llm_explanation
-        
-        if hasattr(self.clause_card_repo, 'update'):
+
+        if hasattr(self.clause_card_repo, "update"):
             return await self.clause_card_repo.update(card)
         return card

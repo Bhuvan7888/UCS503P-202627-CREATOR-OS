@@ -60,6 +60,7 @@ async def get_current_actor(authorization: str | None = Header(default=None)) ->
     token = _extract_token(authorization)
 
     from features.demo_mode import resolve_demo_actor
+
     demo_actor = resolve_demo_actor(token)
     if demo_actor:
         return demo_actor
@@ -85,7 +86,9 @@ async def get_current_actor(authorization: str | None = Header(default=None)) ->
             user_id=user_id, actor_type="creator", brand_id=creator.brand_id, creator_id=creator.id
         )
     else:
-        raise HTTPException(status_code=403, detail="This account is not linked to a brand or creator profile")
+        raise HTTPException(
+            status_code=403, detail="This account is not linked to a brand or creator profile"
+        )
 
     _actor_cache[token] = (actor, time.monotonic() + _ACTOR_CACHE_TTL_SECONDS)
     return actor

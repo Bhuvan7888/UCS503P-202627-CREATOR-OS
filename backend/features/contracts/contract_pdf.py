@@ -53,36 +53,43 @@ ET"""
     stream.set_data(content)
     stream_ref = writer._add_object(stream)
 
-    font_dict = DictionaryObject({
-        NameObject('/Type'): NameObject('/Font'),
-        NameObject('/Subtype'): NameObject('/Type1'),
-        NameObject('/BaseFont'): NameObject('/Helvetica'),
-    })
+    font_dict = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+        }
+    )
     font_ref = writer._add_object(font_dict)
 
-    res_dict = DictionaryObject({
-        NameObject('/Font'): DictionaryObject({NameObject('/F1'): font_ref})
-    })
+    res_dict = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font_ref})}
+    )
 
-    page_dict = DictionaryObject({
-        NameObject('/Type'): NameObject('/Page'),
-        NameObject('/MediaBox'): ArrayObject([NumberObject(0), NumberObject(0), NumberObject(612), NumberObject(792)]),
-        NameObject('/Contents'): stream_ref,
-        NameObject('/Resources'): res_dict,
-    })
+    page_dict = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Page"),
+            NameObject("/MediaBox"): ArrayObject(
+                [NumberObject(0), NumberObject(0), NumberObject(612), NumberObject(792)]
+            ),
+            NameObject("/Contents"): stream_ref,
+            NameObject("/Resources"): res_dict,
+        }
+    )
     page_ref = writer._add_object(page_dict)
 
-    pages_dict = DictionaryObject({
-        NameObject('/Type'): NameObject('/Pages'),
-        NameObject('/Kids'): ArrayObject([page_ref]),
-        NameObject('/Count'): NumberObject(1),
-    })
+    pages_dict = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Pages"),
+            NameObject("/Kids"): ArrayObject([page_ref]),
+            NameObject("/Count"): NumberObject(1),
+        }
+    )
     pages_ref = writer._add_object(pages_dict)
-    page_dict[NameObject('/Parent')] = pages_ref
+    page_dict[NameObject("/Parent")] = pages_ref
 
-    writer._root_object[NameObject('/Pages')] = pages_ref
+    writer._root_object[NameObject("/Pages")] = pages_ref
 
     buf = io.BytesIO()
     writer.write(buf)
     return buf.getvalue()
-

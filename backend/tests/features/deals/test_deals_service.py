@@ -25,13 +25,11 @@ async def test_create_deal_persists_and_logs():
 
     deal = await service.create_deal(
         DealCreateRequest(
-            creator_id=creator_id,
-            campaign_name="Nykaa",
-            contact_email="brand@nykaa.com"
+            creator_id=creator_id, campaign_name="Nykaa", contact_email="brand@nykaa.com"
         ),
         brand_id,
         actor_id,
-        "brand"
+        "brand",
     )
 
     assert deal.brand_id == brand_id
@@ -54,11 +52,15 @@ async def test_list_for_brand_filters_by_brand():
 
     await service.create_deal(
         DealCreateRequest(creator_id=uuid4(), campaign_name="Nykaa", contact_email="a@a.com"),
-        brand_id, uuid4(), "brand"
+        brand_id,
+        uuid4(),
+        "brand",
     )
     await service.create_deal(
         DealCreateRequest(creator_id=uuid4(), campaign_name="boAt", contact_email="b@b.com"),
-        other_brand_id, uuid4(), "brand"
+        other_brand_id,
+        uuid4(),
+        "brand",
     )
 
     deals = await service.list_for_brand(brand_id)
@@ -75,7 +77,9 @@ async def test_update_status_rejects_non_owner():
     creator_id = uuid4()
     deal = await service.create_deal(
         DealCreateRequest(creator_id=creator_id, campaign_name="Nykaa", contact_email="a@a.com"),
-        brand_id, uuid4(), "brand"
+        brand_id,
+        uuid4(),
+        "brand",
     )
 
     with pytest.raises(PermissionDeniedError):
@@ -95,10 +99,14 @@ async def test_update_status_allows_owning_creator_and_logs():
     creator_id = uuid4()
     deal = await service.create_deal(
         DealCreateRequest(creator_id=creator_id, campaign_name="Nykaa", contact_email="a@a.com"),
-        brand_id, uuid4(), "brand"
+        brand_id,
+        uuid4(),
+        "brand",
     )
 
-    updated = await service.update_status(deal.id, "negotiating", uuid4(), "creator", None, creator_id)
+    updated = await service.update_status(
+        deal.id, "negotiating", uuid4(), "creator", None, creator_id
+    )
     assert updated.status == "negotiating"
 
     logs = await activity_log_repo.list_for_deal(deal.id)
@@ -115,17 +123,29 @@ async def test_weekly_completed_value_buckets_by_week():
     creator_id = uuid4()
     deal = await service.create_deal(
         DealCreateRequest(creator_id=creator_id, campaign_name="Nykaa", contact_email="a@a.com"),
-        uuid4(), uuid4(), "brand"
+        uuid4(),
+        uuid4(),
+        "brand",
     )
     deal_repo.data[deal.id].status = "completed"
     deal_repo.data[deal.id].updated_at = datetime.now(UTC)
 
-    await session_repo.create(NegotiationSession(
-        id=uuid4(), deal_id=deal.id, status="active",
-        views_per_week=10000, niche_cpm=50.0, follower_tier_multiplier=1.0, engagement_rate_adjustment=0.0,
-        base_rate=500000.0, range_low=425000.0, range_high=675000.0,
-        checklist=ChecklistState(), created_at=datetime.now(UTC)
-    ))
+    await session_repo.create(
+        NegotiationSession(
+            id=uuid4(),
+            deal_id=deal.id,
+            status="active",
+            views_per_week=10000,
+            niche_cpm=50.0,
+            follower_tier_multiplier=1.0,
+            engagement_rate_adjustment=0.0,
+            base_rate=500000.0,
+            range_low=425000.0,
+            range_high=675000.0,
+            checklist=ChecklistState(),
+            created_at=datetime.now(UTC),
+        )
+    )
 
     points = await service.get_weekly_completed_value("creator", creator_id, weeks=4)
     assert len(points) == 4

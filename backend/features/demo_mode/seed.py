@@ -107,26 +107,100 @@ def seed_demo_data(s: DemoStore):
     mama_id = DEMO_BRANDS["demo.brand1@creatoros.dev"]["brand_id"]
     rohan_id = DEMO_CREATORS["demo.creator2@creatoros.dev"]["creator_id"]
 
-    d1 = add_deal(mama_id, ananya_id, "Glow Serum Launch", "priya.nair@mamaearth.demo", "completed", 55, 9720.0)
-    d2 = add_deal(mama_id, ananya_id, "Winter Skincare Routine", "priya.nair@mamaearth.demo", "negotiating", 6, 5000.0)
-    d3 = add_deal(mama_id, rohan_id, "Protein-Infused Face Wash", "priya.nair@mamaearth.demo", "contracted", 28, 12000.0)
+    d1 = add_deal(
+        mama_id,
+        ananya_id,
+        "Glow Serum Launch",
+        "priya.nair@mamaearth.demo",
+        "completed",
+        55,
+        9720.0,
+    )
+    d2 = add_deal(
+        mama_id,
+        ananya_id,
+        "Winter Skincare Routine",
+        "priya.nair@mamaearth.demo",
+        "negotiating",
+        6,
+        5000.0,
+    )
+    d3 = add_deal(
+        mama_id,
+        rohan_id,
+        "Protein-Infused Face Wash",
+        "priya.nair@mamaearth.demo",
+        "contracted",
+        28,
+        12000.0,
+    )
     add_deal(mama_id, rohan_id, "Men's Grooming Kit Teaser", "priya.nair@mamaearth.demo", "lead", 2)
 
     # 2. Nykaa deals
     zara_id = DEMO_CREATORS["demo.creator3@creatoros.dev"]["creator_id"]
-    d4 = add_deal(nykaa_id, zara_id, "Festive Fashion Edit", "karan.oberoi@nykaa.demo", "completed", 50, 4920.0)
-    add_deal(nykaa_id, zara_id, "Spring Capsule Wardrobe", "karan.oberoi@nykaa.demo", "negotiating", 5, 3600.0)
-    add_deal(nykaa_id, zara_id, "Last Season Denim Push", "karan.oberoi@nykaa.demo", "cancelled", 70)
-    d6 = add_deal(nykaa_id, ananya_id, "Beauty Subscription Box Feature", "karan.oberoi@nykaa.demo", "in_production", 15, 6200.0)
+    d4 = add_deal(
+        nykaa_id,
+        zara_id,
+        "Festive Fashion Edit",
+        "karan.oberoi@nykaa.demo",
+        "completed",
+        50,
+        4920.0,
+    )
+    add_deal(
+        nykaa_id,
+        zara_id,
+        "Spring Capsule Wardrobe",
+        "karan.oberoi@nykaa.demo",
+        "negotiating",
+        5,
+        3600.0,
+    )
+    add_deal(
+        nykaa_id, zara_id, "Last Season Denim Push", "karan.oberoi@nykaa.demo", "cancelled", 70
+    )
+    d6 = add_deal(
+        nykaa_id,
+        ananya_id,
+        "Beauty Subscription Box Feature",
+        "karan.oberoi@nykaa.demo",
+        "in_production",
+        15,
+        6200.0,
+    )
 
     # 3. boAt deals
     boat_id = DEMO_BRANDS["demo.brand2@creatoros.dev"]["brand_id"]
     kabir_id = DEMO_CREATORS["demo.creator4@creatoros.dev"]["creator_id"]
     ishita_id = DEMO_CREATORS["demo.creator5@creatoros.dev"]["creator_id"]
 
-    d7 = add_deal(boat_id, kabir_id, "Wireless Earbuds Review", "arjun.mehra@boat.demo", "completed", 48, 11625.0)
-    add_deal(boat_id, kabir_id, "Smartwatch Launch Teaser", "arjun.mehra@boat.demo", "negotiating", 4, 8000.0)
-    d9 = add_deal(boat_id, ishita_id, "Travel Speaker Vlog", "arjun.mehra@boat.demo", "in_production", 20, 6600.0)
+    d7 = add_deal(
+        boat_id,
+        kabir_id,
+        "Wireless Earbuds Review",
+        "arjun.mehra@boat.demo",
+        "completed",
+        48,
+        11625.0,
+    )
+    add_deal(
+        boat_id,
+        kabir_id,
+        "Smartwatch Launch Teaser",
+        "arjun.mehra@boat.demo",
+        "negotiating",
+        4,
+        8000.0,
+    )
+    d9 = add_deal(
+        boat_id,
+        ishita_id,
+        "Travel Speaker Vlog",
+        "arjun.mehra@boat.demo",
+        "in_production",
+        20,
+        6600.0,
+    )
     add_deal(boat_id, ishita_id, "Podcast Mic Unboxing", "arjun.mehra@boat.demo", "lead", 1)
 
     # Deliverables
@@ -144,11 +218,22 @@ def seed_demo_data(s: DemoStore):
         s.deliverable_repo.data[dev_id] = deliv
 
     add_deliverable(d1, "Instagram Reel — Glow Serum Launch", "1x 30s Reel + 2 Stories", "approved")
-    add_deliverable(d3, "Instagram Reel — Face Wash Launch", "1x Reel, before/after routine", "submitted")
-    add_deliverable(d4, "Instagram Reel — Festive Fashion Edit", "3-look styled Reel + shoppable story set", "approved")
-    add_deliverable(d6, "Unboxing Reel — Beauty Box", "1x unboxing + haul Reel", "revision_requested")
+    add_deliverable(
+        d3, "Instagram Reel — Face Wash Launch", "1x Reel, before/after routine", "submitted"
+    )
+    add_deliverable(
+        d4,
+        "Instagram Reel — Festive Fashion Edit",
+        "3-look styled Reel + shoppable story set",
+        "approved",
+    )
+    add_deliverable(
+        d6, "Unboxing Reel — Beauty Box", "1x unboxing + haul Reel", "revision_requested"
+    )
     add_deliverable(d7, "YouTube Review — Wireless Earbuds", "60-90s review + 1 Reel", "approved")
-    add_deliverable(d9, "Travel Vlog — Travel Speaker", "1x destination vlog, 3-5 min", "in_production")
+    add_deliverable(
+        d9, "Travel Vlog — Travel Speaker", "1x destination vlog, 3-5 min", "in_production"
+    )
 
     # Contracts & Payments
     def add_contract_and_payment(
@@ -239,11 +324,41 @@ Creator agrees not to promote competing vitamin C skincare serums during the act
 Brand shall pay the Creator INR 9,720 within 30 days of completion and receipt of invoice."""
 
     mama_ananya_clauses = [
-        ("deliverables", "1. DELIVERABLES & SCOPE\nCreator agrees to produce and publish 1x 30-second Instagram Reel highlighting the Glow Serum application and 2x Instagram Stories with link stickers.", "green", None, None),
-        ("usage_rights", "2. USAGE RIGHTS & LICENSING\nBrand is granted non-exclusive commercial digital usage rights for social media channels for a duration of 60 days following publication.", "green", None, None),
-        ("revisions", "3. REVISIONS POLICY\nCreator agrees to provide up to two rounds of reasonable edits prior to final publication.", "green", None, None),
-        ("exclusivity", "4. CATEGORY EXCLUSIVITY\nCreator agrees not to promote competing vitamin C skincare serums during the active 3-week campaign window.", "green", None, None),
-        ("payment_terms", "5. COMPENSATION & PAYMENT TERMS\nBrand shall pay the Creator INR 9,720 within 30 days of completion and receipt of invoice.", "green", None, None),
+        (
+            "deliverables",
+            "1. DELIVERABLES & SCOPE\nCreator agrees to produce and publish 1x 30-second Instagram Reel highlighting the Glow Serum application and 2x Instagram Stories with link stickers.",
+            "green",
+            None,
+            None,
+        ),
+        (
+            "usage_rights",
+            "2. USAGE RIGHTS & LICENSING\nBrand is granted non-exclusive commercial digital usage rights for social media channels for a duration of 60 days following publication.",
+            "green",
+            None,
+            None,
+        ),
+        (
+            "revisions",
+            "3. REVISIONS POLICY\nCreator agrees to provide up to two rounds of reasonable edits prior to final publication.",
+            "green",
+            None,
+            None,
+        ),
+        (
+            "exclusivity",
+            "4. CATEGORY EXCLUSIVITY\nCreator agrees not to promote competing vitamin C skincare serums during the active 3-week campaign window.",
+            "green",
+            None,
+            None,
+        ),
+        (
+            "payment_terms",
+            "5. COMPENSATION & PAYMENT TERMS\nBrand shall pay the Creator INR 9,720 within 30 days of completion and receipt of invoice.",
+            "green",
+            None,
+            None,
+        ),
     ]
 
     mama_rohan_text = """MAMAEARTH BRAND COLLABORATION AGREEMENT
@@ -265,11 +380,41 @@ Creator shall not promote or endorse competing men's grooming or skincare brands
 Brand agrees to pay the Creator a fee of INR 12,000 within 30 days of deliverable approval and invoice receipt."""
 
     mama_rohan_clauses = [
-        ("deliverables", "1. DELIVERABLES & TIMELINE\nCreator shall produce 1x high-definition Instagram Reel showcasing the Protein-Infused Face Wash routine within 14 days of receiving product samples.", "green", None, None),
-        ("usage_rights", "2. USAGE RIGHTS & PERPETUITY\nBrand is granted irrevocable, worldwide, perpetual usage rights to the deliverables across all digital channels, paid ads, and third-party media platforms without any additional royalty fees.", "red", "perpetual_usage_rights", "Brand acquires perpetual rights to use your content and likeness forever across all media without additional compensation or expiration date."),
-        ("revisions", "3. REVISIONS & EDITING COMMITMENT\nCreator agrees to provide unlimited revisions to the produced video assets until complete brand satisfaction is achieved, at no extra cost.", "red", "unlimited_revisions", "Demanding unlimited revisions exposes the creator to endless rounds of rework and reshoots without compensating for additional time or effort."),
-        ("exclusivity", "4. EXCLUSIVITY\nCreator shall not promote or endorse competing men's grooming or skincare brands for a period of 30 days following publication.", "green", None, None),
-        ("payment_terms", "5. COMPENSATION & TERMS\nBrand agrees to pay the Creator a fee of INR 12,000 within 30 days of deliverable approval and invoice receipt.", "green", None, None),
+        (
+            "deliverables",
+            "1. DELIVERABLES & TIMELINE\nCreator shall produce 1x high-definition Instagram Reel showcasing the Protein-Infused Face Wash routine within 14 days of receiving product samples.",
+            "green",
+            None,
+            None,
+        ),
+        (
+            "usage_rights",
+            "2. USAGE RIGHTS & PERPETUITY\nBrand is granted irrevocable, worldwide, perpetual usage rights to the deliverables across all digital channels, paid ads, and third-party media platforms without any additional royalty fees.",
+            "red",
+            "perpetual_usage_rights",
+            "Brand acquires perpetual rights to use your content and likeness forever across all media without additional compensation or expiration date.",
+        ),
+        (
+            "revisions",
+            "3. REVISIONS & EDITING COMMITMENT\nCreator agrees to provide unlimited revisions to the produced video assets until complete brand satisfaction is achieved, at no extra cost.",
+            "red",
+            "unlimited_revisions",
+            "Demanding unlimited revisions exposes the creator to endless rounds of rework and reshoots without compensating for additional time or effort.",
+        ),
+        (
+            "exclusivity",
+            "4. EXCLUSIVITY\nCreator shall not promote or endorse competing men's grooming or skincare brands for a period of 30 days following publication.",
+            "green",
+            None,
+            None,
+        ),
+        (
+            "payment_terms",
+            "5. COMPENSATION & TERMS\nBrand agrees to pay the Creator a fee of INR 12,000 within 30 days of deliverable approval and invoice receipt.",
+            "green",
+            None,
+            None,
+        ),
     ]
 
     nykaa_ananya_text = """NYKAA BEAUTY COLLABORATION AGREEMENT
@@ -288,18 +433,96 @@ Creator shall provide standard revisions within 48 hours of draft submission.
 Creator shall receive INR 6,200 upon satisfactory completion of deliverables."""
 
     nykaa_ananya_clauses = [
-        ("deliverables", "1. SCOPE OF DELIVERABLES\nCreator will post 1x unboxing video and haul review on Instagram showcasing the featured subscription items.", "green", None, None),
-        ("usage_rights", "2. WHITELISTING & BOOSTING\nBrand reserves the right to run unpaid whitelisting/boosting ads through Creator's account without supplementary compensation.", "red", "unpaid_whitelisting", "Allows the brand to run paid ads and boosting through your creator account handle without paying a whitelisting access fee."),
-        ("revisions", "3. REVISIONS\nCreator shall provide standard revisions within 48 hours of draft submission.", "green", None, None),
-        ("payment_terms", "4. COMPENSATION\nCreator shall receive INR 6,200 upon satisfactory completion of deliverables.", "green", None, None),
+        (
+            "deliverables",
+            "1. SCOPE OF DELIVERABLES\nCreator will post 1x unboxing video and haul review on Instagram showcasing the featured subscription items.",
+            "green",
+            None,
+            None,
+        ),
+        (
+            "usage_rights",
+            "2. WHITELISTING & BOOSTING\nBrand reserves the right to run unpaid whitelisting/boosting ads through Creator's account without supplementary compensation.",
+            "red",
+            "unpaid_whitelisting",
+            "Allows the brand to run paid ads and boosting through your creator account handle without paying a whitelisting access fee.",
+        ),
+        (
+            "revisions",
+            "3. REVISIONS\nCreator shall provide standard revisions within 48 hours of draft submission.",
+            "green",
+            None,
+            None,
+        ),
+        (
+            "payment_terms",
+            "4. COMPENSATION\nCreator shall receive INR 6,200 upon satisfactory completion of deliverables.",
+            "green",
+            None,
+            None,
+        ),
     ]
 
-    add_contract_and_payment(d1, mama_id, 9720.0, True, raw_text=mama_ananya_text, clauses_data=mama_ananya_clauses)
-    add_contract_and_payment(d3, mama_id, 12000.0, False, raw_text=mama_rohan_text, clauses_data=mama_rohan_clauses)
-    add_contract_and_payment(d4, nykaa_id, 4920.0, True, raw_text="NYKAA FASHION COLLABORATION AGREEMENT\n1. DELIVERABLES: 3-look styled Reel.\n2. USAGE RIGHTS: 45 days.\n3. REVISIONS: Up to 2 rounds.\n4. COMPENSATION: INR 4,920.", clauses_data=[("deliverables", "1. DELIVERABLES: 3-look styled Reel.", "green", None, None), ("usage_rights", "2. USAGE RIGHTS: 45 days.", "green", None, None), ("revisions", "3. REVISIONS: Up to 2 rounds.", "green", None, None), ("payment_terms", "4. COMPENSATION: INR 4,920.", "green", None, None)])
-    add_contract_and_payment(d6, nykaa_id, 6200.0, False, raw_text=nykaa_ananya_text, clauses_data=nykaa_ananya_clauses)
-    add_contract_and_payment(d7, boat_id, 11625.0, True, raw_text="BOAT DIGITAL CREATOR AGREEMENT\n1. DELIVERABLES: 60-90s dedicated YouTube review and 1 Instagram Reel.\n2. USAGE RIGHTS: 90 days digital license.\n3. REVISIONS: 1 round.\n4. COMPENSATION: INR 11,625.", clauses_data=[("deliverables", "1. DELIVERABLES: 60-90s dedicated YouTube review and 1 Instagram Reel.", "green", None, None), ("usage_rights", "2. USAGE RIGHTS: 90 days digital license.", "green", None, None), ("revisions", "3. REVISIONS: 1 round.", "green", None, None), ("payment_terms", "4. COMPENSATION: INR 11,625.", "green", None, None)])
-    add_contract_and_payment(d9, boat_id, 6600.0, False, raw_text="BOAT ADVENTURE COLLABORATION AGREEMENT\n1. DELIVERABLES: 1x destination vlog integration (3-5 minutes).\n2. USAGE RIGHTS: 60 days digital usage.\n3. REVISIONS: Up to 2 revisions.\n4. COMPENSATION: INR 6,600.", clauses_data=[("deliverables", "1. DELIVERABLES: 1x destination vlog integration (3-5 minutes).", "green", None, None), ("usage_rights", "2. USAGE RIGHTS: 60 days digital usage.", "green", None, None), ("revisions", "3. REVISIONS: Up to 2 revisions.", "green", None, None), ("payment_terms", "4. COMPENSATION: INR 6,600.", "green", None, None)])
+    add_contract_and_payment(
+        d1, mama_id, 9720.0, True, raw_text=mama_ananya_text, clauses_data=mama_ananya_clauses
+    )
+    add_contract_and_payment(
+        d3, mama_id, 12000.0, False, raw_text=mama_rohan_text, clauses_data=mama_rohan_clauses
+    )
+    add_contract_and_payment(
+        d4,
+        nykaa_id,
+        4920.0,
+        True,
+        raw_text="NYKAA FASHION COLLABORATION AGREEMENT\n1. DELIVERABLES: 3-look styled Reel.\n2. USAGE RIGHTS: 45 days.\n3. REVISIONS: Up to 2 rounds.\n4. COMPENSATION: INR 4,920.",
+        clauses_data=[
+            ("deliverables", "1. DELIVERABLES: 3-look styled Reel.", "green", None, None),
+            ("usage_rights", "2. USAGE RIGHTS: 45 days.", "green", None, None),
+            ("revisions", "3. REVISIONS: Up to 2 rounds.", "green", None, None),
+            ("payment_terms", "4. COMPENSATION: INR 4,920.", "green", None, None),
+        ],
+    )
+    add_contract_and_payment(
+        d6, nykaa_id, 6200.0, False, raw_text=nykaa_ananya_text, clauses_data=nykaa_ananya_clauses
+    )
+    add_contract_and_payment(
+        d7,
+        boat_id,
+        11625.0,
+        True,
+        raw_text="BOAT DIGITAL CREATOR AGREEMENT\n1. DELIVERABLES: 60-90s dedicated YouTube review and 1 Instagram Reel.\n2. USAGE RIGHTS: 90 days digital license.\n3. REVISIONS: 1 round.\n4. COMPENSATION: INR 11,625.",
+        clauses_data=[
+            (
+                "deliverables",
+                "1. DELIVERABLES: 60-90s dedicated YouTube review and 1 Instagram Reel.",
+                "green",
+                None,
+                None,
+            ),
+            ("usage_rights", "2. USAGE RIGHTS: 90 days digital license.", "green", None, None),
+            ("revisions", "3. REVISIONS: 1 round.", "green", None, None),
+            ("payment_terms", "4. COMPENSATION: INR 11,625.", "green", None, None),
+        ],
+    )
+    add_contract_and_payment(
+        d9,
+        boat_id,
+        6600.0,
+        False,
+        raw_text="BOAT ADVENTURE COLLABORATION AGREEMENT\n1. DELIVERABLES: 1x destination vlog integration (3-5 minutes).\n2. USAGE RIGHTS: 60 days digital usage.\n3. REVISIONS: Up to 2 revisions.\n4. COMPENSATION: INR 6,600.",
+        clauses_data=[
+            (
+                "deliverables",
+                "1. DELIVERABLES: 1x destination vlog integration (3-5 minutes).",
+                "green",
+                None,
+                None,
+            ),
+            ("usage_rights", "2. USAGE RIGHTS: 60 days digital usage.", "green", None, None),
+            ("revisions", "3. REVISIONS: Up to 2 revisions.", "green", None, None),
+            ("payment_terms", "4. COMPENSATION: INR 6,600.", "green", None, None),
+        ],
+    )
 
     # Growth Snapshots for creators
     for c_id, base_f in [
@@ -363,8 +586,25 @@ Creator shall receive INR 6,200 upon satisfactory completion of deliverables."""
         )
         s.message_repo.data[mid] = msg
 
-    add_msg(mama_id, ananya_id, "brand", "Hi Ananya! Loved the Glow Serum Reel — engagement has been great.")
+    add_msg(
+        mama_id,
+        ananya_id,
+        "brand",
+        "Hi Ananya! Loved the Glow Serum Reel — engagement has been great.",
+    )
     add_msg(mama_id, ananya_id, "creator", "Thank you! Really happy with how it turned out.")
-    add_msg(mama_id, rohan_id, "brand", "Hey Rohan, let us know when the travel vlog draft is ready!")
-    add_msg(nykaa_id, zara_id, "brand", "Hi Zara, the Festive Fashion Edit content is live and performing really well!")
-    add_msg(boat_id, kabir_id, "brand", "Kabir, the Wireless Earbuds review was fantastic — highest CTR this quarter.")
+    add_msg(
+        mama_id, rohan_id, "brand", "Hey Rohan, let us know when the travel vlog draft is ready!"
+    )
+    add_msg(
+        nykaa_id,
+        zara_id,
+        "brand",
+        "Hi Zara, the Festive Fashion Edit content is live and performing really well!",
+    )
+    add_msg(
+        boat_id,
+        kabir_id,
+        "brand",
+        "Kabir, the Wireless Earbuds review was fantastic — highest CTR this quarter.",
+    )

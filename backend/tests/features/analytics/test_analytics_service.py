@@ -29,45 +29,75 @@ async def test_brand_analytics_aggregates_across_the_board():
     payment_repo = FakePaymentRepo()
 
     creator = Creator(
-        id=creator_id, brand_id=brand_id, display_name="Test Creator",
-        instagram_handle="@test", niche="beauty", follower_tier="micro",
-        followers_count=50000, engagement_rate=4.0, created_at=now,
+        id=creator_id,
+        brand_id=brand_id,
+        display_name="Test Creator",
+        instagram_handle="@test",
+        niche="beauty",
+        follower_tier="micro",
+        followers_count=50000,
+        engagement_rate=4.0,
+        created_at=now,
     )
     await creator_repo.create(creator)
     await creator_repo.link_brand(creator_id, brand_id)
 
     deal = Deal(
-        id=uuid4(), brand_id=brand_id, creator_id=creator_id,
-        campaign_name="Nykaa", contact_email="a@a.com", status="completed",
-        created_at=now, updated_at=now,
+        id=uuid4(),
+        brand_id=brand_id,
+        creator_id=creator_id,
+        campaign_name="Nykaa",
+        contact_email="a@a.com",
+        status="completed",
+        created_at=now,
+        updated_at=now,
     )
     await deal_repo.create(deal)
 
     contract = Contract(
-        id=uuid4(), deal_id=deal.id, file_path="contracts/x.pdf", status="signed",
-        created_at=now, updated_at=now,
+        id=uuid4(),
+        deal_id=deal.id,
+        file_path="contracts/x.pdf",
+        status="signed",
+        created_at=now,
+        updated_at=now,
     )
     await contract_repo.create(contract)
     contract_repo.deals_data[deal.id] = brand_id
 
     # A payment paid this month, tied to the deal via the contract.
     payment = Payment(
-        id=uuid4(), contract_id=contract.id, amount_inr=100000, status="paid",
-        invoice_number="INV-1", due_date=date.today() - timedelta(days=5),
-        paid_at=now, created_at=now, updated_at=now,
+        id=uuid4(),
+        contract_id=contract.id,
+        amount_inr=100000,
+        status="paid",
+        invoice_number="INV-1",
+        due_date=date.today() - timedelta(days=5),
+        paid_at=now,
+        created_at=now,
+        updated_at=now,
     )
     await payment_repo.create(payment)
     payment_repo.contracts_deals_data[contract.id] = brand_id
 
     # Noise from a different brand that must never leak into the result.
-    await deal_repo.create(Deal(
-        id=uuid4(), brand_id=other_brand_id, creator_id=uuid4(),
-        campaign_name="OtherBrand", contact_email="b@b.com", status="lead",
-        created_at=now, updated_at=now,
-    ))
+    await deal_repo.create(
+        Deal(
+            id=uuid4(),
+            brand_id=other_brand_id,
+            creator_id=uuid4(),
+            campaign_name="OtherBrand",
+            contact_email="b@b.com",
+            status="lead",
+            created_at=now,
+            updated_at=now,
+        )
+    )
 
     service = AnalyticsService(
-        deal_repo=deal_repo, creator_repo=creator_repo, contract_repo=contract_repo,
+        deal_repo=deal_repo,
+        creator_repo=creator_repo,
+        contract_repo=contract_repo,
         payment_repo=payment_repo,
     )
 

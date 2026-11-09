@@ -11,7 +11,9 @@ from shared.errors import NotFoundError, PermissionDeniedError
 
 class DealService:
     def __init__(
-        self, deal_repo: DealRepo, activity_log_repo: ActivityLogRepo,
+        self,
+        deal_repo: DealRepo,
+        activity_log_repo: ActivityLogRepo,
         negotiation_session_repo: NegotiationSessionRepo | None = None,
     ):
         self.deal_repo = deal_repo
@@ -19,11 +21,7 @@ class DealService:
         self.negotiation_session_repo = negotiation_session_repo
 
     async def create_deal(
-        self,
-        request: DealCreateRequest,
-        brand_id: UUID | None,
-        actor_id: UUID,
-        actor_type: str
+        self, request: DealCreateRequest, brand_id: UUID | None, actor_id: UUID, actor_type: str
     ) -> Deal:
         deal = Deal(
             id=uuid4(),
@@ -34,7 +32,7 @@ class DealService:
             status="lead",
             value_inr=request.value_inr,
             created_at=datetime.now(UTC),
-            updated_at=datetime.now(UTC)
+            updated_at=datetime.now(UTC),
         )
         created = await self.deal_repo.create(deal)
 
@@ -49,7 +47,7 @@ class DealService:
                 actor_label=str(actor_id),
                 action="deal_created",
                 metadata={"deal_id": str(created.id), "campaign_name": created.campaign_name},
-                created_at=datetime.now(UTC)
+                created_at=datetime.now(UTC),
             )
             await self.activity_log_repo.create(log)
 
@@ -58,12 +56,19 @@ class DealService:
     async def list_for_brand(self, brand_id: UUID, limit: int = 50, offset: int = 0) -> list[Deal]:
         return await self.deal_repo.list_for_brand(brand_id, limit, offset)
 
-    async def list_for_creator(self, creator_id: UUID, limit: int = 50, offset: int = 0) -> list[Deal]:
+    async def list_for_creator(
+        self, creator_id: UUID, limit: int = 50, offset: int = 0
+    ) -> list[Deal]:
         return await self.deal_repo.list_for_creator(creator_id, limit, offset)
 
     async def update_status(
-        self, deal_id: UUID, status: str, actor_id: UUID, actor_type: str,
-        actor_brand_id: UUID | None, actor_creator_id: UUID | None,
+        self,
+        deal_id: UUID,
+        status: str,
+        actor_id: UUID,
+        actor_type: str,
+        actor_brand_id: UUID | None,
+        actor_creator_id: UUID | None,
     ) -> Deal:
         deal = await self.deal_repo.get(deal_id)
         if not deal:
@@ -84,7 +89,7 @@ class DealService:
             actor_label=str(actor_id),
             action="deal_status_updated",
             metadata={"from_status": from_status, "to_status": status},
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         await self.activity_log_repo.create(log)
 
@@ -94,12 +99,16 @@ class DealService:
         deals = await self.deal_repo.list_for_creator(creator_id, limit=500)
         sessions = (
             await self.negotiation_session_repo.list_for_creator(creator_id, limit=500)
-            if self.negotiation_session_repo else []
+            if self.negotiation_session_repo
+            else []
         )
         rate_by_deal = {s.deal_id: s.base_rate for s in sessions}
 
         completed = [d for d in deals if d.status == "completed"]
-        earnings = [d.value_inr if d.value_inr is not None else rate_by_deal.get(d.id, 0.0) for d in completed]
+        earnings = [
+            d.value_inr if d.value_inr is not None else rate_by_deal.get(d.id, 0.0)
+            for d in completed
+        ]
         total_earnings = sum(earnings)
 
         return {

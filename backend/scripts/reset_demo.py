@@ -11,6 +11,7 @@ Run from backend/, with the venv active and real Supabase credentials in .env:
 
     python -m scripts.reset_demo
 """
+
 import asyncio
 
 from shared.supabase_client import get_supabase_client

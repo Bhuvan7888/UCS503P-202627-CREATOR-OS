@@ -20,16 +20,18 @@ async def test_creator_onboarding_writes_activity_log():
     creator_repo = FakeCreatorRepo()
     activity_log_repo = FakeActivityLogRepo()
     service = CreatorService(creator_repo, activity_log_repo)
-    
+
     brand_id = uuid4()
     actor_id = uuid4()
-    req = CreatorOnboardRequest(display_name="Test", instagram_handle="@test", niche="tech", follower_tier="nano")
-    
+    req = CreatorOnboardRequest(
+        display_name="Test", instagram_handle="@test", niche="tech", follower_tier="nano"
+    )
+
     creator = await service.onboard_creator(req, brand_id, actor_id, "brand")
-    
+
     # Assert creator created
     assert creator.id in creator_repo.data
-    
+
     # Assert activity log written
     logs = await activity_log_repo.list_for_brand(brand_id)
     assert len(logs) == 1
@@ -42,7 +44,9 @@ async def test_creator_profile_update():
     creator_repo = FakeCreatorRepo()
     service = CreatorService(creator_repo, FakeActivityLogRepo())
 
-    req = CreatorOnboardRequest(display_name="Test", instagram_handle="@test", niche="tech", follower_tier="nano")
+    req = CreatorOnboardRequest(
+        display_name="Test", instagram_handle="@test", niche="tech", follower_tier="nano"
+    )
     creator = await service.onboard_creator(req, uuid4(), uuid4(), "brand")
     assert creator.followers_count is None
 
@@ -63,8 +67,12 @@ async def test_creator_link_brand():
 
     creator = await creator_repo.create(
         Creator(
-            id=uuid4(), display_name="Test", instagram_handle="@test", niche="tech",
-            follower_tier="nano", created_at=datetime.now(UTC),
+            id=uuid4(),
+            display_name="Test",
+            instagram_handle="@test",
+            niche="tech",
+            follower_tier="nano",
+            created_at=datetime.now(UTC),
         )
     )
 

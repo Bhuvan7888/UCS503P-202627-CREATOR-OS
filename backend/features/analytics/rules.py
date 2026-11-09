@@ -26,7 +26,10 @@ def revenue_by_month(payments: list[Payment]) -> list[RevenueMonth]:
         month = p.created_at.strftime("%Y-%m")
         key = "paid" if p.status == "paid" else "pending"
         revenue[month][key] += float(p.amount_inr)
-    return [RevenueMonth(month=m, paid=v["paid"], pending=v["pending"]) for m, v in sorted(revenue.items())]
+    return [
+        RevenueMonth(month=m, paid=v["paid"], pending=v["pending"])
+        for m, v in sorted(revenue.items())
+    ]
 
 
 def payment_totals(
@@ -50,7 +53,9 @@ def top_campaigns(deals: list[Deal], campaign_value: dict[str, float]) -> list[T
     deal_count = Counter(d.campaign_name for d in deals)
     return sorted(
         (
-            TopBrand(campaign_name=name, deal_count=count, total_value=campaign_value.get(name, 0.0))
+            TopBrand(
+                campaign_name=name, deal_count=count, total_value=campaign_value.get(name, 0.0)
+            )
             for name, count in deal_count.items()
         ),
         key=lambda x: x.total_value,

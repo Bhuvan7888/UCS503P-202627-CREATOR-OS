@@ -22,8 +22,10 @@ class Contract(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
 class ContractStatusUpdateRequest(BaseModel):
-    status: Literal['draft', 'uploaded', 'signed', 'pending_review', 'void']
+    status: Literal["draft", "uploaded", "signed", "pending_review", "void"]
+
 
 class ContractCreatorStatusUpdateRequest(BaseModel):
-    creator_status: Literal['unread', 'read', 'ongoing', 'completed']
+    creator_status: Literal["unread", "read", "ongoing", "completed"]
