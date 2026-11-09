@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from features.activity_log import SupabaseActivityLogRepo
+from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from features.payments.models import (
     Payment,
     PaymentCreateRequest,

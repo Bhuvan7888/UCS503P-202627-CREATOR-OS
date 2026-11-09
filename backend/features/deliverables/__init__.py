@@ -10,7 +10,6 @@ from features.deliverables.models import (
 )
 from features.deliverables.repository import DeliverableRepo
 from features.deliverables.service import DeliverableService
-from features.deliverables.supabase_repository import SupabaseDeliverableRepo
 
 __all__ = [
     "Deliverable",
@@ -18,5 +17,4 @@ __all__ = [
     "DeliverableRepo",
     "DeliverableService",
     "DeliverableStatusUpdateRequest",
-    "SupabaseDeliverableRepo",
 ]

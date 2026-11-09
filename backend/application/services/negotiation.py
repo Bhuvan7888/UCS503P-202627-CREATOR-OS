@@ -2,7 +2,6 @@ from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from domain.interfaces.repositories import (
-    GrowthSnapshotRepo,
     NegotiationConversationRepo,
     NegotiationSessionRepo,
 )
@@ -22,6 +21,7 @@ from domain.models.negotiation import (
     NegotiationSessionCreate,
 )
 from features.activity_log import ActivityLog, ActivityLogRepo
+from features.creators import GrowthSnapshotRepo
 from features.deals import DealRepo
 from shared.llm.llm_port import LLMPort
 

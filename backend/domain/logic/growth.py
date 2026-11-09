@@ -1,4 +1,4 @@
-from domain.models.creator import GrowthSnapshot
+from features.creators import GrowthSnapshot
 
 
 def estimate_weekly_growth_rate(snapshots: list[GrowthSnapshot]) -> float | None:

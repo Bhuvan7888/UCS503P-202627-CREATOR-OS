@@ -2,18 +2,19 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from application.services.creators import CreatorService
 from domain.models.auth import LinkBrandRequest
-from domain.models.creator import (
+from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.brands import Brand
+from features.brands.supabase_repository import SupabaseBrandRepo
+from features.creators.models import (
     Creator,
     CreatorOnboardRequest,
     CreatorProfileUpdateRequest,
     GrowthSnapshot,
     GrowthSnapshotCreateRequest,
 )
-from features.activity_log import SupabaseActivityLogRepo
-from features.brands import Brand, SupabaseBrandRepo
-from infrastructure.supabase.repos import (
+from features.creators.service import CreatorService
+from features.creators.supabase_repository import (
     SupabaseCreatorRepo,
     SupabaseGrowthSnapshotRepo,
 )

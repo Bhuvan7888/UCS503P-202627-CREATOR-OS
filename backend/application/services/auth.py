@@ -4,7 +4,6 @@ from uuid import UUID, uuid4
 
 from supabase import Client
 
-from domain.interfaces.repositories import CreatorRepo
 from domain.models.auth import (
     AuthSession,
     BrandLoginRequest,
@@ -12,8 +11,8 @@ from domain.models.auth import (
     CreatorLoginRequest,
     CreatorSignupRequest,
 )
-from domain.models.creator import Creator
 from features.brands import Brand, BrandMember, BrandMemberRepo, BrandRepo
+from features.creators import Creator, CreatorRepo
 from shared.errors import ValidationError
 
 

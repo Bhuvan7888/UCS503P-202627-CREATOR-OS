@@ -12,8 +12,8 @@ from domain.models.contract import (
     ContractStatusUpdateRequest,
 )
 from domain.models.contract_intelligence import ClauseInput
-from features.activity_log import SupabaseActivityLogRepo
-from features.deals import SupabaseDealRepo
+from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.deals.supabase_repository import SupabaseDealRepo
 from infrastructure.pdf import extract_text, generate_sample_contract_pdf
 from infrastructure.supabase.repos import SupabaseContractRepo
 from infrastructure.supabase.storage import SupabaseStorage

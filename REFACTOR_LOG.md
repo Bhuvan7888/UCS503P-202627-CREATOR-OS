@@ -173,3 +173,17 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | split | `BrandRepo`, `BrandMemberRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/brands/repository.py` | one repository/port per feature |
 | add | `backend/features/brands/__init__.py` | public API (generated from names other packages import) |
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+
+## Phase 3.3 — Backend feature: `creators` (+ index rule fix)
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/creators.py` → `backend/features/creators/router.py` | feature folder |
+| move | `backend/application/services/creators.py` → `backend/features/creators/service.py` | feature folder |
+| move | `backend/domain/models/creator.py` → `backend/features/creators/models.py` | feature folder |
+| split | `SupabaseCreatorRepo`, `SupabaseGrowthSnapshotRepo` from `backend/infrastructure/supabase/repos.py` → `backend/features/creators/supabase_repository.py` | one repository/port per feature |
+| split | `CreatorRepo`, `GrowthSnapshotRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/creators/repository.py` | one repository/port per feature |
+| split | `test_creator_onboarding_writes_activity_log`, `test_creator_profile_update`, `test_creator_link_brand` from `backend/tests/unit/test_services.py` → `backend/tests/features/creators/test_creators_service.py` | tests mirror the feature |
+| add | `backend/features/creators/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+| edit | all `backend/features/*/__init__.py` | Supabase repositories removed from feature indexes. The per-feature layer contract caught `creators.repository → brands index → brands.supabase_repository → demo_mode → seed → creators.service` (a hidden upward dependency). Indexes now export only the domain API; composition roots (`router.py`, `dependencies.py`) import `features.<x>.supabase_repository` directly |

@@ -27,27 +27,36 @@ from application.services.auth import AuthService
 from application.services.clause_explanation import ClauseExplanationService
 from application.services.contract_intelligence import ContractIntelligenceService
 from application.services.contracts import ContractService
-from application.services.creators import CreatorService
 from application.services.negotiation import NegotiationService
 from domain.models.auth import BrandSignupRequest, CreatorSignupRequest
 from domain.models.contract import ContractStatusUpdateRequest
-from domain.models.creator import GrowthSnapshot
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationConversation,
     NegotiationSessionCreate,
 )
-from features.activity_log import SupabaseActivityLogRepo
-from features.brands import SupabaseBrandMemberRepo, SupabaseBrandRepo
-from features.deals import DealCreateRequest, DealService, SupabaseDealRepo
+from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.brands.supabase_repository import (
+    SupabaseBrandMemberRepo,
+    SupabaseBrandRepo,
+)
+from features.creators import CreatorService, GrowthSnapshot
+from features.creators.supabase_repository import (
+    SupabaseCreatorRepo,
+    SupabaseGrowthSnapshotRepo,
+)
+from features.deals import DealCreateRequest, DealService
+from features.deals.supabase_repository import SupabaseDealRepo
 from features.deliverables import (
     DeliverableCreateRequest,
     DeliverableService,
     DeliverableStatusUpdateRequest,
-    SupabaseDeliverableRepo,
 )
-from features.messages import Message, SupabaseMessageRepo
-from features.payments import PaymentCreateRequest, PaymentService, SupabasePaymentRepo
+from features.deliverables.supabase_repository import SupabaseDeliverableRepo
+from features.messages import Message
+from features.messages.supabase_repository import SupabaseMessageRepo
+from features.payments import PaymentCreateRequest, PaymentService
+from features.payments.supabase_repository import SupabasePaymentRepo
 from infrastructure.email.resend_adapter import ResendAdapter
 from infrastructure.pdf import extract_text
 from infrastructure.supabase.contract_intelligence_repos import (
@@ -56,8 +65,6 @@ from infrastructure.supabase.contract_intelligence_repos import (
 )
 from infrastructure.supabase.repos import (
     SupabaseContractRepo,
-    SupabaseCreatorRepo,
-    SupabaseGrowthSnapshotRepo,
     SupabaseNegotiationConversationRepo,
     SupabaseNegotiationSessionRepo,
 )

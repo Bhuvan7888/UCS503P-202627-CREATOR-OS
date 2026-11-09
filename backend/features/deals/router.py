@@ -2,7 +2,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from features.activity_log import SupabaseActivityLogRepo
+from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.creators.supabase_repository import SupabaseCreatorRepo
 from features.deals.models import (
     Deal,
     DealCreateRequest,
@@ -11,10 +12,7 @@ from features.deals.models import (
 )
 from features.deals.service import DealService
 from features.deals.supabase_repository import SupabaseDealRepo
-from infrastructure.supabase.repos import (
-    SupabaseCreatorRepo,
-    SupabaseNegotiationSessionRepo,
-)
+from infrastructure.supabase.repos import SupabaseNegotiationSessionRepo
 from interface.dependencies import ActorContext, get_current_actor
 from shared.errors import NotFoundError, PermissionDeniedError
 from shared.supabase_client import get_supabase_client

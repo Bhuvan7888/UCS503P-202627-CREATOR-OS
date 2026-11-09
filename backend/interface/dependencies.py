@@ -5,8 +5,8 @@ from uuid import UUID
 
 from fastapi import Header, HTTPException
 
-from features.brands import SupabaseBrandMemberRepo
-from infrastructure.supabase.repos import SupabaseCreatorRepo
+from features.brands.supabase_repository import SupabaseBrandMemberRepo
+from features.creators.supabase_repository import SupabaseCreatorRepo
 from shared.supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)

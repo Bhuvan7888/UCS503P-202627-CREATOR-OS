@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from datetime import date
 from uuid import UUID
 
-from domain.interfaces.repositories import ContractRepo, CreatorRepo
+from domain.interfaces.repositories import ContractRepo
 from features.analytics.models import (
     BrandAnalytics,
     CreatorPerformance,
@@ -12,6 +12,7 @@ from features.analytics.models import (
     RevenueMonth,
     TopBrand,
 )
+from features.creators import CreatorRepo
 from features.deals import DealRepo
 from features.payments import PaymentRepo
 

@@ -16,10 +16,10 @@ from domain.models.negotiation import (
     NegotiationSessionCreate,
     RateRangeOut,
 )
-from features.activity_log import SupabaseActivityLogRepo
-from features.deals import SupabaseDealRepo
+from features.activity_log.supabase_repository import SupabaseActivityLogRepo
+from features.creators.supabase_repository import SupabaseGrowthSnapshotRepo
+from features.deals.supabase_repository import SupabaseDealRepo
 from infrastructure.supabase.repos import (
-    SupabaseGrowthSnapshotRepo,
     SupabaseNegotiationConversationRepo,
     SupabaseNegotiationSessionRepo,
 )
