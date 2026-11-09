@@ -416,3 +416,15 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | move | `frontend/src/components/{ActivityLog,AssistantPanel,DataTable,StatTile}.tsx` → `_deprecated/frontend/components/` | 0 imports anywhere in `src/` (re-checked before moving) |
 | move | `frontend/src/lib/supabase.ts` → `_deprecated/frontend/lib/supabase.ts` | 0 imports; the frontend only talks to the FastAPI backend |
 | move | `frontend/tests/example.spec.ts`, `frontend/tests/e2e/flow.spec.ts` → `_deprecated/frontend/tests/` | Playwright boilerplate hitting playwright.dev; e2e spec targets `/agency` which doesn't exist |
+
+## Decision 4 — Stale tests updated to the intended current behavior
+
+| Test (new location) | Old expectation | New expectation | Why |
+|---|---|---|---|
+| `tests/features/contracts/test_contracts_api.py` | `draft → signed` returns 400 | `test_contract_status_can_move_freely_between_active_statuses` (200), plus `test_rejected_contract_transition_returns_400`, which forces the rule to reject so the 400 mapping stays covered | `8560f05` made contract statuses reversible |
+| `tests/features/contracts/test_contracts_service.py::test_contract_rejected_transition_raises_and_does_not_log` | `draft → signed` raises | rule forced to reject → raises + no activity log | same; keeps the original intent |
+| `tests/features/payments/test_payments_service.py` (2 tests) | same-status change raises | same-status allowed; unknown status (`refunded`) raises | status dropdowns allow re-selecting |
+| `tests/features/deliverables/test_deliverables_service.py::test_deliverable_status_role_rules` | brand can't set `in_production` | brand may set any status; creator still can't approve | `_BRAND_ALLOWED_STATUSES` was widened deliberately |
+| `tests/features/contract_intelligence/test_clause_explanation_service.py` | LLM failure → `llm_explanation is None` | LLM failure → canned `DEFAULT_FLAG_EXPLANATIONS` text | fallback added in `af9eb70` |
+
+Backend suite: **114 passed, 0 failed** (was 6 failed).

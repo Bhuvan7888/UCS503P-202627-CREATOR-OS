@@ -90,8 +90,10 @@ def test_validate_status_change():
     validate_status_change("paid", "pending")
     validate_status_change("pending", "overdue")
 
+    # Same-status updates are allowed since 8560f05 (status dropdowns); only unknown statuses fail.
+    validate_status_change("paid", "paid")
     with pytest.raises(InvalidStatusTransition):
-        validate_status_change("paid", "paid")
+        validate_status_change("paid", "refunded")
 
 @pytest.mark.asyncio
 async def test_update_status_service():
@@ -115,5 +117,8 @@ async def test_update_status_service():
     updated = await service.update_status(p_id, "pending", brand_id, actor_id, "brand", deal_id)
     assert updated.status == "pending"
 
+    # Re-selecting the same status is allowed; an unknown status is rejected.
+    again = await service.update_status(p_id, "pending", brand_id, actor_id, "brand", deal_id)
+    assert again.status == "pending"
     with pytest.raises(InvalidStatusTransition):
-        await service.update_status(p_id, "pending", brand_id, actor_id, "brand", deal_id)
+        await service.update_status(p_id, "refunded", brand_id, actor_id, "brand", deal_id)

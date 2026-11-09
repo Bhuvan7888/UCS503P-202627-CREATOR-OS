@@ -51,7 +51,7 @@ async def test_deliverable_valid_transition():
 
 
 @pytest.mark.asyncio
-async def test_deliverable_status_role_gating():
+async def test_deliverable_status_role_rules():
     deliverable_repo = FakeDeliverableRepo()
     activity_log_repo = FakeActivityLogRepo()
     service = DeliverableService(deliverable_repo, activity_log_repo)
@@ -60,11 +60,11 @@ async def test_deliverable_status_role_gating():
     req_create = DeliverableCreateRequest(deal_id=deal_id, title="Test", description="Desc")
     created = await service.create_deliverable(req_create, brand_id, creator_id, "creator")
 
-    # Brand can't advance production progress — that's the creator's job now
-    with pytest.raises(PermissionDeniedError):
-        await service.update_status(
-            created.id, DeliverableStatusUpdateRequest(status="in_production"), brand_id, "brand", brand_id, deal_id
-        )
+    # The brand may set any status (including production progress) since the status-dropdown change
+    moved = await service.update_status(
+        created.id, DeliverableStatusUpdateRequest(status="in_production"), brand_id, "brand", brand_id, deal_id
+    )
+    assert moved.status == "in_production"
 
     # Creator can't approve their own submission — that's the brand's review call
     with pytest.raises(PermissionDeniedError):

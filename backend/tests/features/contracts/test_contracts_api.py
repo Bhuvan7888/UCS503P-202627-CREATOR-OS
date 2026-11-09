@@ -1,7 +1,6 @@
 from datetime import UTC
 from uuid import uuid4
 
-import pytest
 from fastapi.testclient import TestClient
 
 from main import app
@@ -9,10 +8,7 @@ from main import app
 client = TestClient(app)
 
 
-@pytest.mark.asyncio
-async def test_invalid_contract_transition():
-    # Fully fake-repo-based — proves an invalid transition returns 400 with the
-    # typed exception's message, not a 500. No real Supabase credentials needed.
+def _contract_api_setup():
     from datetime import datetime
 
     from features.auth.dependencies import ActorContext, get_current_brand
@@ -44,13 +40,21 @@ async def test_invalid_contract_transition():
         user_id=uuid4(), actor_type="brand", brand_id=uuid4()
     )
 
-    # draft -> signed is invalid
-    response = client.patch(
-        f"/contracts/{contract_id}/status",
-        json={"status": "signed"},
-    )
+    return contract_id
 
+
+def test_contract_status_can_move_freely_between_active_statuses():
+    # Since 8560f05 contract statuses are reversible: draft -> signed is allowed.
+    contract_id = _contract_api_setup()
+    response = client.patch(f"/contracts/{contract_id}/status", json={"status": "signed"})
+    assert response.status_code == 200
+    assert response.json()["status"] == "signed"
+
+
+def test_rejected_contract_transition_returns_400(monkeypatch):
+    # The typed InvalidStatusTransition must still map to a 400 with its message, not a 500.
+    monkeypatch.setattr("features.contracts.service.is_valid_contract_transition", lambda *_: False)
+    contract_id = _contract_api_setup()
+    response = client.patch(f"/contracts/{contract_id}/status", json={"status": "signed"})
     assert response.status_code == 400
     assert "Invalid transition" in response.json()["detail"]
-
-    app.dependency_overrides.clear()

@@ -71,7 +71,9 @@ async def test_contract_valid_transition():
 
 
 @pytest.mark.asyncio
-async def test_contract_invalid_transition():
+async def test_contract_rejected_transition_raises_and_does_not_log(monkeypatch):
+    # Since 8560f05 every move between known statuses is allowed, so force the rule to reject.
+    monkeypatch.setattr("features.contracts.service.is_valid_contract_transition", lambda *_: False)
     contract_repo = FakeContractRepo()
     activity_log_repo = FakeActivityLogRepo()
     service = ContractService(contract_repo, activity_log_repo)
