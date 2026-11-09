@@ -20,3 +20,22 @@ dependencies = [
     "supabase>=2.31.0",
     "uvicorn>=0.52.3",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# Explicit rule set so results don't change with ruff's built-in defaults.
+select = ["E", "W", "F", "I", "B", "UP", "C4", "SIM", "BLE", "DTZ", "RUF", "TRY", "S110"]
+ignore = [
+    "B008",   # FastAPI dependency injection: `Depends(...)` in argument defaults is the framework idiom
+    "E501",   # line length is the formatter's job; long string literals are left as they are
+    "TRY003", # long messages on raise are fine
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S110", "BLE001"]
+
+[tool.ruff.format]
+quote-style = "double"

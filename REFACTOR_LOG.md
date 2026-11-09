@@ -531,3 +531,12 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 |---|---|---|
 | add | `frontend/src/features/messages/constants/messages-polling.ts` (`MESSAGES_POLL_INTERVAL_MS = 4000`) | replaces `POLL_MS = 4000` in ChatPage and CreatorProfilePage and the literal `4000` in AppShell |
 | move | unread-message polling from `src/app/_shell/AppShell.tsx` → `src/features/messages/hooks/useUnreadMessages.ts` (exported from the messages index) | it's messages behaviour; the hook is called at the same position, so hook order and effect timing are unchanged |
+
+## Phase 4.6 — Formatter and linter configuration
+
+| Action | Path | Reason |
+|---|---|---|
+| add | `[tool.ruff]` in `backend/pyproject.toml` | there was no ruff config; results depended on ruff 0.16's built-in defaults. Explicit rules, `line-length = 100`, B008 ignored (FastAPI `Depends()` idiom, 102 of the baseline findings) |
+| add | `frontend/prettier.config.mjs`, `frontend/.prettierignore`, `format` / `format:check` scripts | the frontend had no formatter; config follows the code's existing style (double quotes, semicolons), `printWidth: 100` to match the backend |
+| add | `prettier@3.3.3` devDependency (`frontend/package.json`) | same version the old root workspace used. Lockfile edited surgically (+17 lines, 0 removed): installing with local npm 10 or npm 11 rewrote unrelated `libc` / `@emnapi` entries, so only the prettier entries were added; `npm ci` verified |
+| move | root `prettier.config.js` → `_deprecated/root-workspace/` | belonged to the dead stack (single quotes, tailwind plugin, `apps/web` path) |

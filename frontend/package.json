@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint --ignore-pattern 'creator-dashboard/**'",
     "test:smoke": "node tests/smoke/check-routes.mjs",
-    "generate:api": "openapi-typescript http://localhost:8000/openapi.json -o src/shared/lib/api-types.ts"
+    "generate:api": "openapi-typescript http://localhost:8000/openapi.json -o src/shared/lib/api-types.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
@@ -28,6 +30,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "openapi-typescript": "^7.13.0",
+    "prettier": "3.3.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
