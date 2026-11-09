@@ -17,6 +17,7 @@ from features.payments.service import PaymentService
 from features.payments.supabase_repository import SupabasePaymentRepo
 from shared.errors import InvalidStatusTransition
 from shared.http_errors import map_errors
+from shared.pagination import clamp_page_size
 from shared.supabase_client import get_supabase_client
 
 
@@ -45,7 +46,7 @@ async def list_payments(
     actor: ActorContext = Depends(get_current_actor),
     service: PaymentService = Depends(get_payment_service)
 ):
-    limit = min(limit, 100)
+    limit = clamp_page_size(limit)
     if actor.actor_type == "creator":
         return await service.list_for_creator(actor.creator_id, limit, offset)
     return await service.list_for_brand(actor.brand_id, limit, offset)

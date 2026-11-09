@@ -517,3 +517,10 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | fix | 4× `newStatus as any` → the generated `ContractStatusUpdateRequest`/`DeliverableStatusUpdateRequest` status types | type-only, removes 4 `no-explicit-any` errors |
 | edit | `ClauseReviewPage` session hydration | same documented `eslint-disable-next-line react-hooks/set-state-in-effect` used at the 8 other identical sites |
 | edit | `frontend/playwright.config.ts` | ~40 lines of commented-out create-playwright boilerplate removed; active settings unchanged |
+
+## Phase 4.5 — Magic numbers and hard-coded values
+
+| Action | Path | Reason |
+|---|---|---|
+| add | `backend/shared/pagination.py` (`MAX_PAGE_SIZE = 100`, `clamp_page_size`) | `min(limit, 100)` was repeated in 7 routers (activity_log, contracts, creators, deals, deliverables, negotiation, payments) |
+| edit | `backend/features/demo_mode/mode.py` | `timeout=0.3` → `SUPABASE_PROBE_TIMEOUT_SECONDS` |

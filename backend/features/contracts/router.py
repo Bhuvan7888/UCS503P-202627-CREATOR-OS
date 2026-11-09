@@ -27,6 +27,7 @@ from features.deals.supabase_repository import SupabaseDealRepo
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 from shared.http_errors import map_errors
 from shared.llm.gemini_adapter import GeminiAdapter
+from shared.pagination import clamp_page_size
 from shared.supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)
@@ -205,7 +206,7 @@ async def list_contracts(
     actor: ActorContext = Depends(get_current_actor),
     service: ContractService = Depends(get_contract_service)
 ):
-    limit = min(limit, 100)
+    limit = clamp_page_size(limit)
     if actor.actor_type == "creator":
         return await service.list_for_creator(actor.creator_id, limit, offset)
     return await service.list_for_brand(actor.brand_id, limit, offset)

@@ -5,6 +5,9 @@ from urllib.parse import urlparse
 
 from shared.config import settings
 
+# How long to wait for Supabase's port before falling back to demo mode.
+SUPABASE_PROBE_TIMEOUT_SECONDS = 0.3
+
 # --- Check Supabase Availability ---
 _supabase_available: bool | None = None
 
@@ -23,7 +26,7 @@ def is_demo_mode() -> bool:
         parsed = urlparse(settings.SUPABASE_URL)
         host = parsed.hostname or "127.0.0.1"
         port = parsed.port or (443 if parsed.scheme == "https" else 80)
-        with socket.create_connection((host, port), timeout=0.3):
+        with socket.create_connection((host, port), timeout=SUPABASE_PROBE_TIMEOUT_SECONDS):
             _supabase_available = True
             return False
     except Exception:

@@ -6,6 +6,7 @@ from features.activity_log.models import ActivityLog, ActivityLogManualEntryRequ
 from features.activity_log.service import ActivityLogService
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from features.auth.dependencies import ActorContext, get_current_actor
+from shared.pagination import clamp_page_size
 from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/activity-log", tags=["activity-log"])
@@ -21,7 +22,7 @@ async def get_activity_logs(
     actor: ActorContext = Depends(get_current_actor),
     service: ActivityLogService = Depends(get_activity_log_service)
 ):
-    limit = min(limit, 100)
+    limit = clamp_page_size(limit)
     if deal_id:
         return await service.get_logs_for_deal(str(deal_id), limit, offset)
     if actor.actor_type == "creator":

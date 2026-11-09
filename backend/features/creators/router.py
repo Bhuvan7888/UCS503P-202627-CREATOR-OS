@@ -25,6 +25,7 @@ from features.creators.supabase_repository import (
 )
 from shared.errors import ValidationError
 from shared.http_errors import map_errors
+from shared.pagination import clamp_page_size
 from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/creators", tags=["creators"])
@@ -53,7 +54,7 @@ async def list_creators(
     actor: ActorContext = Depends(get_current_brand),
     service: CreatorService = Depends(get_creator_service)
 ):
-    return await service.list_for_brand(actor.brand_id, min(limit, 100), offset)
+    return await service.list_for_brand(actor.brand_id, clamp_page_size(limit), offset)
 
 @router.patch("/me", response_model=Creator)
 async def update_my_profile(
