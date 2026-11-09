@@ -341,3 +341,12 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | move | `frontend/src/components/creator/RateCalculatorForm.tsx` → `frontend/src/features/negotiation/components/RateCalculatorForm.tsx` | feature folder |
 | add | `frontend/src/app/(creator)/creator/negotiate/[dealId]/page.tsx` | one-line route stub → `@/features/negotiation/NegotiationPage` (URL unchanged) |
 | rename | default export in `frontend/src/features/negotiation/NegotiationPage.tsx` → `NegotiationPage` | component name = file name |
+
+## Phase 3.3 — Frontend feature: `contract-intelligence`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(brand)/contracts/[id]/clauses/page.tsx` → `frontend/src/features/contract-intelligence/ClauseReviewPage.tsx` | feature folder |
+| move | `frontend/src/components/ClauseCard.tsx` → `frontend/src/features/contract-intelligence/components/ClauseCard.tsx` | feature folder |
+| add | `frontend/src/app/(brand)/contracts/[id]/clauses/page.tsx` | one-line route stub → `@/features/contract-intelligence/ClauseReviewPage` (URL unchanged) |
+| rename | default export in `frontend/src/features/contract-intelligence/ClauseReviewPage.tsx` → `ClauseReviewPage` | component name = file name |
