@@ -489,3 +489,11 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | split | `findHighlights` + `Highlight` → `features/contract-intelligence/utils/find-highlights.utils.ts`; `HighlightedText` → `features/contract-intelligence/components/HighlightedText.tsx` | ClauseReviewPage 325 → ~250 lines |
 | split | `BarRow`, `RevenueChart` → `features/analytics/components/` | AnalyticsPage |
 | split | `dealStageVariant`, `getAvailableStatuses`, `getBrandAvailableStatuses`, `deliverableStatusVariant` → `features/deliverables/utils/deliverable-status.utils.ts` | DeliverablesPage 322 → ~260 lines |
+
+## Phase 4.3 — Split oversized backend functions
+
+| Action | Path | Reason |
+|---|---|---|
+| split | `AnalyticsService.get_brand_analytics` (89 lines) → pure functions in new `backend/features/analytics/rules.py` (`revenue_by_month`, `payment_totals`, `top_campaigns`, `creator_performance`, `overdue_payments`, `roster_by_niche`); the service now only fetches and assembles | each aggregate is named and testable. **Proof:** old (HEAD) vs new service output compared with `model_dump()` for all 3 demo brands: identical; unit test passes |
+| deferred | `features/demo_mode/seed.py::seed_demo_data` (346 lines), `scripts/seed_demo.py::main` (387 lines), `features/contracts/contract_pdf.py::generate_sample_contract_pdf` (60), `DeliverableService.update_status` (56) | the seeds are linear data scripts whose nested helpers close over many locals (splitting means threading ~15 ids through calls), and `scripts/seed_demo.py` writes to the real Supabase project, so it can't be exercised here. Recommended follow-up with a seed snapshot test |
+| deferred | `ContractsPage` (370), `DealDetailPage` (349), `CreatorDashboardPage` (328) | single stateful components; splitting needs state/handler threading into child components. Safer with UI tests in place (none exist yet) |
