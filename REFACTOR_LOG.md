@@ -330,3 +330,14 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | move | `frontend/src/components/creator/GrowthTracker.tsx` → `frontend/src/features/creators/components/GrowthTracker.tsx` | feature folder |
 | add | `frontend/src/app/(brand)/creators/[id]/page.tsx` | one-line route stub → `@/features/creators/CreatorProfilePage` (URL unchanged) |
 | rename | default export in `frontend/src/features/creators/CreatorProfilePage.tsx` → `CreatorProfilePage` | component name = file name |
+
+## Phase 3.3 — Frontend feature: `negotiation`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(creator)/creator/negotiate/[dealId]/page.tsx` → `frontend/src/features/negotiation/NegotiationPage.tsx` | feature folder |
+| move | `frontend/src/components/creator/ForecastChart.tsx` → `frontend/src/features/negotiation/components/ForecastChart.tsx` | feature folder |
+| move | `frontend/src/components/creator/NegotiationChat.tsx` → `frontend/src/features/negotiation/components/NegotiationChat.tsx` | feature folder |
+| move | `frontend/src/components/creator/RateCalculatorForm.tsx` → `frontend/src/features/negotiation/components/RateCalculatorForm.tsx` | feature folder |
+| add | `frontend/src/app/(creator)/creator/negotiate/[dealId]/page.tsx` | one-line route stub → `@/features/negotiation/NegotiationPage` (URL unchanged) |
+| rename | default export in `frontend/src/features/negotiation/NegotiationPage.tsx` → `NegotiationPage` | component name = file name |
