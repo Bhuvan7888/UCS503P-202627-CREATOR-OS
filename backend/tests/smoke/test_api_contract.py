@@ -93,6 +93,6 @@ def test_route_table_is_unchanged():
 )
 def test_protected_route_rejects_anonymous_request(method: str, path: str):
     url = re.sub(r"\{[^}]+\}", _PLACEHOLDER_ID, path)
-    body = {} if method in ("POST", "PATCH") else None
+    body: dict[str, object] | None = {} if method in ("POST", "PATCH") else None
     response = client.request(method, url, json=body)
     assert response.status_code == 401

@@ -16,3 +16,20 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | Action | Path | Reason |
 |---|---|---|
 | add | `AUDIT.md` | feature inventory, problems, proposed structure (awaiting Checkpoint 1 approval) |
+
+## Phase 3.1 — Hygiene
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `turbo.json`, `pnpm-workspace.yaml`, `pnpm.yaml`, `pnpm-lock.yaml`, `.npmrc`, `package.json`, `tsconfig.json`, `.eslintrc.js`, `commitlint.config.json`, `.husky/` → `_deprecated/root-workspace/` | tooling for the deleted pnpm/Turborepo NestJS monorepo; CI and both apps don't use it; husky hooks were never installed |
+| move | `.env.example` → `_deprecated/root-workspace/.env.example` | lists NestJS-era vars; none are read by the code |
+| move | `docker-compose.yml`, `scripts/init-db.sql` → `_deprecated/docker/` | compose builds `apps/*/Dockerfile.dev`, which don't exist |
+| move | `.cursorrules` → `_deprecated/.cursorrules` | describes a different product/stack ("DEALOS", NestJS) and misleads AI tools |
+| move | `packages/shared/` → `_deprecated/packages/shared/` | `@creator-os/shared` imported by nothing |
+| move | `DESIGN_SYSTEM.md`, `FEATURE_SPEC.md` → `docs/archive/` | stale (dark theme) / aspirational spec |
+| move | `PROGRESS.md` → `docs/PROGRESS.md` | docs live in `docs/` |
+| add | `_deprecated/README.md` | explains the folder |
+| add | `frontend/.env.example` | documents `NEXT_PUBLIC_API_URL` (the only env var the frontend reads); `backend/.env.example` already lists all 8 backend vars |
+| edit | `.gitignore` | dropped Prisma `apps/api` entries; added Python caches, Playwright output, `.env.*` with `!.env.example` |
+| edit | `frontend/.gitignore` | un-ignore `.env.example` (`.env*` was swallowing it) |
+| fix | `backend/tests/smoke/test_api_contract.py` | type annotation so the new file adds no mypy error |
