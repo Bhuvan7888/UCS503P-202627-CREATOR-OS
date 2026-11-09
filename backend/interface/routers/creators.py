@@ -12,8 +12,8 @@ from domain.models.creator import (
     GrowthSnapshot,
     GrowthSnapshotCreateRequest,
 )
+from features.activity_log import SupabaseActivityLogRepo
 from infrastructure.supabase.repos import (
-    SupabaseActivityLogRepo,
     SupabaseBrandRepo,
     SupabaseCreatorRepo,
     SupabaseGrowthSnapshotRepo,

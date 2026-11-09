@@ -46,6 +46,7 @@ from domain.models.negotiation import (
     NegotiationSessionCreate,
 )
 from domain.models.payment import PaymentCreateRequest
+from features.activity_log import SupabaseActivityLogRepo
 from features.messages import Message, SupabaseMessageRepo
 from infrastructure.email.resend_adapter import ResendAdapter
 from infrastructure.pdf import extract_text
@@ -54,7 +55,6 @@ from infrastructure.supabase.contract_intelligence_repos import (
     SupabaseEscalationRepo,
 )
 from infrastructure.supabase.repos import (
-    SupabaseActivityLogRepo,
     SupabaseBrandMemberRepo,
     SupabaseBrandRepo,
     SupabaseContractRepo,

@@ -3,7 +3,6 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from domain.models.activity_log import ActivityLog
 from domain.models.brand import Brand, BrandMember
 from domain.models.contract import Contract
 from domain.models.contract_intelligence import ClauseCardOut, EscalationOut
@@ -17,6 +16,7 @@ from domain.models.negotiation import (
     NegotiationSession,
 )
 from domain.models.payment import Payment
+from features.activity_log import ActivityLog
 from features.messages import Message
 
 

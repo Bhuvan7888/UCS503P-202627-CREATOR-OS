@@ -8,7 +8,8 @@ from domain.models.payment import (
     PaymentCreateRequest,
     PaymentStatusUpdateRequest,
 )
-from infrastructure.supabase.repos import SupabaseActivityLogRepo, SupabasePaymentRepo
+from features.activity_log import SupabaseActivityLogRepo
+from infrastructure.supabase.repos import SupabasePaymentRepo
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from shared.errors import InvalidStatusTransition
 from shared.supabase_client import get_supabase_client

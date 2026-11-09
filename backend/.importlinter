@@ -1,4 +1,5 @@
 [importlinter]
+exclude_type_checking_imports = True
 root_packages =
     domain
     application
@@ -32,6 +33,7 @@ name = Inside each feature: router > services > domain (models, rules, repositor
 type = layers
 containers =
     features.benchmarks
+    features.activity_log
     features.messages
     features.analytics
 layers =

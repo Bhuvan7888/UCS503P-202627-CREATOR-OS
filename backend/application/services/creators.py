@@ -1,13 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from domain.interfaces.repositories import (
-    ActivityLogRepo,
-    BrandRepo,
-    CreatorRepo,
-    GrowthSnapshotRepo,
-)
-from domain.models.activity_log import ActivityLog
+from domain.interfaces.repositories import BrandRepo, CreatorRepo, GrowthSnapshotRepo
 from domain.models.brand import Brand
 from domain.models.creator import (
     Creator,
@@ -15,6 +9,7 @@ from domain.models.creator import (
     GrowthSnapshot,
     GrowthSnapshotCreateRequest,
 )
+from features.activity_log import ActivityLog, ActivityLogRepo
 from shared.errors import ValidationError
 
 

@@ -12,12 +12,9 @@ from domain.models.contract import (
     ContractStatusUpdateRequest,
 )
 from domain.models.contract_intelligence import ClauseInput
+from features.activity_log import SupabaseActivityLogRepo
 from infrastructure.pdf import extract_text, generate_sample_contract_pdf
-from infrastructure.supabase.repos import (
-    SupabaseActivityLogRepo,
-    SupabaseContractRepo,
-    SupabaseDealRepo,
-)
+from infrastructure.supabase.repos import SupabaseContractRepo, SupabaseDealRepo
 from infrastructure.supabase.storage import SupabaseStorage
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from interface.routers.contract_intelligence import get_ci_service

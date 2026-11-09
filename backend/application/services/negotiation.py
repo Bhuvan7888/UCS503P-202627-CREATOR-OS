@@ -2,7 +2,6 @@ from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from domain.interfaces.repositories import (
-    ActivityLogRepo,
     DealRepo,
     GrowthSnapshotRepo,
     NegotiationConversationRepo,
@@ -15,7 +14,6 @@ from domain.logic.negotiation import (
     calculate_range,
     checklist_is_complete,
 )
-from domain.models.activity_log import ActivityLog
 from domain.models.negotiation import (
     ChecklistState,
     ForecastPoint,
@@ -24,6 +22,7 @@ from domain.models.negotiation import (
     NegotiationSession,
     NegotiationSessionCreate,
 )
+from features.activity_log import ActivityLog, ActivityLogRepo
 from shared.llm.llm_port import LLMPort
 
 DEFAULT_WEEKLY_GROWTH_RATE = 0.05

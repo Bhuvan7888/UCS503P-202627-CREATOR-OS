@@ -1,5 +1,4 @@
 from domain.interfaces.repositories import (
-    ActivityLogRepo,
     BrandMemberRepo,
     BrandRepo,
     ContractRepo,
@@ -8,6 +7,7 @@ from domain.interfaces.repositories import (
     DeliverableRepo,
     PaymentRepo,
 )
+from features.activity_log import ActivityLogRepo
 from tests.fakes.fake_repos import (
     FakeActivityLogRepo,
     FakeBrandMemberRepo,

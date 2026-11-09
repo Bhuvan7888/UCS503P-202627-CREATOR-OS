@@ -8,10 +8,8 @@ from domain.models.deliverable import (
     DeliverableCreateRequest,
     DeliverableStatusUpdateRequest,
 )
-from infrastructure.supabase.repos import (
-    SupabaseActivityLogRepo,
-    SupabaseDeliverableRepo,
-)
+from features.activity_log import SupabaseActivityLogRepo
+from infrastructure.supabase.repos import SupabaseDeliverableRepo
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 from shared.supabase_client import get_supabase_client

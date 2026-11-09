@@ -2,9 +2,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from application.services.activity_log import ActivityLogService
-from domain.models.activity_log import ActivityLog, ActivityLogManualEntryRequest
-from infrastructure.supabase.repos import SupabaseActivityLogRepo
+from features.activity_log.models import ActivityLog, ActivityLogManualEntryRequest
+from features.activity_log.service import ActivityLogService
+from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from interface.dependencies import ActorContext, get_current_actor
 from shared.supabase_client import get_supabase_client
 

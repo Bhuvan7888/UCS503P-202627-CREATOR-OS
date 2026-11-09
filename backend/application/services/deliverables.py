@@ -1,14 +1,14 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from domain.interfaces.repositories import ActivityLogRepo, DeliverableRepo
+from domain.interfaces.repositories import DeliverableRepo
 from domain.logic.transitions import is_valid_deliverable_transition
-from domain.models.activity_log import ActivityLog
 from domain.models.deliverable import (
     Deliverable,
     DeliverableCreateRequest,
     DeliverableStatusUpdateRequest,
 )
+from features.activity_log import ActivityLog, ActivityLogRepo
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 
 _CREATOR_ALLOWED_STATUSES = {"pending", "in_production", "editing", "submitted", "revision_requested"}

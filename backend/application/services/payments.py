@@ -1,10 +1,14 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from domain.interfaces.repositories import ActivityLogRepo, PaymentRepo
-from domain.logic.payments import create_invoice, validate_mark_paid, validate_status_change
-from domain.models.activity_log import ActivityLog
+from domain.interfaces.repositories import PaymentRepo
+from domain.logic.payments import (
+    create_invoice,
+    validate_mark_paid,
+    validate_status_change,
+)
 from domain.models.payment import Payment, PaymentCreateRequest
+from features.activity_log import ActivityLog, ActivityLogRepo
 
 
 class PaymentService:

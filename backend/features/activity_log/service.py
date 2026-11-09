@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from domain.interfaces.repositories import ActivityLogRepo
-from domain.models.activity_log import ActivityLog
+from features.activity_log.models import ActivityLog
+from features.activity_log.repository import ActivityLogRepo
 
 
 class ActivityLogService:

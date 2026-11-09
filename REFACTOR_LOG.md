@@ -108,3 +108,16 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | split | `MessageRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/messages/repository.py` | one repository/port per feature |
 | add | `backend/features/messages/__init__.py` | public API (generated from names other packages import) |
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+
+## Phase 3.3 — Backend feature: `activity_log`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/activity_log.py` → `backend/features/activity_log/router.py` | feature folder |
+| move | `backend/application/services/activity_log.py` → `backend/features/activity_log/service.py` | feature folder |
+| move | `backend/domain/models/activity_log.py` → `backend/features/activity_log/models.py` | feature folder |
+| split | `SupabaseActivityLogRepo` from `backend/infrastructure/supabase/repos.py` → `backend/features/activity_log/supabase_repository.py` | one repository/port per feature |
+| split | `ActivityLogRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/activity_log/repository.py` | one repository/port per feature |
+| add | `backend/features/activity_log/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+| edit | `backend/.importlinter` | `exclude_type_checking_imports = True`: imports under `if TYPE_CHECKING:` never run, so they are not real dependencies |
