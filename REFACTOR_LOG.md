@@ -285,3 +285,10 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | move | `frontend/src/app/(brand)/activity/page.tsx` → `frontend/src/features/activity-log/ActivityLogPage.tsx` | feature folder |
 | add | `frontend/src/app/(brand)/activity/page.tsx` | one-line route stub → `@/features/activity-log/ActivityLogPage` (URL unchanged) |
 | rename | default export in `frontend/src/features/activity-log/ActivityLogPage.tsx` → `ActivityLogPage` | component name = file name |
+
+## Phase 3.3 — Frontend feature: `analytics`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(brand)/analytics/page.tsx` → `frontend/src/features/analytics/AnalyticsPage.tsx` | feature folder |
+| add | `frontend/src/app/(brand)/analytics/page.tsx` | one-line route stub → `@/features/analytics/AnalyticsPage` (URL unchanged) |
