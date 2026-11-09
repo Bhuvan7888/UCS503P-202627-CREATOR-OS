@@ -24,6 +24,7 @@ from features.negotiation.supabase_repository import (
     SupabaseNegotiationConversationRepo,
     SupabaseNegotiationSessionRepo,
 )
+from shared.http_errors import map_errors
 from shared.llm.gemini_adapter import GeminiAdapter
 from shared.supabase_client import get_supabase_client
 
@@ -97,10 +98,8 @@ async def get_forecast(
     # weekly_growth_rate omitted => derive it from the creator's real
     # growth-snapshot history instead of a manual assumption (falls back to
     # a default rate if they don't have enough history yet).
-    try:
+    with map_errors({ValueError: 404}):
         return await service.get_forecast(id, weekly_growth_rate, weeks)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
 
 @router.patch("/{id}/checklist", response_model=NegotiationSession)
 async def update_checklist(
@@ -117,16 +116,10 @@ async def create_counter_offer(
     actor: ActorContext = Depends(get_current_actor),
     service: NegotiationService = Depends(get_negotiation_service)
 ):
-    try:
+    with map_errors({ValueError: 400}, by_message={"Checklist is not complete": 409, "Session not found": 404}):
         return await service.create_counter_offer(
             id, request.amount, request.message, actor.actor_id, actor.actor_type
         )
-    except ValueError as e:
-        if str(e) == "Checklist is not complete":
-            raise HTTPException(status_code=409, detail=str(e))
-        if str(e) == "Session not found":
-            raise HTTPException(status_code=404, detail=str(e))
-        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/{id}/conversations", response_model=NegotiationConversation)
 async def analyze_conversation(
@@ -171,15 +164,9 @@ async def generate_script(
     request: ScriptGenerateRequest,
     service: NegotiationService = Depends(get_negotiation_service)
 ):
-    try:
+    with map_errors({ValueError: 400}, by_message={"Checklist is not complete": 409, "Session not found": 404}):
         if request.use_llm:
             return await service.generate_script_llm(id, request.kind)
         else:
             return await service.generate_script(id, request.kind)
-    except ValueError as e:
-        if str(e) == "Checklist is not complete":
-            raise HTTPException(status_code=409, detail=str(e))
-        if str(e) == "Session not found":
-            raise HTTPException(status_code=404, detail=str(e))
-        raise HTTPException(status_code=400, detail=str(e))
 

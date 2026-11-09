@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from features.auth.dependencies import (
@@ -16,6 +16,7 @@ from features.payments.models import (
 from features.payments.service import PaymentService
 from features.payments.supabase_repository import SupabasePaymentRepo
 from shared.errors import InvalidStatusTransition
+from shared.http_errors import map_errors
 from shared.supabase_client import get_supabase_client
 
 
@@ -57,14 +58,8 @@ async def mark_paid(
     actor: ActorContext = Depends(get_current_brand),
     service: PaymentService = Depends(get_payment_service)
 ):
-    try:
+    with map_errors({ValueError: 400, InvalidStatusTransition: 400}, by_message={"Payment not found": 404}):
         return await service.mark_paid(payment_id, actor.brand_id, actor.actor_id, actor.actor_type, deal_id)
-    except ValueError as e:
-        if str(e) == "Payment not found":
-            raise HTTPException(status_code=404, detail=str(e))
-        raise HTTPException(status_code=400, detail=str(e))
-    except InvalidStatusTransition as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
 @router.patch("/{contract_id}/status", response_model=Payment)
 async def update_payment_status(
@@ -75,13 +70,7 @@ async def update_payment_status(
     actor: ActorContext = Depends(get_current_brand),
     service: PaymentService = Depends(get_payment_service)
 ):
-    try:
+    with map_errors({ValueError: 400, InvalidStatusTransition: 400}, by_message={"Payment not found": 404}):
         return await service.update_status(
             payment_id, request.status, actor.brand_id, actor.actor_id, actor.actor_type, deal_id
         )
-    except ValueError as e:
-        if str(e) == "Payment not found":
-            raise HTTPException(status_code=404, detail=str(e))
-        raise HTTPException(status_code=400, detail=str(e))
-    except InvalidStatusTransition as e:
-        raise HTTPException(status_code=400, detail=str(e))

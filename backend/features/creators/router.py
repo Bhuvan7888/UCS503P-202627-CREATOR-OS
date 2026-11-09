@@ -24,6 +24,7 @@ from features.creators.supabase_repository import (
     SupabaseGrowthSnapshotRepo,
 )
 from shared.errors import ValidationError
+from shared.http_errors import map_errors
 from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/creators", tags=["creators"])
@@ -83,10 +84,8 @@ async def link_brand(
 ):
     if not actor.creator_id:
         raise HTTPException(status_code=403, detail="This action requires a creator account")
-    try:
+    with map_errors({ValidationError: 400}):
         return await service.link_brand(actor.creator_id, request.invite_code)
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/me/growth-snapshots", response_model=GrowthSnapshot)
 async def add_growth_snapshot(

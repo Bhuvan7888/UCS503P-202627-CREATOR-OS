@@ -16,6 +16,7 @@ from features.deliverables.models import (
 from features.deliverables.service import DeliverableService
 from features.deliverables.supabase_repository import SupabaseDeliverableRepo
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
+from shared.http_errors import map_errors
 from shared.supabase_client import get_supabase_client
 
 router = APIRouter(tags=["deliverables"])
@@ -59,13 +60,7 @@ async def update_deliverable_status(
     actor: ActorContext = Depends(get_current_actor),
     service: DeliverableService = Depends(get_deliverable_service)
 ):
-    try:
+    with map_errors({InvalidStatusTransition: 400, ValueError: 404, PermissionDeniedError: 403}):
         return await service.update_status(
             id, request, actor.actor_id, actor.actor_type, actor.brand_id, deal_id, actor.creator_id
         )
-    except InvalidStatusTransition as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except PermissionDeniedError as e:
-        raise HTTPException(status_code=403, detail=str(e))

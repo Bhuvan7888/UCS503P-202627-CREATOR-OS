@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from features.auth.models import (
     AuthSession,
@@ -14,6 +14,7 @@ from features.brands.supabase_repository import (
 )
 from features.creators.supabase_repository import SupabaseCreatorRepo
 from shared.errors import ValidationError
+from shared.http_errors import map_errors
 from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -37,10 +38,8 @@ async def brand_signup(
     request: BrandSignupRequest,
     service: AuthService = Depends(get_auth_service)
 ):
-    try:
+    with map_errors({ValidationError: 400}):
         return await service.brand_signup(request)
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/brand/login", response_model=AuthSession)
@@ -53,10 +52,8 @@ async def brand_login(
     if demo_session:
         return demo_session
 
-    try:
+    with map_errors({ValidationError: 400}):
         return await service.brand_login(request)
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/creator/signup", response_model=AuthSession)
@@ -64,10 +61,8 @@ async def creator_signup(
     request: CreatorSignupRequest,
     service: AuthService = Depends(get_auth_service)
 ):
-    try:
+    with map_errors({ValidationError: 400}):
         return await service.creator_signup(request)
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/creator/login", response_model=AuthSession)
@@ -80,7 +75,5 @@ async def creator_login(
     if demo_session:
         return demo_session
 
-    try:
+    with map_errors({ValidationError: 400}):
         return await service.creator_login(request)
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))

@@ -15,6 +15,7 @@ from features.deals.service import DealService
 from features.deals.supabase_repository import SupabaseDealRepo
 from features.negotiation.supabase_repository import SupabaseNegotiationSessionRepo
 from shared.errors import NotFoundError, PermissionDeniedError
+from shared.http_errors import map_errors
 from shared.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/deals", tags=["deals"])
@@ -75,12 +76,8 @@ async def mark_deal_viewed(
 ):
     if actor.actor_type != "brand":
         raise HTTPException(status_code=403, detail="Only the owning brand can mark a deal viewed")
-    try:
+    with map_errors({NotFoundError: 404, PermissionDeniedError: 403}):
         return await service.mark_viewed(id, actor.brand_id)
-    except NotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except PermissionDeniedError as e:
-        raise HTTPException(status_code=403, detail=str(e))
 
 @router.get("/weekly-value", response_model=list[WeeklyValuePoint])
 async def weekly_completed_value(
@@ -98,11 +95,7 @@ async def update_deal_status(
     actor: ActorContext = Depends(get_current_actor),
     service: DealService = Depends(get_deal_service)
 ):
-    try:
+    with map_errors({NotFoundError: 404, PermissionDeniedError: 403}):
         return await service.update_status(
             id, request.status, actor.actor_id, actor.actor_type, actor.brand_id, actor.creator_id
         )
-    except NotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except PermissionDeniedError as e:
-        raise HTTPException(status_code=403, detail=str(e))
