@@ -84,3 +84,15 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
 | edit | `backend/main.py` | routers imported explicitly as `<feature>_router` (include order unchanged) so each feature move is a plain import rewrite |
 | edit | `backend/.importlinter` | new per-feature layers contract (`router > service > models : rules : repository`), verified to fail on a deliberate violation |
+
+## Phase 3.3 — Backend feature: `analytics`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/analytics.py` → `backend/features/analytics/router.py` | feature folder |
+| move | `backend/application/services/analytics.py` → `backend/features/analytics/service.py` | feature folder |
+| move | `backend/domain/models/analytics.py` → `backend/features/analytics/models.py` | feature folder |
+| move | `backend/tests/unit/test_analytics.py` → `backend/tests/features/analytics/test_analytics_service.py` | tests mirror the feature |
+| add | `backend/features/analytics/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+| edit | `backend/.importlinter` | feature layers marked optional `(layer)`; features don't all have every layer |

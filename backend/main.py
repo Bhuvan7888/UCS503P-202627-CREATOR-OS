@@ -3,9 +3,9 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from features.analytics.router import router as analytics_router
 from features.benchmarks.router import router as benchmarks_router
 from interface.routers.activity_log import router as activity_log_router
-from interface.routers.analytics import router as analytics_router
 from interface.routers.auth import router as auth_router
 from interface.routers.contract_intelligence import escalations_router
 from interface.routers.contract_intelligence import (

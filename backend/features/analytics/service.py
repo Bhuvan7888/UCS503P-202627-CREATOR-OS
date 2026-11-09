@@ -10,7 +10,7 @@ from domain.interfaces.repositories import (
     DealRepo,
     PaymentRepo,
 )
-from domain.models.analytics import (
+from features.analytics.models import (
     BrandAnalytics,
     CreatorPerformance,
     NicheBreakdown,

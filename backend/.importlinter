@@ -32,7 +32,8 @@ name = Inside each feature: router > services > domain (models, rules, repositor
 type = layers
 containers =
     features.benchmarks
+    features.analytics
 layers =
-    router
-    service
-    models : rules : repository
+    (router)
+    (service)
+    (models) : (rules) : (repository)

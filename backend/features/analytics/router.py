@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from application.services.analytics import AnalyticsService
-from domain.models.analytics import BrandAnalytics
+from features.analytics.models import BrandAnalytics
+from features.analytics.service import AnalyticsService
 from infrastructure.supabase.repos import (
     SupabaseContractRepo,
     SupabaseCreatorRepo,

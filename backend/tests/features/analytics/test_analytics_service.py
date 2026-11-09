@@ -3,11 +3,11 @@ from uuid import uuid4
 
 import pytest
 
-from application.services.analytics import AnalyticsService
 from domain.models.contract import Contract
 from domain.models.creator import Creator
 from domain.models.deal import Deal
 from domain.models.payment import Payment
+from features.analytics import AnalyticsService
 from tests.fakes.fake_repos import (
     FakeContractRepo,
     FakeCreatorRepo,
