@@ -5,13 +5,13 @@ from domain.models.brand import Brand, BrandMember
 from domain.models.contract import Contract
 from domain.models.creator import Creator
 from domain.models.deal import Deal
-from domain.models.deliverable import Deliverable
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationOffer,
     NegotiationSession,
 )
 from features.activity_log import ActivityLog
+from features.deliverables import Deliverable
 from features.payments import Payment
 
 

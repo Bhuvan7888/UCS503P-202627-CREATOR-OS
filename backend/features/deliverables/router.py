@@ -2,14 +2,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from application.services.deliverables import DeliverableService
-from domain.models.deliverable import (
+from features.activity_log import SupabaseActivityLogRepo
+from features.deliverables.models import (
     Deliverable,
     DeliverableCreateRequest,
     DeliverableStatusUpdateRequest,
 )
-from features.activity_log import SupabaseActivityLogRepo
-from infrastructure.supabase.repos import SupabaseDeliverableRepo
+from features.deliverables.service import DeliverableService
+from features.deliverables.supabase_repository import SupabaseDeliverableRepo
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 from shared.supabase_client import get_supabase_client

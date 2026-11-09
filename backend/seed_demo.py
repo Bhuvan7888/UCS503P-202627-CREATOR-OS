@@ -29,22 +29,23 @@ from application.services.contract_intelligence import ContractIntelligenceServi
 from application.services.contracts import ContractService
 from application.services.creators import CreatorService
 from application.services.deals import DealService
-from application.services.deliverables import DeliverableService
 from application.services.negotiation import NegotiationService
 from domain.models.auth import BrandSignupRequest, CreatorSignupRequest
 from domain.models.contract import ContractStatusUpdateRequest
 from domain.models.creator import GrowthSnapshot
 from domain.models.deal import DealCreateRequest
-from domain.models.deliverable import (
-    DeliverableCreateRequest,
-    DeliverableStatusUpdateRequest,
-)
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationConversation,
     NegotiationSessionCreate,
 )
 from features.activity_log import SupabaseActivityLogRepo
+from features.deliverables import (
+    DeliverableCreateRequest,
+    DeliverableService,
+    DeliverableStatusUpdateRequest,
+    SupabaseDeliverableRepo,
+)
 from features.messages import Message, SupabaseMessageRepo
 from features.payments import PaymentCreateRequest, PaymentService, SupabasePaymentRepo
 from infrastructure.email.resend_adapter import ResendAdapter
@@ -59,7 +60,6 @@ from infrastructure.supabase.repos import (
     SupabaseContractRepo,
     SupabaseCreatorRepo,
     SupabaseDealRepo,
-    SupabaseDeliverableRepo,
     SupabaseGrowthSnapshotRepo,
     SupabaseNegotiationConversationRepo,
     SupabaseNegotiationSessionRepo,

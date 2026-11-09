@@ -4,9 +4,9 @@ from domain.interfaces.repositories import (
     ContractRepo,
     CreatorRepo,
     DealRepo,
-    DeliverableRepo,
 )
 from features.activity_log import ActivityLogRepo
+from features.deliverables import DeliverableRepo
 from features.payments import PaymentRepo
 from tests.fakes.fake_repos import (
     FakeActivityLogRepo,

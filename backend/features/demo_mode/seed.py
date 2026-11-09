@@ -12,11 +12,11 @@ from domain.models.contract import Contract
 from domain.models.contract_intelligence import ClauseCardOut
 from domain.models.creator import Creator, GrowthSnapshot
 from domain.models.deal import Deal
-from domain.models.deliverable import Deliverable
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationSession,
 )
+from features.deliverables import Deliverable
 from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS
 from features.messages import Message
 from features.payments import Payment
