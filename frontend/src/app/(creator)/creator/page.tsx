@@ -5,7 +5,7 @@ import { Handshake, Briefcase } from "lucide-react";
 import client from "@/lib/api";
 import { EmptyState } from "@/components/EmptyState";
 import { StatusPill } from "@/components/StatusPill";
-import { GrowthTracker } from "@/components/creator/GrowthTracker";
+import { GrowthTracker } from "@/features/creators/components/GrowthTracker";
 import { DealsTable } from "@/components/creator/DealsTable";
 import { loadSession } from "@/lib/auth";
 import type { components } from "@/lib/api-types";

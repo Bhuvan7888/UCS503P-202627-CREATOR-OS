@@ -321,3 +321,12 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | move | `frontend/src/app/page.tsx` → `frontend/src/features/landing/LandingPage.tsx` | feature folder |
 | move | `frontend/src/app/landing.module.css` → `frontend/src/features/landing/landing.module.css` | feature folder |
 | add | `frontend/src/app/page.tsx` | one-line route stub → `@/features/landing/LandingPage` (URL unchanged) |
+
+## Phase 3.3 — Frontend feature: `creators`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(brand)/creators/[id]/page.tsx` → `frontend/src/features/creators/CreatorProfilePage.tsx` | feature folder |
+| move | `frontend/src/components/creator/GrowthTracker.tsx` → `frontend/src/features/creators/components/GrowthTracker.tsx` | feature folder |
+| add | `frontend/src/app/(brand)/creators/[id]/page.tsx` | one-line route stub → `@/features/creators/CreatorProfilePage` (URL unchanged) |
+| rename | default export in `frontend/src/features/creators/CreatorProfilePage.tsx` → `CreatorProfilePage` | component name = file name |
