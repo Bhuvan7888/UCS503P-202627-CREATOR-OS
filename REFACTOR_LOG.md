@@ -121,3 +121,18 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | add | `backend/features/activity_log/__init__.py` | public API (generated from names other packages import) |
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
 | edit | `backend/.importlinter` | `exclude_type_checking_imports = True`: imports under `if TYPE_CHECKING:` never run, so they are not real dependencies |
+
+## Phase 3.3 — Backend feature: `payments`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/payments.py` → `backend/features/payments/router.py` | feature folder |
+| move | `backend/application/services/payments.py` → `backend/features/payments/service.py` | feature folder |
+| move | `backend/domain/models/payment.py` → `backend/features/payments/models.py` | feature folder |
+| move | `backend/domain/logic/payments.py` → `backend/features/payments/rules.py` | feature folder |
+| split | `SupabasePaymentRepo` from `backend/infrastructure/supabase/repos.py` → `backend/features/payments/supabase_repository.py` | one repository/port per feature |
+| split | `PaymentRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/payments/repository.py` | one repository/port per feature |
+| move | `backend/tests/unit/test_payments.py` → `backend/tests/features/payments/test_payments_service.py` | tests mirror the feature |
+| split | `=client`, `test_payment_mark_paid_400` from `backend/tests/integration/test_routers.py` → `backend/tests/features/payments/test_payments_api.py` | tests mirror the feature |
+| add | `backend/features/payments/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |

@@ -3,13 +3,14 @@ from uuid import uuid4
 
 import pytest
 
-from application.services.payments import PaymentService
-from domain.logic.payments import (
+from features.payments import (
+    Payment,
+    PaymentCreateRequest,
+    PaymentService,
     create_invoice,
     validate_mark_paid,
     validate_status_change,
 )
-from domain.models.payment import Payment, PaymentCreateRequest
 from shared.errors import InvalidStatusTransition
 from tests.fakes.fake_repos import FakeActivityLogRepo, FakePaymentRepo
 

@@ -17,9 +17,9 @@ from domain.models.negotiation import (
     ChecklistState,
     NegotiationSession,
 )
-from domain.models.payment import Payment
 from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS
 from features.messages import Message
+from features.payments import Payment
 
 if TYPE_CHECKING:
     from features.demo_mode.demo_store import DemoStore

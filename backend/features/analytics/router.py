@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends
 
 from features.analytics.models import BrandAnalytics
 from features.analytics.service import AnalyticsService
+from features.payments import SupabasePaymentRepo
 from infrastructure.supabase.repos import (
     SupabaseContractRepo,
     SupabaseCreatorRepo,
     SupabaseDealRepo,
-    SupabasePaymentRepo,
 )
 from interface.dependencies import ActorContext, get_current_brand
 from shared.supabase_client import get_supabase_client

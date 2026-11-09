@@ -4,12 +4,7 @@ from collections import Counter, defaultdict
 from datetime import date
 from uuid import UUID
 
-from domain.interfaces.repositories import (
-    ContractRepo,
-    CreatorRepo,
-    DealRepo,
-    PaymentRepo,
-)
+from domain.interfaces.repositories import ContractRepo, CreatorRepo, DealRepo
 from features.analytics.models import (
     BrandAnalytics,
     CreatorPerformance,
@@ -17,6 +12,7 @@ from features.analytics.models import (
     RevenueMonth,
     TopBrand,
 )
+from features.payments import PaymentRepo
 
 # Analytics reads the whole brand in one pass rather than paginating, since an
 # brand's own roster/deal volume is small enough for this to be cheap.

@@ -31,7 +31,6 @@ from application.services.creators import CreatorService
 from application.services.deals import DealService
 from application.services.deliverables import DeliverableService
 from application.services.negotiation import NegotiationService
-from application.services.payments import PaymentService
 from domain.models.auth import BrandSignupRequest, CreatorSignupRequest
 from domain.models.contract import ContractStatusUpdateRequest
 from domain.models.creator import GrowthSnapshot
@@ -45,9 +44,9 @@ from domain.models.negotiation import (
     NegotiationConversation,
     NegotiationSessionCreate,
 )
-from domain.models.payment import PaymentCreateRequest
 from features.activity_log import SupabaseActivityLogRepo
 from features.messages import Message, SupabaseMessageRepo
+from features.payments import PaymentCreateRequest, PaymentService, SupabasePaymentRepo
 from infrastructure.email.resend_adapter import ResendAdapter
 from infrastructure.pdf import extract_text
 from infrastructure.supabase.contract_intelligence_repos import (
@@ -64,7 +63,6 @@ from infrastructure.supabase.repos import (
     SupabaseGrowthSnapshotRepo,
     SupabaseNegotiationConversationRepo,
     SupabaseNegotiationSessionRepo,
-    SupabasePaymentRepo,
 )
 from infrastructure.supabase.storage import SupabaseStorage
 from shared.llm.gemini_adapter import GeminiAdapter

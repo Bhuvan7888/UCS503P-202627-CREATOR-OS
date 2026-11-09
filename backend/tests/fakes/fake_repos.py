@@ -11,8 +11,8 @@ from domain.models.negotiation import (
     NegotiationOffer,
     NegotiationSession,
 )
-from domain.models.payment import Payment
 from features.activity_log import ActivityLog
+from features.payments import Payment
 
 
 class FakeBrandRepo:

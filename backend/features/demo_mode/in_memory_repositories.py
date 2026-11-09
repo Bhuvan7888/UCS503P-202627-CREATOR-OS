@@ -15,9 +15,9 @@ from domain.models.negotiation import (
     NegotiationOffer,
     NegotiationSession,
 )
-from domain.models.payment import Payment
 from features.activity_log import ActivityLog
 from features.messages import Message
+from features.payments import Payment
 
 
 # --- In-Memory Repository Implementations ---
