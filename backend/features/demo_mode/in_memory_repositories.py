@@ -166,6 +166,32 @@ class DealOwnerMap(dict):
         return getattr(deal, self._attribute) if deal else default
 
 
+class ContractOwnerMap(dict):
+    """contract_id -> brand_id / creator_id, via the contract's deal (or a personal contract's creator).
+
+    Seeded entries win; contracts created at runtime are resolved from the demo stores.
+    """
+
+    def __init__(
+        self, contract_repo: "DemoContractRepo", deal_repo: "DemoDealRepo", attribute: str
+    ):
+        super().__init__()
+        self._contract_repo = contract_repo
+        self._deal_repo = deal_repo
+        self._attribute = attribute
+
+    def get(self, contract_id, default=None):
+        if contract_id in self:
+            return self[contract_id]
+        contract = self._contract_repo.data.get(contract_id)
+        if contract is None:
+            return default
+        if self._attribute == "creator_id" and getattr(contract, "creator_id", None):
+            return contract.creator_id
+        deal = self._deal_repo.data.get(contract.deal_id) if contract.deal_id else None
+        return getattr(deal, self._attribute) if deal else default
+
+
 class DemoContractRepo:
     def __init__(self):
         self.data: dict[UUID, Contract] = {}

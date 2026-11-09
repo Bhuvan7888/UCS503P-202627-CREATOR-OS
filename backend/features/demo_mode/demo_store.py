@@ -1,4 +1,5 @@
 from features.demo_mode.in_memory_repositories import (
+    ContractOwnerMap,
     DealOwnerMap,
     DemoActivityLogRepo,
     DemoBrandMemberRepo,
@@ -43,6 +44,18 @@ class DemoStore:
             repo.deal_creator_map = DealOwnerMap(self.deal_repo, "creator_id")
         self.deliverable_repo.deal_brand_map = DealOwnerMap(self.deal_repo, "brand_id")
         self.deliverable_repo.deal_creator_map = DealOwnerMap(self.deal_repo, "creator_id")
+        # Same for records keyed by contract (payments, clause cards, escalations).
+        contract_brand = ContractOwnerMap(self.contract_repo, self.deal_repo, "brand_id")
+        self.payment_repo.contract_brand_map = contract_brand
+        self.payment_repo.contract_creator_map = ContractOwnerMap(
+            self.contract_repo, self.deal_repo, "creator_id"
+        )
+        self.clause_card_repo.contract_brand_map = ContractOwnerMap(
+            self.contract_repo, self.deal_repo, "brand_id"
+        )
+        self.escalation_repo.contract_brand_map = ContractOwnerMap(
+            self.contract_repo, self.deal_repo, "brand_id"
+        )
         self._seeded = False
 
     def seed_if_needed(self):

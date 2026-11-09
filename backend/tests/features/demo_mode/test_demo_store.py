@@ -56,3 +56,34 @@ async def test_creator_only_sees_deliverables_on_their_own_deals():
 
     listed = await store.deliverable_repo.list_for_creator(creator_id)
     assert [d.deal_id for d in listed] == [mine.id]
+
+
+@pytest.mark.asyncio
+async def test_payment_on_contract_created_after_seeding_is_listed_for_brand_and_creator():
+    from decimal import Decimal
+
+    from features.contracts import Contract
+    from features.payments import Payment
+
+    store = DemoStore()
+    brand_id, creator_id = uuid4(), uuid4()
+    deal = await store.deal_repo.create(_deal(brand_id, creator_id))
+    now = datetime.now(UTC)
+    contract = await store.contract_repo.create(
+        Contract(id=uuid4(), deal_id=deal.id, status="uploaded", created_at=now, updated_at=now)
+    )
+    payment = await store.payment_repo.create(
+        Payment(
+            id=uuid4(),
+            contract_id=contract.id,
+            amount_inr=Decimal("100"),
+            invoice_number="INV-1",
+            status="pending",
+            due_date=now.date(),
+            created_at=now,
+            updated_at=now,
+        )
+    )
+
+    assert [p.id for p in await store.payment_repo.list_for_brand(brand_id)] == [payment.id]
+    assert [p.id for p in await store.payment_repo.list_for_creator(creator_id)] == [payment.id]
