@@ -5,7 +5,7 @@ from uuid import UUID
 from supabase import Client
 
 from domain.models.contract_intelligence import ClauseCardOut, EscalationOut
-from demo_data import is_demo_mode, store
+from features.demo_mode import is_demo_mode, store
 
 
 class _DemoFallbackMixin:

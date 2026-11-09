@@ -1,7 +1,8 @@
 import asyncio
 
 from supabase import Client
-from demo_data import is_demo_mode
+
+from features.demo_mode import is_demo_mode
 
 
 class SupabaseStorage:

@@ -51,6 +51,7 @@ All six look like **stale tests after intentional behavior changes**, not regres
 
 | Suite | Location | What it locks | Result |
 |---|---|---|---|
+| Backend demo-mode contract (added in Phase 3) | `backend/tests/smoke/test_demo_mode_contract.py` | 42 read endpoints answered in demo mode (status, item count, keys), compared with a snapshot generated from the pre-refactor commit `7f8026c` | ✅ |
 | Backend API contract | `backend/tests/smoke/test_api_contract.py` | the exact set of 55 `(method, path)` pairs, plus a 401 for each of the 40 auth-protected routes when no token is sent (offline, no Supabase calls) | ✅ 41 passed |
 | Frontend route manifest | `frontend/tests/smoke/check-routes.mjs` + `routes.snapshot.json` (`npm run test:smoke`, after `npm run build`) | all 19 public URLs are still produced by `next build`, and no unexpected ones are added | ✅ OK |
 

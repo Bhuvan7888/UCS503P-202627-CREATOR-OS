@@ -55,3 +55,15 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | move | `backend/infrastructure/llm/gemini_adapter.py` → `backend/shared/llm/gemini_adapter.py` | LLM adapter used by 2 features |
 | edit | 34 importers | import paths rewritten by AST codemod; imports re-sorted (ruff I001) in touched files only |
 | edit | `backend/.importlinter` | added `shared`, `features` roots + new contract: `shared` may not import features or app layers |
+
+## Phase 3.3 — Backend feature: `demo-mode` (first, because every Supabase repository depends on its fallback mixin)
+
+| Action | Path | Reason |
+|---|---|---|
+| move+split | `backend/demo_data.py` → `backend/features/demo_mode/demo_store.py` (git mv), plus new `mode.py`, `accounts.py`, `demo_auth.py`, `seed.py`, `in_memory_repositories.py` | 1,000-line module mixed 5 concerns |
+| move | `_DemoFallbackMixin` from `infrastructure/supabase/repos.py` → `features/demo_mode/fallback.py` as `DemoFallbackMixin` | it belongs to demo mode; now public API of the feature |
+| rename | `_seed_demo_data` → `seed_demo_data` | now called across modules |
+| add | `features/demo_mode/__init__.py` | public API; `store`/demo-auth exported lazily (PEP 562) to avoid an import cycle with the repositories |
+| behavior note | `DemoFallbackMixin` imports the store lazily inside `__getattribute__` | same lookup, same result; only the import moment changed (needed to break the cycle) |
+| edit | importers of `demo_data` (`storage.py`, `contract_intelligence_repos.py`, `dependencies.py`, `routers/auth.py`) | now import from `features.demo_mode` |
+| add | `backend/tests/smoke/demo_mode_probe.py`, `test_demo_mode_contract.py`, `demo_mode_snapshot.json` | new safety net: 42 demo-mode API responses (status/count/keys), snapshot **generated from pre-refactor commit 7f8026c** in a temporary worktree with dummy env values |

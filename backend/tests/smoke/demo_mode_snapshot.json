@@ -1,0 +1,483 @@
+{
+  "GET /contracts/sample-contract-pdf": {
+    "content_type": "application/pdf",
+    "status": 200
+  },
+  "GET /creators/{id}": {
+    "keys": [
+      "avg_views_per_week",
+      "brand_id",
+      "created_at",
+      "display_name",
+      "engagement_rate",
+      "follower_tier",
+      "followers_count",
+      "id",
+      "instagram_handle",
+      "niche",
+      "user_id"
+    ],
+    "status": 200
+  },
+  "POST /auth/brand/login": {
+    "keys": [
+      "access_token",
+      "brand_id",
+      "brand_name",
+      "creator_id",
+      "display_name",
+      "refresh_token",
+      "role",
+      "user_id"
+    ],
+    "status": 200
+  },
+  "POST /auth/creator/login": {
+    "keys": [
+      "access_token",
+      "brand_id",
+      "brand_name",
+      "creator_id",
+      "display_name",
+      "refresh_token",
+      "role",
+      "user_id"
+    ],
+    "status": 200
+  },
+  "brand GET /activity-log": {
+    "count": 0,
+    "status": 200
+  },
+  "brand GET /analytics/brand": {
+    "keys": [
+      "creator_performance",
+      "deals_by_status",
+      "overdue_payments_count",
+      "overdue_payments_total",
+      "revenue_by_month",
+      "roster_by_niche",
+      "top_brands",
+      "total_creators",
+      "total_deals"
+    ],
+    "status": 200
+  },
+  "brand GET /benchmarks": {
+    "keys": [
+      "detail"
+    ],
+    "status": 422
+  },
+  "brand GET /contracts": {
+    "count": 2,
+    "keys": [
+      "created_at",
+      "creator_id",
+      "creator_status",
+      "deal_id",
+      "exclusivity_scope",
+      "file_path",
+      "id",
+      "payment_timeline_days",
+      "previous_status",
+      "raw_text",
+      "revision_limit",
+      "status",
+      "updated_at",
+      "usage_rights_duration_days"
+    ],
+    "status": 200
+  },
+  "brand GET /contracts/{id}": {
+    "keys": [
+      "created_at",
+      "creator_id",
+      "creator_status",
+      "deal_id",
+      "exclusivity_scope",
+      "file_path",
+      "id",
+      "payment_timeline_days",
+      "previous_status",
+      "raw_text",
+      "revision_limit",
+      "status",
+      "updated_at",
+      "usage_rights_duration_days"
+    ],
+    "status": 200
+  },
+  "brand GET /contracts/{id}/clauses": {
+    "count": 5,
+    "keys": [
+      "clause_type",
+      "contract_id",
+      "created_at",
+      "flag",
+      "flag_reason_code",
+      "id",
+      "llm_explanation",
+      "raw_text"
+    ],
+    "status": 200
+  },
+  "brand GET /creators": {
+    "count": 2,
+    "keys": [
+      "avg_views_per_week",
+      "brand_id",
+      "created_at",
+      "display_name",
+      "engagement_rate",
+      "follower_tier",
+      "followers_count",
+      "id",
+      "instagram_handle",
+      "niche",
+      "user_id"
+    ],
+    "status": 200
+  },
+  "brand GET /deals": {
+    "count": 4,
+    "keys": [
+      "brand_id",
+      "brand_viewed_at",
+      "campaign_name",
+      "contact_email",
+      "created_at",
+      "creator_id",
+      "id",
+      "status",
+      "updated_at",
+      "value_inr"
+    ],
+    "status": 200
+  },
+  "brand GET /deals/stats": {
+    "keys": [
+      "detail"
+    ],
+    "status": 403
+  },
+  "brand GET /deals/weekly-value": {
+    "count": 8,
+    "keys": [
+      "value",
+      "week_start"
+    ],
+    "status": 200
+  },
+  "brand GET /deliverables": {
+    "count": 2,
+    "keys": [
+      "contract_id",
+      "created_at",
+      "deal_id",
+      "description",
+      "file_path",
+      "id",
+      "previous_status",
+      "status",
+      "title",
+      "updated_at"
+    ],
+    "status": 200
+  },
+  "brand GET /messages/unread": {
+    "keys": [
+      "by_contact",
+      "has_unread",
+      "unread_count"
+    ],
+    "status": 200
+  },
+  "brand GET /messages?with_id": {
+    "count": 2,
+    "keys": [
+      "body",
+      "brand_id",
+      "created_at",
+      "creator_id",
+      "id",
+      "read_at",
+      "sender_type"
+    ],
+    "status": 200
+  },
+  "brand GET /negotiation/sessions": {
+    "count": 2,
+    "keys": [
+      "base_rate",
+      "checklist",
+      "created_at",
+      "deal_id",
+      "engagement_rate_adjustment",
+      "follower_tier_multiplier",
+      "id",
+      "niche_cpm",
+      "range_high",
+      "range_low",
+      "status",
+      "views_per_week"
+    ],
+    "status": 200
+  },
+  "brand GET /negotiation/sessions/{id}/conversations": {
+    "count": 0,
+    "status": 200
+  },
+  "brand GET /negotiation/sessions/{id}/forecast": {
+    "count": 12,
+    "keys": [
+      "high",
+      "low",
+      "mid",
+      "week"
+    ],
+    "status": 200
+  },
+  "brand GET /negotiation/sessions/{id}/offers": {
+    "count": 0,
+    "status": 200
+  },
+  "brand GET /negotiation/sessions/{id}/rate-range": {
+    "keys": [
+      "base_rate",
+      "range_high",
+      "range_low"
+    ],
+    "status": 200
+  },
+  "brand GET /payments": {
+    "count": 2,
+    "keys": [
+      "amount_inr",
+      "contract_id",
+      "created_at",
+      "deliverable_id",
+      "due_date",
+      "id",
+      "invoice_number",
+      "invoice_pdf_path",
+      "net_amount_inr",
+      "paid_at",
+      "platform_fee_inr",
+      "status",
+      "updated_at"
+    ],
+    "status": 200
+  },
+  "brand deals statuses": [
+    "completed",
+    "contracted",
+    "lead",
+    "negotiating"
+  ],
+  "creator GET /activity-log": {
+    "count": 0,
+    "status": 200
+  },
+  "creator GET /contracts": {
+    "count": 2,
+    "keys": [
+      "created_at",
+      "creator_id",
+      "creator_status",
+      "deal_id",
+      "exclusivity_scope",
+      "file_path",
+      "id",
+      "payment_timeline_days",
+      "previous_status",
+      "raw_text",
+      "revision_limit",
+      "status",
+      "updated_at",
+      "usage_rights_duration_days"
+    ],
+    "status": 200
+  },
+  "creator GET /contracts/{id}": {
+    "keys": [
+      "created_at",
+      "creator_id",
+      "creator_status",
+      "deal_id",
+      "exclusivity_scope",
+      "file_path",
+      "id",
+      "payment_timeline_days",
+      "previous_status",
+      "raw_text",
+      "revision_limit",
+      "status",
+      "updated_at",
+      "usage_rights_duration_days"
+    ],
+    "status": 200
+  },
+  "creator GET /contracts/{id}/clauses": {
+    "count": 5,
+    "keys": [
+      "clause_type",
+      "contract_id",
+      "created_at",
+      "flag",
+      "flag_reason_code",
+      "id",
+      "llm_explanation",
+      "raw_text"
+    ],
+    "status": 200
+  },
+  "creator GET /creators/me/brands": {
+    "count": 2,
+    "keys": [
+      "created_at",
+      "description",
+      "gst_number",
+      "id",
+      "name",
+      "pan_number"
+    ],
+    "status": 200
+  },
+  "creator GET /creators/me/growth-snapshots": {
+    "count": 3,
+    "keys": [
+      "created_at",
+      "creator_id",
+      "engagement_rate",
+      "followers_count",
+      "id",
+      "recorded_at"
+    ],
+    "status": 200
+  },
+  "creator GET /deals": {
+    "count": 3,
+    "keys": [
+      "brand_id",
+      "brand_viewed_at",
+      "campaign_name",
+      "contact_email",
+      "created_at",
+      "creator_id",
+      "id",
+      "status",
+      "updated_at",
+      "value_inr"
+    ],
+    "status": 200
+  },
+  "creator GET /deals/stats": {
+    "keys": [
+      "completed_count",
+      "earnings_per_project",
+      "total_earnings"
+    ],
+    "status": 200
+  },
+  "creator GET /deals/weekly-value": {
+    "count": 8,
+    "keys": [
+      "value",
+      "week_start"
+    ],
+    "status": 200
+  },
+  "creator GET /deliverables": {
+    "count": 6,
+    "keys": [
+      "contract_id",
+      "created_at",
+      "deal_id",
+      "description",
+      "file_path",
+      "id",
+      "previous_status",
+      "status",
+      "title",
+      "updated_at"
+    ],
+    "status": 200
+  },
+  "creator GET /messages/unread": {
+    "keys": [
+      "by_contact",
+      "has_unread",
+      "unread_count"
+    ],
+    "status": 200
+  },
+  "creator GET /negotiation/sessions": {
+    "count": 2,
+    "keys": [
+      "base_rate",
+      "checklist",
+      "created_at",
+      "deal_id",
+      "engagement_rate_adjustment",
+      "follower_tier_multiplier",
+      "id",
+      "niche_cpm",
+      "range_high",
+      "range_low",
+      "status",
+      "views_per_week"
+    ],
+    "status": 200
+  },
+  "creator GET /negotiation/sessions/{id}/conversations": {
+    "count": 0,
+    "status": 200
+  },
+  "creator GET /negotiation/sessions/{id}/forecast": {
+    "count": 12,
+    "keys": [
+      "high",
+      "low",
+      "mid",
+      "week"
+    ],
+    "status": 200
+  },
+  "creator GET /negotiation/sessions/{id}/offers": {
+    "count": 0,
+    "status": 200
+  },
+  "creator GET /negotiation/sessions/{id}/rate-range": {
+    "keys": [
+      "base_rate",
+      "range_high",
+      "range_low"
+    ],
+    "status": 200
+  },
+  "creator GET /payments": {
+    "count": 2,
+    "keys": [
+      "amount_inr",
+      "contract_id",
+      "created_at",
+      "deliverable_id",
+      "due_date",
+      "id",
+      "invoice_number",
+      "invoice_pdf_path",
+      "net_amount_inr",
+      "paid_at",
+      "platform_fee_inr",
+      "status",
+      "updated_at"
+    ],
+    "status": 200
+  },
+  "creator deals statuses": [
+    "completed",
+    "in_production",
+    "negotiating"
+  ]
+}
