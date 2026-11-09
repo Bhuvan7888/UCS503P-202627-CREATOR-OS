@@ -428,3 +428,9 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | `tests/features/contract_intelligence/test_clause_explanation_service.py` | LLM failure → `llm_explanation is None` | LLM failure → canned `DEFAULT_FLAG_EXPLANATIONS` text | fallback added in `af9eb70` |
 
 Backend suite: **114 passed, 0 failed** (was 6 failed).
+
+## Phase 4 — De-duplication
+
+| Cluster | Change | Call sites |
+|---|---|---|
+| B1 demo fallback mixin | deleted the second copy of `_DemoFallbackMixin` in `features/contract_intelligence/supabase_repository.py`; it now uses `features.demo_mode.DemoFallbackMixin` (identical logic). Also drops that module's eager import of the demo `store` | 2 classes |

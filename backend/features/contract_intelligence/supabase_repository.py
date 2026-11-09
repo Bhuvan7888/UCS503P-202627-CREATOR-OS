@@ -1,3 +1,5 @@
+"""Supabase implementations of the clause-card and escalation repositories."""
+
 import asyncio
 from datetime import UTC, datetime
 from uuid import UUID
@@ -5,22 +7,10 @@ from uuid import UUID
 from supabase import Client
 
 from features.contract_intelligence.models import ClauseCardOut, EscalationOut
-from features.demo_mode import is_demo_mode, store
+from features.demo_mode import DemoFallbackMixin
 
 
-class _DemoFallbackMixin:
-    _fallback_repo_name: str = ""
-
-    def __getattribute__(self, name):
-        if not name.startswith("_") and name != "client" and is_demo_mode():
-            store.seed_if_needed()
-            fb = getattr(store, self._fallback_repo_name, None)
-            if fb and hasattr(fb, name):
-                return getattr(fb, name)
-        return super().__getattribute__(name)
-
-
-class SupabaseClauseCardRepo(_DemoFallbackMixin):
+class SupabaseClauseCardRepo(DemoFallbackMixin):
     _fallback_repo_name = "clause_card_repo"
     def __init__(self, client: Client):
         self.client = client
@@ -51,7 +41,7 @@ class SupabaseClauseCardRepo(_DemoFallbackMixin):
         return [ClauseCardOut.model_validate({k: v for k, v in d.items() if k != "contracts"}) for d in res.data]
 
 
-class SupabaseEscalationRepo(_DemoFallbackMixin):
+class SupabaseEscalationRepo(DemoFallbackMixin):
     _fallback_repo_name = "escalation_repo"
     def __init__(self, client: Client):
         self.client = client
