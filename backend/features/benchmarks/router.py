@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from application.services.benchmarks import BenchmarkService
-from domain.models.benchmarks import BenchmarkOut, BenchmarkQuery
-from infrastructure.supabase.repos import SupabaseRateBenchmarkRepo
+from features.benchmarks.models import BenchmarkOut, BenchmarkQuery
+from features.benchmarks.service import BenchmarkService
+from features.benchmarks.supabase_repository import SupabaseRateBenchmarkRepo
 from shared.supabase_client import get_supabase_client
 
 

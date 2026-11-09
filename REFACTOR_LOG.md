@@ -67,3 +67,20 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | behavior note | `DemoFallbackMixin` imports the store lazily inside `__getattribute__` | same lookup, same result; only the import moment changed (needed to break the cycle) |
 | edit | importers of `demo_data` (`storage.py`, `contract_intelligence_repos.py`, `dependencies.py`, `routers/auth.py`) | now import from `features.demo_mode` |
 | add | `backend/tests/smoke/demo_mode_probe.py`, `test_demo_mode_contract.py`, `demo_mode_snapshot.json` | new safety net: 42 demo-mode API responses (status/count/keys), snapshot **generated from pre-refactor commit 7f8026c** in a temporary worktree with dummy env values |
+
+## Phase 3.3 — Backend feature: `benchmarks`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/benchmarks.py` → `backend/features/benchmarks/router.py` | feature folder |
+| move | `backend/application/services/benchmarks.py` → `backend/features/benchmarks/service.py` | feature folder |
+| move | `backend/domain/models/benchmarks.py` → `backend/features/benchmarks/models.py` | feature folder |
+| move | `backend/domain/logic/benchmarks.py` → `backend/features/benchmarks/rules.py` | feature folder |
+| split | `SupabaseRateBenchmarkRepo` from `backend/infrastructure/supabase/repos.py` → `backend/features/benchmarks/supabase_repository.py` | one repository/port per feature |
+| split | `RateBenchmarkRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/benchmarks/repository.py` | one repository/port per feature |
+| move | `backend/tests/unit/test_benchmarks.py` → `backend/tests/features/benchmarks/test_benchmarks_rules.py` | tests mirror the feature |
+| move | `backend/tests/integration/test_benchmarks.py` → `backend/tests/features/benchmarks/test_benchmarks_api.py` | tests mirror the feature |
+| add | `backend/features/benchmarks/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+| edit | `backend/main.py` | routers imported explicitly as `<feature>_router` (include order unchanged) so each feature move is a plain import rewrite |
+| edit | `backend/.importlinter` | new per-feature layers contract (`router > service > models : rules : repository`), verified to fail on a deliberate violation |

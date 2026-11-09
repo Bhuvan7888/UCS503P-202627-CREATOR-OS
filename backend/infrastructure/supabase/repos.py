@@ -345,19 +345,6 @@ class SupabaseNegotiationConversationRepo(DemoFallbackMixin):
         )
         return [NegotiationConversation.model_validate(d) for d in res.data]
 
-class SupabaseRateBenchmarkRepo(DemoFallbackMixin):
-    _fallback_repo_name = "benchmark_repo"
-    def __init__(self, client: Client):
-        self.client = client
-    async def get_historical_rates(self, niche: str, follower_tier: str) -> list[float]:
-        res = (
-            await asyncio.to_thread(lambda: self.client.table("negotiation_sessions")
-            .select("base_rate, deals!inner(creators!inner(niche, follower_tier))")
-            .eq("deals.creators.niche", niche)
-            .eq("deals.creators.follower_tier", follower_tier)
-            .execute())
-        )
-        return [row["base_rate"] for row in res.data]  # type: ignore
 
 class SupabaseMessageRepo(DemoFallbackMixin):
     _fallback_repo_name = "message_repo"

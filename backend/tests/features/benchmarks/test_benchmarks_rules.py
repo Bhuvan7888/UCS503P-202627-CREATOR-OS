@@ -1,4 +1,4 @@
-from domain.logic.benchmarks import compute_percentiles
+from features.benchmarks import compute_percentiles
 
 
 def test_compute_percentiles_insufficient_data():

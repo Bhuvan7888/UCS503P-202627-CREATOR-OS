@@ -1,6 +1,6 @@
-from domain.interfaces.repositories import RateBenchmarkRepo
-from domain.logic.benchmarks import compute_percentiles
-from domain.models.benchmarks import BenchmarkOut, BenchmarkQuery
+from features.benchmarks.models import BenchmarkOut, BenchmarkQuery
+from features.benchmarks.repository import RateBenchmarkRepo
+from features.benchmarks.rules import compute_percentiles
 
 
 class BenchmarkService:

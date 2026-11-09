@@ -4,10 +4,10 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
-from application.services.benchmarks import BenchmarkService
 from application.services.negotiation import NegotiationService
 from domain.models.negotiation import ChecklistState, NegotiationSession
-from interface.routers.benchmarks import router as benchmarks_router
+from features.benchmarks import BenchmarkService
+from features.benchmarks.router import router as benchmarks_router
 from interface.routers.negotiation import router as negotiation_router
 from tests.fakes.fake_repos import FakeLLMPort, FakeRateBenchmarkRepo
 
@@ -38,7 +38,7 @@ def negotiation_client():
     return app
 
 def test_benchmark_insufficient_data(benchmark_client):
-    from interface.routers.benchmarks import get_benchmark_service
+    from features.benchmarks.router import get_benchmark_service
     repo = FakeRateBenchmarkRepo(data={
         ("beauty", "micro"): [100.0, 150.0, 200.0] # only 3 data points
     })
@@ -52,7 +52,7 @@ def test_benchmark_insufficient_data(benchmark_client):
         assert data["p50_rate"] is None
 
 def test_benchmark_sufficient_data(benchmark_client):
-    from interface.routers.benchmarks import get_benchmark_service
+    from features.benchmarks.router import get_benchmark_service
     repo = FakeRateBenchmarkRepo(data={
         ("beauty", "micro"): [100.0, 150.0, 200.0, 250.0, 300.0] # 5 data points
     })

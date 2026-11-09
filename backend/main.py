@@ -3,20 +3,21 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from interface.routers import (
-    activity_log,
-    analytics,
-    auth,
-    benchmarks,
-    contract_intelligence,
-    contracts,
-    creators,
-    deals,
-    deliverables,
-    messages,
-    negotiation,
-    payments,
+from features.benchmarks.router import router as benchmarks_router
+from interface.routers.activity_log import router as activity_log_router
+from interface.routers.analytics import router as analytics_router
+from interface.routers.auth import router as auth_router
+from interface.routers.contract_intelligence import escalations_router
+from interface.routers.contract_intelligence import (
+    router as contract_intelligence_router,
 )
+from interface.routers.contracts import router as contracts_router
+from interface.routers.creators import router as creators_router
+from interface.routers.deals import router as deals_router
+from interface.routers.deliverables import router as deliverables_router
+from interface.routers.messages import router as messages_router
+from interface.routers.negotiation import router as negotiation_router
+from interface.routers.payments import router as payments_router
 
 app = FastAPI(title="Creator OS")
 
@@ -30,19 +31,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(creators.router)
-app.include_router(deals.router)
-app.include_router(contracts.router)
-app.include_router(deliverables.router)
-app.include_router(activity_log.router)
-app.include_router(negotiation.router)
-app.include_router(payments.router)
-app.include_router(contract_intelligence.router)
-app.include_router(contract_intelligence.escalations_router)
-app.include_router(benchmarks.router)
-app.include_router(analytics.router)
-app.include_router(messages.router)
+app.include_router(auth_router)
+app.include_router(creators_router)
+app.include_router(deals_router)
+app.include_router(contracts_router)
+app.include_router(deliverables_router)
+app.include_router(activity_log_router)
+app.include_router(negotiation_router)
+app.include_router(payments_router)
+app.include_router(contract_intelligence_router)
+app.include_router(escalations_router)
+app.include_router(benchmarks_router)
+app.include_router(analytics_router)
+app.include_router(messages_router)
 
 def main():
     import uvicorn

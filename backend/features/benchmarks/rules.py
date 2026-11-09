@@ -1,6 +1,6 @@
 import statistics
 
-from domain.models.benchmarks import BenchmarkOut
+from features.benchmarks.models import BenchmarkOut
 
 
 def compute_percentiles(historical_rates: list[float]) -> BenchmarkOut:
