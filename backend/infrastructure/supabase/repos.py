@@ -10,7 +10,6 @@ from domain.models.contract import Contract
 from domain.models.creator import Creator, GrowthSnapshot
 from domain.models.deal import Deal
 from domain.models.deliverable import Deliverable
-from domain.models.message import Message
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationConversation,
@@ -344,25 +343,3 @@ class SupabaseNegotiationConversationRepo(DemoFallbackMixin):
             .order("created_at", desc=True).execute())
         )
         return [NegotiationConversation.model_validate(d) for d in res.data]
-
-
-class SupabaseMessageRepo(DemoFallbackMixin):
-    _fallback_repo_name = "message_repo"
-    def __init__(self, client: Client):
-        self.client = client
-    async def create(self, message: Message) -> Message:
-        res = await asyncio.to_thread(lambda: self.client.table("messages").insert(message.model_dump(mode="json", exclude={"id"})).execute())
-        return Message.model_validate(res.data[0])
-    async def list_for_thread(self, brand_id: UUID, creator_id: UUID, limit: int = 200) -> list[Message]:
-        res = (
-            await asyncio.to_thread(lambda: self.client.table("messages").select("*")
-            .eq("brand_id", str(brand_id)).eq("creator_id", str(creator_id))
-            .order("created_at", desc=False).limit(limit).execute())
-        )
-        return [Message.model_validate(d) for d in res.data]
-    async def mark_thread_read(self, brand_id: UUID, creator_id: UUID, reader_type: str) -> int:
-        return 0
-    async def get_unread_count(self, actor_type: str, actor_id: UUID) -> int:
-        return 0
-    async def get_unread_by_contact(self, actor_type: str, actor_id: UUID) -> dict[str, int]:
-        return {}

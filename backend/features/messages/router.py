@@ -3,9 +3,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from application.services.messages import MessageService
-from domain.models.message import Message, MessageCreateRequest
-from infrastructure.supabase.repos import SupabaseCreatorRepo, SupabaseMessageRepo
+from features.messages.models import Message, MessageCreateRequest
+from features.messages.service import MessageService
+from features.messages.supabase_repository import SupabaseMessageRepo
+from infrastructure.supabase.repos import SupabaseCreatorRepo
 from interface.dependencies import ActorContext, get_current_actor
 from shared.supabase_client import get_supabase_client
 

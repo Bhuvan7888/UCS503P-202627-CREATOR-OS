@@ -10,7 +10,6 @@ from domain.models.contract_intelligence import ClauseCardOut, EscalationOut
 from domain.models.creator import Creator, GrowthSnapshot
 from domain.models.deal import Deal
 from domain.models.deliverable import Deliverable
-from domain.models.message import Message
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationConversation,
@@ -18,6 +17,7 @@ from domain.models.negotiation import (
     NegotiationSession,
 )
 from domain.models.payment import Payment
+from features.messages import Message
 
 
 # --- In-Memory Repository Implementations ---

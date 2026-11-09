@@ -40,13 +40,13 @@ from domain.models.deliverable import (
     DeliverableCreateRequest,
     DeliverableStatusUpdateRequest,
 )
-from domain.models.message import Message
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationConversation,
     NegotiationSessionCreate,
 )
 from domain.models.payment import PaymentCreateRequest
+from features.messages import Message, SupabaseMessageRepo
 from infrastructure.email.resend_adapter import ResendAdapter
 from infrastructure.pdf import extract_text
 from infrastructure.supabase.contract_intelligence_repos import (
@@ -62,7 +62,6 @@ from infrastructure.supabase.repos import (
     SupabaseDealRepo,
     SupabaseDeliverableRepo,
     SupabaseGrowthSnapshotRepo,
-    SupabaseMessageRepo,
     SupabaseNegotiationConversationRepo,
     SupabaseNegotiationSessionRepo,
     SupabasePaymentRepo,

@@ -96,3 +96,15 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | add | `backend/features/analytics/__init__.py` | public API (generated from names other packages import) |
 | edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
 | edit | `backend/.importlinter` | feature layers marked optional `(layer)`; features don't all have every layer |
+
+## Phase 3.3 — Backend feature: `messages`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/messages.py` → `backend/features/messages/router.py` | feature folder |
+| move | `backend/application/services/messages.py` → `backend/features/messages/service.py` | feature folder |
+| move | `backend/domain/models/message.py` → `backend/features/messages/models.py` | feature folder |
+| split | `SupabaseMessageRepo` from `backend/infrastructure/supabase/repos.py` → `backend/features/messages/supabase_repository.py` | one repository/port per feature |
+| split | `MessageRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/messages/repository.py` | one repository/port per feature |
+| add | `backend/features/messages/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |

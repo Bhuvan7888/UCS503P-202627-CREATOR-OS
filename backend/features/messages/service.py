@@ -2,8 +2,8 @@ from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID, uuid4
 
-from domain.interfaces.repositories import MessageRepo
-from domain.models.message import Message
+from features.messages.models import Message
+from features.messages.repository import MessageRepo
 
 
 class MessageService:

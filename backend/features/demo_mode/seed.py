@@ -13,13 +13,13 @@ from domain.models.contract_intelligence import ClauseCardOut
 from domain.models.creator import Creator, GrowthSnapshot
 from domain.models.deal import Deal
 from domain.models.deliverable import Deliverable
-from domain.models.message import Message
 from domain.models.negotiation import (
     ChecklistState,
     NegotiationSession,
 )
 from domain.models.payment import Payment
 from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS
+from features.messages import Message
 
 if TYPE_CHECKING:
     from features.demo_mode.demo_store import DemoStore
