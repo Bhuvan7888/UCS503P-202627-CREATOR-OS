@@ -370,3 +370,12 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | add | `frontend/src/app/(creator)/creator/board/page.tsx` | one-line route stub → `@/features/deals/CreatorDealBoardPage` (URL unchanged) |
 | rename | default export in `frontend/src/features/deals/BrandDealsPage.tsx` → `BrandDealsPage` | component name = file name |
 | rename | default export in `frontend/src/features/deals/CreatorDealBoardPage.tsx` → `CreatorDealBoardPage` | component name = file name |
+
+## Phase 3.3 — Frontend feature: `creator-dashboard`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(creator)/creator/page.tsx` → `frontend/src/features/creator-dashboard/CreatorDashboardPage.tsx` | feature folder |
+| move | `frontend/src/components/creator/DealsTable.tsx` → `frontend/src/features/creator-dashboard/components/DealsTable.tsx` | feature folder |
+| add | `frontend/src/app/(creator)/creator/page.tsx` | one-line route stub → `@/features/creator-dashboard/CreatorDashboardPage` (URL unchanged) |
+| rename | default export in `frontend/src/features/creator-dashboard/CreatorDashboardPage.tsx` → `CreatorDashboardPage` | component name = file name |
