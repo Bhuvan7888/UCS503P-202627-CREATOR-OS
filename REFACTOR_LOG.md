@@ -357,3 +357,16 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 |---|---|---|
 | move | `frontend/src/app/(brand)/contracts/page.tsx` → `frontend/src/features/contracts/ContractsPage.tsx` | feature folder |
 | add | `frontend/src/app/(brand)/contracts/page.tsx` | one-line route stub → `@/features/contracts/ContractsPage` (URL unchanged) |
+
+## Phase 3.3 — Frontend feature: `deals`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(brand)/brand/page.tsx` → `frontend/src/features/deals/BrandDealsPage.tsx` | feature folder |
+| move | `frontend/src/app/(brand)/deals/[id]/page.tsx` → `frontend/src/features/deals/DealDetailPage.tsx` | feature folder |
+| move | `frontend/src/app/(creator)/creator/board/page.tsx` → `frontend/src/features/deals/CreatorDealBoardPage.tsx` | feature folder |
+| add | `frontend/src/app/(brand)/brand/page.tsx` | one-line route stub → `@/features/deals/BrandDealsPage` (URL unchanged) |
+| add | `frontend/src/app/(brand)/deals/[id]/page.tsx` | one-line route stub → `@/features/deals/DealDetailPage` (URL unchanged) |
+| add | `frontend/src/app/(creator)/creator/board/page.tsx` | one-line route stub → `@/features/deals/CreatorDealBoardPage` (URL unchanged) |
+| rename | default export in `frontend/src/features/deals/BrandDealsPage.tsx` → `BrandDealsPage` | component name = file name |
+| rename | default export in `frontend/src/features/deals/CreatorDealBoardPage.tsx` → `CreatorDealBoardPage` | component name = file name |
