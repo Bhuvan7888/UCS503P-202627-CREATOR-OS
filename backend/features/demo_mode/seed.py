@@ -115,7 +115,7 @@ def seed_demo_data(s: DemoStore):
     # 2. Nykaa deals
     zara_id = DEMO_CREATORS["demo.creator3@creatoros.dev"]["creator_id"]
     d4 = add_deal(nykaa_id, zara_id, "Festive Fashion Edit", "karan.oberoi@nykaa.demo", "completed", 50, 4920.0)
-    d5 = add_deal(nykaa_id, zara_id, "Spring Capsule Wardrobe", "karan.oberoi@nykaa.demo", "negotiating", 5, 3600.0)
+    add_deal(nykaa_id, zara_id, "Spring Capsule Wardrobe", "karan.oberoi@nykaa.demo", "negotiating", 5, 3600.0)
     add_deal(nykaa_id, zara_id, "Last Season Denim Push", "karan.oberoi@nykaa.demo", "cancelled", 70)
     d6 = add_deal(nykaa_id, ananya_id, "Beauty Subscription Box Feature", "karan.oberoi@nykaa.demo", "in_production", 15, 6200.0)
 
@@ -125,7 +125,7 @@ def seed_demo_data(s: DemoStore):
     ishita_id = DEMO_CREATORS["demo.creator5@creatoros.dev"]["creator_id"]
 
     d7 = add_deal(boat_id, kabir_id, "Wireless Earbuds Review", "arjun.mehra@boat.demo", "completed", 48, 11625.0)
-    d8 = add_deal(boat_id, kabir_id, "Smartwatch Launch Teaser", "arjun.mehra@boat.demo", "negotiating", 4, 8000.0)
+    add_deal(boat_id, kabir_id, "Smartwatch Launch Teaser", "arjun.mehra@boat.demo", "negotiating", 4, 8000.0)
     d9 = add_deal(boat_id, ishita_id, "Travel Speaker Vlog", "arjun.mehra@boat.demo", "in_production", 20, 6600.0)
     add_deal(boat_id, ishita_id, "Podcast Mic Unboxing", "arjun.mehra@boat.demo", "lead", 1)
 

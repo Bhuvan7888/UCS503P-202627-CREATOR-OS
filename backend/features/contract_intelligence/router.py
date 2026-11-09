@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
+from features.auth.dependencies import ActorContext, get_current_brand
 from features.contract_intelligence.dependencies import (
     get_contract_intelligence_service,
 )
@@ -15,11 +16,8 @@ from features.contract_intelligence.models import (
 from features.contract_intelligence.service import ContractIntelligenceService
 
 # Assuming a get_service dependency exists, or we mock it.
-# We'll create a dependency injection helper.
-
 router = APIRouter(prefix="/contracts", tags=["contract_intelligence"])
 
-from features.auth.dependencies import ActorContext, get_current_brand
 
 
 @router.get("/{contract_id}/clauses", response_model=list[ClauseCardOut])

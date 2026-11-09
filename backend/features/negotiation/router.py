@@ -17,6 +17,7 @@ from features.negotiation.models import (
     NegotiationSession,
     NegotiationSessionCreate,
     RateRangeOut,
+    ScriptGenerateRequest,
 )
 from features.negotiation.rules import calculate_range
 from features.negotiation.service import NegotiationService
@@ -155,7 +156,6 @@ async def list_offers(
 ):
     return await service.list_offers(id)
 
-from features.negotiation.models import ScriptGenerateRequest
 
 
 @router.post("/{id}/script", response_model=str)

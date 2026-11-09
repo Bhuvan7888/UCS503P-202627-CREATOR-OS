@@ -12,7 +12,6 @@ async def test_rls_role_matrix():
         pytest.skip("No Supabase URL provided for integration tests.")
         
     service_role_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-    anon_key = os.environ["SUPABASE_ANON_KEY"]
 
     admin_client = create_client(supabase_url, service_role_key)
     

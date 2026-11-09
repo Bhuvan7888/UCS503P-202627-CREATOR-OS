@@ -3,6 +3,7 @@ from uuid import UUID
 
 from features.activity_log import ActivityLog
 from features.brands import Brand, BrandMember
+from features.contract_intelligence import ClauseCardOut, EscalationOut
 from features.contracts import Contract
 from features.creators import Creator
 from features.deals import Deal
@@ -207,9 +208,7 @@ class FakeNegotiationSessionRepo:
         matches = [o for o in self.offers_data.values() if o.session_id == session_id]
         return sorted(matches, key=lambda o: o.sent_at)
 
-from datetime import UTC
 
-from features.contract_intelligence import ClauseCardOut, EscalationOut
 
 
 class FakeEmailPort:

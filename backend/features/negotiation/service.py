@@ -184,13 +184,5 @@ class NegotiationService:
         if not self.llm_port:
             raise ValueError("LLM port not configured")
             
-        # We use a dummy reason string or just prompt the LLM directly
-        # LLMPort currently has explain_clause. Wait, let me check LLMPort. 
-        # If I need a generic prompt, maybe I should add a method or use explain_clause?
-        # Actually the instruction says "using LLMPort (from Phase 2 Step 2, reused, not a new adapter)".
-        # Let's check LLMPort to see if I need to modify it or just reuse the explain_clause method.
-        # It's better to add a generic `generate_text` or similar to LLMPort, but the prompt says:
-        # "using LLMPort (from Phase 2 Step 2, reused, not a new adapter)".
-        # Let me add a draft_script method to LLMPort.
         return await self.llm_port.draft_script(session, kind)
 

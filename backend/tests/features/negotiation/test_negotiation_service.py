@@ -3,14 +3,22 @@ from uuid import uuid4
 
 import pytest
 
+from features.deals import Deal
 from features.negotiation import (
     ChecklistState,
+    NegotiationService,
     NegotiationSession,
     calculate_base_rate,
     calculate_forecast,
     calculate_range,
     checklist_is_complete,
     generate_script,
+)
+from tests.fakes.fake_repos import (
+    FakeActivityLogRepo,
+    FakeDealRepo,
+    FakeLLMPort,
+    FakeNegotiationSessionRepo,
 )
 
 
@@ -90,8 +98,6 @@ def test_generate_script():
     assert s3 and isinstance(s3, str)
 
 
-from features.negotiation import NegotiationService
-from tests.fakes.fake_repos import FakeLLMPort
 
 
 class MinimalFakeSessionRepo:
@@ -148,12 +154,6 @@ async def test_generate_script_llm_complete_checklist():
     assert script == "Drafted script."
 
 
-from features.deals import Deal
-from tests.fakes.fake_repos import (
-    FakeActivityLogRepo,
-    FakeDealRepo,
-    FakeNegotiationSessionRepo,
-)
 
 
 def _deal_repo_for(deal_id, brand_id) -> FakeDealRepo:

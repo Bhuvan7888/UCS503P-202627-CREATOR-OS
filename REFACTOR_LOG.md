@@ -497,3 +497,13 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | split | `AnalyticsService.get_brand_analytics` (89 lines) → pure functions in new `backend/features/analytics/rules.py` (`revenue_by_month`, `payment_totals`, `top_campaigns`, `creator_performance`, `overdue_payments`, `roster_by_niche`); the service now only fetches and assembles | each aggregate is named and testable. **Proof:** old (HEAD) vs new service output compared with `model_dump()` for all 3 demo brands: identical; unit test passes |
 | deferred | `features/demo_mode/seed.py::seed_demo_data` (346 lines), `scripts/seed_demo.py::main` (387 lines), `features/contracts/contract_pdf.py::generate_sample_contract_pdf` (60), `DeliverableService.update_status` (56) | the seeds are linear data scripts whose nested helpers close over many locals (splitting means threading ~15 ids through calls), and `scripts/seed_demo.py` writes to the real Supabase project, so it can't be exercised here. Recommended follow-up with a seed snapshot test |
 | deferred | `ContractsPage` (370), `DealDetailPage` (349), `CreatorDashboardPage` (328) | single stateful components; splitting needs state/handler threading into child components. Safer with UI tests in place (none exist yet) |
+
+## Phase 4.4 — Unused code, leftovers, comments
+
+| Action | Path | Reason |
+|---|---|---|
+| move | inline `demo()` self-test + `print("ok")` in `backend/shared/money.py` → `backend/tests/shared/test_money.py` | debug leftover; same assertions now run in the suite |
+| remove | unused `import os` in `backend/main.py`; unused `d5`/`d8` assignments in `features/demo_mode/seed.py` (calls kept); unused `anon_key` in `tests/features/auth/test_auth_rls_role_matrix.py`; duplicate `from datetime import UTC` in `tests/fakes/fake_repos.py` | ruff F401/F841/F811 |
+| move | mid-file imports to the top: `contract_intelligence/router.py`, `negotiation/router.py`, `tests/fakes/fake_repos.py`, `tests/features/negotiation/test_negotiation_service.py` | ruff E402 |
+| remove | assistant "thinking out loud" comments (`# Wait, let me check LLMPort…`, `# We'll create a dependency injection helper.`) | stale notes, not documentation |
+| keep | `print` in `backend/scripts/*` | intentional CLI progress output |
