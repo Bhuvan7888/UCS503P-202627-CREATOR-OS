@@ -481,3 +481,11 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | F1 | new `frontend/src/features/auth/components/LoginForm.tsx` (role-specific copy in one table) and `features/auth/constants/demo-accounts.ts` (`DEMO_PASSWORD`, brand/creator demo lists); `BrandLoginPage`/`CreatorLoginPage` are now 3-line wrappers (−200 lines). **Proof:** prerendered HTML of `/brand/login` and `/creator/login` (body, scripts stripped) is byte-identical before and after | BrandLoginPage, CreatorLoginPage |
 | F8 | **not merged.** The two contract→deal status cascades differ: `ContractsPage` has a third rule (`draft` → deal `negotiating`) and aborts on a failed contract PATCH; `DealDetailPage` has neither. Merging would change behaviour; logged as a probable bug (Decision 6) | —  |
 | F9 | **not done.** Each of the 8 session-hydration sites reads the session synchronously inside an effect that also decides which requests to fire; a `useSession` hook would move that to a later render and change request timing | —  |
+
+## Phase 4.3 — Split oversized frontend files
+
+| Action | Path | Reason |
+|---|---|---|
+| split | `findHighlights` + `Highlight` → `features/contract-intelligence/utils/find-highlights.utils.ts`; `HighlightedText` → `features/contract-intelligence/components/HighlightedText.tsx` | ClauseReviewPage 325 → ~250 lines |
+| split | `BarRow`, `RevenueChart` → `features/analytics/components/` | AnalyticsPage |
+| split | `dealStageVariant`, `getAvailableStatuses`, `getBrandAvailableStatuses`, `deliverableStatusVariant` → `features/deliverables/utils/deliverable-status.utils.ts` | DeliverablesPage 322 → ~260 lines |

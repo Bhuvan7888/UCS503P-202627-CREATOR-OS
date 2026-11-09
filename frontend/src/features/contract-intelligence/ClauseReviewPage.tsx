@@ -10,73 +10,10 @@ import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { contractStatusVariant } from "@/shared/lib/status-variants";
+import { HighlightedText } from "./components/HighlightedText";
 
 type Contract = components["schemas"]["Contract"];
 type ClauseCardOut = components["schemas"]["ClauseCardOut"];
-
-interface Highlight {
-  start: number;
-  end: number;
-  flag: "red" | "yellow";
-  reason: string | null;
-}
-
-function findHighlights(fullText: string, clauses: ClauseCardOut[]): Highlight[] {
-  const ranges: Highlight[] = [];
-  for (const c of clauses) {
-    if (c.flag === "green") continue;
-    const trimmed = c.raw_text.trim();
-    if (!trimmed) continue;
-    const pattern = trimmed
-      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-      .replace(/\s+/g, "\\s+");
-    try {
-      const match = fullText.match(new RegExp(pattern));
-      if (match && match.index !== undefined) {
-        ranges.push({ start: match.index, end: match.index + match[0].length, flag: c.flag, reason: c.flag_reason_code ?? null });
-      }
-    } catch {
-      // Ignore regex issues
-    }
-  }
-  ranges.sort((a, b) => a.start - b.start);
-  const merged: Highlight[] = [];
-  for (const r of ranges) {
-    if (merged.length && r.start < merged[merged.length - 1].end) continue;
-    merged.push(r);
-  }
-  return merged;
-}
-
-function HighlightedText({ fullText, clauses }: { fullText: string; clauses: ClauseCardOut[] }) {
-  const highlights = findHighlights(fullText, clauses);
-  if (highlights.length === 0) {
-    return <>{fullText}</>;
-  }
-  const nodes: React.ReactNode[] = [];
-  let cursor = 0;
-  highlights.forEach((h, i) => {
-    if (h.start > cursor) nodes.push(<span key={`t${i}`}>{fullText.slice(cursor, h.start)}</span>);
-    nodes.push(
-      <mark
-        key={`h${i}`}
-        title={h.reason ?? undefined}
-        style={{
-          background: h.flag === "red" ? "var(--color-danger-soft)" : "var(--color-warning-soft)",
-          color: h.flag === "red" ? "var(--color-danger)" : "var(--color-warning)",
-          padding: "1px 3px",
-          borderRadius: "3px",
-          fontWeight: 500,
-        }}
-      >
-        {fullText.slice(h.start, h.end)}
-      </mark>
-    );
-    cursor = h.end;
-  });
-  if (cursor < fullText.length) nodes.push(<span key="tail">{fullText.slice(cursor)}</span>);
-  return <>{nodes}</>;
-}
 
 export default function ClauseReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

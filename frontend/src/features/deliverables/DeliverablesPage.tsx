@@ -3,71 +3,18 @@
 import React, { useEffect, useState } from "react";
 import { PackageOpen } from "lucide-react";
 import client from "@/shared/lib/api-client";
-import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
+import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 import { DELIVERABLE_STATUS_LABEL } from "./constants/deliverable-status";
+import { dealStageVariant, getAvailableStatuses, getBrandAvailableStatuses, deliverableStatusVariant } from "./utils/deliverable-status.utils";
 
 type Deliverable = components["schemas"]["Deliverable"];
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
 type Contract = components["schemas"]["Contract"];
-
-// Intentionally differs from the shared dealStatusVariant (contracted/in_production are "accent" here).
-function dealStageVariant(status: string): StatusVariant {
-  switch (status) {
-    case "negotiating": return "warning";
-    case "contracted": return "accent";
-    case "in_production": return "accent";
-    case "completed": return "success";
-    case "cancelled": return "danger";
-    default: return "neutral";
-  }
-}
-
-function getAvailableStatuses(d: Deliverable): { value: string; label: string }[] {
-  const options = [
-    { value: "pending", label: "Not started" },
-    { value: "in_production", label: "In progress" },
-    { value: "editing", label: "Video editing phase" },
-    { value: "submitted", label: "Delivered — awaiting approval" },
-  ];
-
-  if (d.status === "revision_requested" || d.previous_status === "revision_requested") {
-    options.push({ value: "revision_requested", label: "Revision requested" });
-  }
-
-  return options;
-}
-
-function getBrandAvailableStatuses(d: Deliverable): { value: string; label: string }[] {
-  const options = [
-    { value: "in_production", label: "In progress" },
-    { value: "submitted", label: "Delivered — awaiting approval" },
-    { value: "approved", label: "Approved" },
-    { value: "revision_requested", label: "Revision requested" },
-    { value: "rejected", label: "Rejected" },
-  ];
-  if (d.status === "pending") {
-    options.unshift({ value: "pending", label: "Not started" });
-  }
-  if (d.status === "editing") {
-    options.splice(2, 0, { value: "editing", label: "Video editing phase" });
-  }
-  return options;
-}
-
-function deliverableStatusVariant(status: string): StatusVariant {
-  switch (status) {
-    case "approved": return "success";
-    case "rejected": return "danger";
-    case "revision_requested": return "warning";
-    case "submitted": return "accent";
-    default: return "neutral";
-  }
-}
 
 export default function DeliverablesPage() {
   const [items, setItems] = useState<Deliverable[] | null>(null);
