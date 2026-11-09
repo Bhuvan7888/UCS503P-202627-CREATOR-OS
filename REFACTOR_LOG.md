@@ -292,3 +292,10 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 |---|---|---|
 | move | `frontend/src/app/(brand)/analytics/page.tsx` → `frontend/src/features/analytics/AnalyticsPage.tsx` | feature folder |
 | add | `frontend/src/app/(brand)/analytics/page.tsx` | one-line route stub → `@/features/analytics/AnalyticsPage` (URL unchanged) |
+
+## Phase 3.3 — Frontend feature: `payments`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(brand)/payments/page.tsx` → `frontend/src/features/payments/PaymentsPage.tsx` | feature folder |
+| add | `frontend/src/app/(brand)/payments/page.tsx` | one-line route stub → `@/features/payments/PaymentsPage` (URL unchanged) |
