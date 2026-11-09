@@ -9,14 +9,13 @@ import { EmptyState } from "@/shared/components/ui/EmptyState";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 import { formatInr } from "@/shared/lib/format-currency";
+import { MESSAGES_POLL_INTERVAL_MS } from "@/features/messages";
 
 type Creator = components["schemas"]["Creator"];
 type Deal = components["schemas"]["Deal"];
 type Payment = components["schemas"]["Payment"];
 type Contract = components["schemas"]["Contract"];
 type Message = components["schemas"]["Message"];
-
-const POLL_MS = 4000;
 
 export default function CreatorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -62,7 +61,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
       });
     }
     poll();
-    const interval = setInterval(poll, POLL_MS);
+    const interval = setInterval(poll, MESSAGES_POLL_INTERVAL_MS);
     return () => { cancelled = true; clearInterval(interval); };
   }, [id]);
 

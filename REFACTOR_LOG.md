@@ -524,3 +524,10 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 |---|---|---|
 | add | `backend/shared/pagination.py` (`MAX_PAGE_SIZE = 100`, `clamp_page_size`) | `min(limit, 100)` was repeated in 7 routers (activity_log, contracts, creators, deals, deliverables, negotiation, payments) |
 | edit | `backend/features/demo_mode/mode.py` | `timeout=0.3` → `SUPABASE_PROBE_TIMEOUT_SECONDS` |
+
+## Phase 4.5 — Frontend magic numbers
+
+| Action | Path | Reason |
+|---|---|---|
+| add | `frontend/src/features/messages/constants/messages-polling.ts` (`MESSAGES_POLL_INTERVAL_MS = 4000`) | replaces `POLL_MS = 4000` in ChatPage and CreatorProfilePage and the literal `4000` in AppShell |
+| move | unread-message polling from `src/app/_shell/AppShell.tsx` → `src/features/messages/hooks/useUnreadMessages.ts` (exported from the messages index) | it's messages behaviour; the hook is called at the same position, so hook order and effect timing are unchanged |

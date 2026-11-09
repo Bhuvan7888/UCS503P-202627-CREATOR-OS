@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import client from "@/shared/lib/api-client";
 import { loadSession, clearSession } from "@/shared/lib/session";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
+import { useUnreadMessages } from "@/features/messages";
 import {
   LayoutGrid,
   BarChart3,
@@ -32,40 +32,7 @@ export function AppShell({ children, role }: AppShellProps) {
   // wrapped by a layout that hardcodes role="brand". The session's own role
   // is always accurate (it comes from the JWT), so it wins once loaded.
   const [effectiveRole, setEffectiveRole] = useState(role);
-  const [hasUnread, setHasUnread] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function checkUnread() {
-      const session = loadSession();
-      if (!session) {
-        if (!cancelled) setHasUnread(false);
-        return;
-      }
-      try {
-        const { data } = await client.GET("/messages/unread");
-        if (!cancelled && data) {
-          setHasUnread(Boolean(data.has_unread));
-        }
-      } catch {
-        // ignore errors
-      }
-    }
-
-    checkUnread();
-    const interval = setInterval(checkUnread, 4000);
-
-    const onUpdate = () => checkUnread();
-    window.addEventListener("messagesUpdated", onUpdate);
-    window.addEventListener("focus", onUpdate);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-      window.removeEventListener("messagesUpdated", onUpdate);
-      window.removeEventListener("focus", onUpdate);
-    };
-  }, [pathname]);
+  const hasUnread = useUnreadMessages(pathname);
 
   useEffect(() => {
     // Deliberate: localStorage is only readable client-side, so this must run

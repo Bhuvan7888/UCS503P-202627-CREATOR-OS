@@ -6,6 +6,7 @@ import client from "@/shared/lib/api-client";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
+import { MESSAGES_POLL_INTERVAL_MS } from "./constants/messages-polling";
 
 type Message = components["schemas"]["Message"];
 type Creator = components["schemas"]["Creator"];
@@ -14,8 +15,6 @@ type Brand = components["schemas"]["Brand"];
 // ponytail: real-time via polling every 4s while a thread is open, not a
 // Supabase Realtime subscription — no new client-side infra/RLS policy
 // needed. Upgrade to Realtime if 4s latency ever matters.
-const POLL_MS = 4000;
-
 export default function ChatPage() {
   const [isBrand, setIsBrand] = useState<boolean | null>(null);
   const [contacts, setContacts] = useState<{ id: string; label: string }[]>([]);
@@ -67,7 +66,7 @@ export default function ChatPage() {
       });
     }
     poll();
-    const interval = setInterval(poll, POLL_MS);
+    const interval = setInterval(poll, MESSAGES_POLL_INTERVAL_MS);
     return () => { cancelled = true; clearInterval(interval); };
   }, [selectedId]);
 
