@@ -306,3 +306,10 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 |---|---|---|
 | move | `frontend/src/app/(brand)/chat/page.tsx` → `frontend/src/features/messages/ChatPage.tsx` | feature folder |
 | add | `frontend/src/app/(brand)/chat/page.tsx` | one-line route stub → `@/features/messages/ChatPage` (URL unchanged) |
+
+## Phase 3.3 — Frontend feature: `deliverables`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/app/(brand)/deliverables/page.tsx` → `frontend/src/features/deliverables/DeliverablesPage.tsx` | feature folder |
+| add | `frontend/src/app/(brand)/deliverables/page.tsx` | one-line route stub → `@/features/deliverables/DeliverablesPage` (URL unchanged) |
