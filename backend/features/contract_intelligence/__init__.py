@@ -13,10 +13,14 @@ from features.contract_intelligence.models import (
     EscalateRequest,
     EscalationOut,
 )
-from features.contract_intelligence.red_flag_rules import detect_flags
+from features.contract_intelligence.red_flag_rules import (
+    DEFAULT_FLAG_EXPLANATIONS,
+    detect_flags,
+)
 from features.contract_intelligence.service import ContractIntelligenceService
 
 __all__ = [
+    "DEFAULT_FLAG_EXPLANATIONS",
     "ClauseCardOut",
     "ClauseExplanationService",
     "ClauseInput",

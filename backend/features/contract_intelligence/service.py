@@ -14,17 +14,14 @@ from features.contract_intelligence.models import (
     FlagResult,
     ResolveEscalationRequest,
 )
-from features.contract_intelligence.red_flag_rules import detect_flags
+from features.contract_intelligence.red_flag_rules import (
+    DEFAULT_FLAG_EXPLANATIONS,
+    detect_flags,
+)
 from features.contract_intelligence.repository import ClauseCardRepo, EscalationRepo
 from features.contracts import ContractRepo
 from shared.errors import NotFoundError, ValidationError
 
-DEFAULT_FLAG_EXPLANATIONS = {
-    "perpetual_usage_rights": "The brand acquires perpetual rights to use your content and likeness forever across all media without additional compensation or expiration date.",
-    "unlimited_revisions": "Demanding unlimited revisions exposes the creator to endless rounds of rework and reshoots without compensating for additional time or effort.",
-    "unpaid_whitelisting": "Allows the brand to run paid ads and boosting through your creator account handle without paying a whitelisting access fee.",
-    "extended_exclusivity": "Exclusivity extends beyond the active campaign window, preventing you from partnering with other brands in the niche.",
-}
 
 class ContractIntelligenceService:
     def __init__(

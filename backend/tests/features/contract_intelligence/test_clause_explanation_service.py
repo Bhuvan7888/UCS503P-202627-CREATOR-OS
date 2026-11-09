@@ -3,9 +3,10 @@ from uuid import uuid4
 
 import pytest
 
-from features.contract_intelligence import ClauseCardOut, ClauseExplanationService
-from features.contract_intelligence.clause_explanation_service import (
+from features.contract_intelligence import (
     DEFAULT_FLAG_EXPLANATIONS,
+    ClauseCardOut,
+    ClauseExplanationService,
 )
 from tests.fakes.fake_repos import FakeClauseCardRepo, FakeLLMPort
 
