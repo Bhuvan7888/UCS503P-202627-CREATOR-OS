@@ -1,0 +1,21 @@
+[
+  "/",
+  "/favicon.ico",
+  "/brand/login",
+  "/brand/signup",
+  "/creator/login",
+  "/creator/signup",
+  "/activity",
+  "/analytics",
+  "/brand",
+  "/chat",
+  "/contracts",
+  "/contracts/[id]/clauses",
+  "/creators/[id]",
+  "/deals/[id]",
+  "/deliverables",
+  "/payments",
+  "/creator",
+  "/creator/board",
+  "/creator/negotiate/[dealId]"
+]
