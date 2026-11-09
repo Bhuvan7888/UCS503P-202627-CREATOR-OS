@@ -9,17 +9,13 @@ import { loadSession } from "@/shared/lib/session";
 import { ArrowLeft } from "lucide-react";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
+import { DELIVERABLE_STATUS_LABEL } from "@/features/deliverables";
 
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
 type Contract = components["schemas"]["Contract"];
 type Deliverable = components["schemas"]["Deliverable"];
 type Payment = components["schemas"]["Payment"];
-
-const DELIVERABLE_STATUS_LABEL: Record<string, string> = {
-  pending: "Not started", in_production: "In progress", editing: "Video editing phase",
-  submitted: "Delivered — awaiting approval", approved: "Approved", rejected: "Rejected", revision_requested: "Revision requested",
-};
 
 function money(n: number) {
   return `₹${Math.round(n).toLocaleString("en-IN")}`;

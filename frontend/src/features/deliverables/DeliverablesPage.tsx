@@ -8,6 +8,7 @@ import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
+import { DELIVERABLE_STATUS_LABEL } from "./constants/deliverable-status";
 
 type Deliverable = components["schemas"]["Deliverable"];
 type Deal = components["schemas"]["Deal"];
@@ -24,16 +25,6 @@ function dealStageVariant(status: string): StatusVariant {
     default: return "neutral";
   }
 }
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Not started",
-  in_production: "In progress",
-  editing: "Video editing phase",
-  submitted: "Delivered — awaiting approval",
-  approved: "Approved",
-  rejected: "Rejected",
-  revision_requested: "Revision requested",
-};
 
 function getAvailableStatuses(d: Deliverable): { value: string; label: string }[] {
   const options = [
@@ -214,7 +205,7 @@ export default function DeliverablesPage() {
                   {d.contract_id ? `${d.contract_id.slice(0, 8)}` : "—"}
                 </td>
                 <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                  <StatusPill status={STATUS_LABEL[d.status] ?? d.status} variant={variantFor(d.status)} />
+                  <StatusPill status={DELIVERABLE_STATUS_LABEL[d.status] ?? d.status} variant={variantFor(d.status)} />
                 </td>
                 <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)", textAlign: "right" }}>
                   {isBrand ? (

@@ -443,3 +443,9 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | Action | Path | Reason |
 |---|---|---|
 | F3 | new `frontend/src/shared/constants/deal-stages.ts`; 7 identical local copies removed (entries verified equal by script before removal; `STAGE_LABEL` renamed); Kanban `STAGES` now derived from it (same keys, labels, order) | BrandDealsPage, DealDetailPage, CreatorDealBoardPage, DeliverablesPage, CreatorProfilePage, AnalyticsPage, NegotiationPage, DealsTable |
+
+## Phase 4 — F4 deliverable status labels
+
+| Action | Path | Reason |
+|---|---|---|
+| F4 | new `frontend/src/features/deliverables/constants/deliverable-status.ts`, exported from `features/deliverables/index.ts`; 2 identical copies removed (`STATUS_LABEL` renamed) | DeliverablesPage, DealDetailPage (via the deliverables index) |
