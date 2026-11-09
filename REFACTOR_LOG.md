@@ -473,3 +473,11 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | Action | Path | Reason |
 |---|---|---|
 | F2 | new `frontend/src/features/auth/components/AuthPageFrame.tsx` (logo column + form body + gradient art, same markup and classes) and `features/auth/constants/auth-messages.ts` (`NETWORK_ERROR_MESSAGE`); 5 copies of the frame and 4 copies of the message replaced | BrandLoginPage, CreatorLoginPage, BrandSignupPage (×2 branches), CreatorSignupPage |
+
+## Phase 4 — F1 login form
+
+| Action | Path | Reason |
+|---|---|---|
+| F1 | new `frontend/src/features/auth/components/LoginForm.tsx` (role-specific copy in one table) and `features/auth/constants/demo-accounts.ts` (`DEMO_PASSWORD`, brand/creator demo lists); `BrandLoginPage`/`CreatorLoginPage` are now 3-line wrappers (−200 lines). **Proof:** prerendered HTML of `/brand/login` and `/creator/login` (body, scripts stripped) is byte-identical before and after | BrandLoginPage, CreatorLoginPage |
+| F8 | **not merged.** The two contract→deal status cascades differ: `ContractsPage` has a third rule (`draft` → deal `negotiating`) and aborts on a failed contract PATCH; `DealDetailPage` has neither. Merging would change behaviour; logged as a probable bug (Decision 6) | —  |
+| F9 | **not done.** Each of the 8 session-hydration sites reads the session synchronously inside an effect that also decides which requests to fire; a `useSession` hook would move that to a later render and change request timing | —  |
