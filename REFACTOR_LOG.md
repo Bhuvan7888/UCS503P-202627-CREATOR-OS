@@ -393,3 +393,18 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | add | `frontend/src/app/(auth)/brand/signup/page.tsx` | one-line route stub → `@/features/auth/BrandSignupPage` (URL unchanged) |
 | add | `frontend/src/app/(auth)/creator/login/page.tsx` | one-line route stub → `@/features/auth/CreatorLoginPage` (URL unchanged) |
 | add | `frontend/src/app/(auth)/creator/signup/page.tsx` | one-line route stub → `@/features/auth/CreatorSignupPage` (URL unchanged) |
+
+## Phase 3.4 — Frontend shared code
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `frontend/src/components/StatusPill.tsx` → `frontend/src/shared/components/ui/StatusPill.tsx` | feature folder |
+| move | `frontend/src/components/EmptyState.tsx` → `frontend/src/shared/components/ui/EmptyState.tsx` | feature folder |
+| move | `frontend/src/components/GradientPanel.tsx` → `frontend/src/shared/components/ui/GradientPanel.tsx` | feature folder |
+| move | `frontend/src/components/GradientPanel.module.css` → `frontend/src/shared/components/ui/GradientPanel.module.css` | feature folder |
+| move | `frontend/src/lib/api.ts` → `frontend/src/shared/lib/api-client.ts` | feature folder |
+| move | `frontend/src/lib/api-types.ts` → `frontend/src/shared/lib/api-types.ts` | feature folder |
+| move | `frontend/src/lib/auth.ts` → `frontend/src/shared/lib/session.ts` | feature folder |
+| move | `frontend/src/components/AppShell.tsx` → `frontend/src/app/_shell/AppShell.tsx` | feature folder |
+| move | `frontend/src/app/globals.css` → `frontend/src/styles/globals.css` | feature folder |
+| edit | `frontend/package.json` | `generate:api` now writes `src/shared/lib/api-types.ts` |

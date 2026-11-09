@@ -1,5 +1,5 @@
 import React from "react";
-import { StatusPill, StatusVariant } from "@/components/StatusPill";
+import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
 import { AlertCircle } from "lucide-react";
 
 export interface ClauseCardProps {

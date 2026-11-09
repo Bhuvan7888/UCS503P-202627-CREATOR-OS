@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import client from "@/lib/api";
-import { saveSession } from "@/lib/auth";
-import { GradientPanel } from "@/components/GradientPanel";
+import client from "@/shared/lib/api-client";
+import { saveSession } from "@/shared/lib/session";
+import { GradientPanel } from "@/shared/components/ui/GradientPanel";
 import styles from "./auth.module.css";
 
 export default function CreatorLoginPage() {

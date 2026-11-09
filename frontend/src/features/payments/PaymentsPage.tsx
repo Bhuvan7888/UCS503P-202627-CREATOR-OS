@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { Receipt } from "lucide-react";
-import client from "@/lib/api";
-import { StatusPill } from "@/components/StatusPill";
-import { EmptyState } from "@/components/EmptyState";
-import { loadSession } from "@/lib/auth";
-import type { components } from "@/lib/api-types";
+import client from "@/shared/lib/api-client";
+import { StatusPill } from "@/shared/components/ui/StatusPill";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
+import { loadSession } from "@/shared/lib/session";
+import type { components } from "@/shared/lib/api-types";
 
 type Payment = components["schemas"]["Payment"];
 type Contract = components["schemas"]["Contract"];

@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import client from "@/lib/api";
-import { saveSession, type AuthSession } from "@/lib/auth";
-import { GradientPanel } from "@/components/GradientPanel";
+import client from "@/shared/lib/api-client";
+import { saveSession, type AuthSession } from "@/shared/lib/session";
+import { GradientPanel } from "@/shared/components/ui/GradientPanel";
 import styles from "./auth.module.css";
 
 export default function BrandSignupPage() {

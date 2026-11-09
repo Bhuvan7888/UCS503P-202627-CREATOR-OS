@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { BarChart3 } from "lucide-react";
-import client from "@/lib/api";
-import { EmptyState } from "@/components/EmptyState";
-import type { components } from "@/lib/api-types";
+import client from "@/shared/lib/api-client";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
+import type { components } from "@/shared/lib/api-types";
 
 type BrandAnalytics = components["schemas"]["BrandAnalytics"];
 

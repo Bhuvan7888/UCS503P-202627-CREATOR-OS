@@ -1,6 +1,6 @@
 import React from "react";
 import { Clock } from "lucide-react";
-import { EmptyState } from "./EmptyState";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 
 interface ActivityItem {
   id: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import type { components } from "@/lib/api-types";
+import type { components } from "@/shared/lib/api-types";
 
 type GrowthSnapshot = components["schemas"]["GrowthSnapshot"];
 

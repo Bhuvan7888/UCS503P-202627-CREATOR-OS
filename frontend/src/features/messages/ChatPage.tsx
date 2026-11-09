@@ -2,10 +2,10 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { MessageCircle } from "lucide-react";
-import client from "@/lib/api";
-import { EmptyState } from "@/components/EmptyState";
-import { loadSession } from "@/lib/auth";
-import type { components } from "@/lib/api-types";
+import client from "@/shared/lib/api-client";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
+import { loadSession } from "@/shared/lib/session";
+import type { components } from "@/shared/lib/api-types";
 
 type Message = components["schemas"]["Message"];
 type Creator = components["schemas"]["Creator"];

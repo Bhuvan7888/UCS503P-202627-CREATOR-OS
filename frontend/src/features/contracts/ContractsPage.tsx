@@ -3,11 +3,11 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileText } from "lucide-react";
-import client from "@/lib/api";
-import { StatusPill, StatusVariant } from "@/components/StatusPill";
-import { EmptyState } from "@/components/EmptyState";
-import { loadSession } from "@/lib/auth";
-import type { components } from "@/lib/api-types";
+import client from "@/shared/lib/api-client";
+import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
+import { loadSession } from "@/shared/lib/session";
+import type { components } from "@/shared/lib/api-types";
 
 type Contract = components["schemas"]["Contract"];
 type Deal = components["schemas"]["Deal"];

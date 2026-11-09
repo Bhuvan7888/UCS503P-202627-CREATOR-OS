@@ -1,4 +1,4 @@
-import type { components } from "./api-types";
+import type { components } from "@/shared/lib/api-types";
 
 export type AuthSession = components["schemas"]["AuthSession"];
 

@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
-import client from "@/lib/api";
-import { StatusPill } from "@/components/StatusPill";
-import { EmptyState } from "@/components/EmptyState";
-import { loadSession } from "@/lib/auth";
+import client from "@/shared/lib/api-client";
+import { StatusPill } from "@/shared/components/ui/StatusPill";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
+import { loadSession } from "@/shared/lib/session";
 import { ArrowLeft } from "lucide-react";
-import type { components } from "@/lib/api-types";
+import type { components } from "@/shared/lib/api-types";
 
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];

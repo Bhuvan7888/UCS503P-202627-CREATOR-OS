@@ -3,12 +3,12 @@
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, FileText, ShieldAlert } from "lucide-react";
-import client from "@/lib/api";
+import client from "@/shared/lib/api-client";
 import { ClauseCard } from "./components/ClauseCard";
-import { EmptyState } from "@/components/EmptyState";
-import { StatusPill, StatusVariant } from "@/components/StatusPill";
-import { loadSession } from "@/lib/auth";
-import type { components } from "@/lib/api-types";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
+import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
+import { loadSession } from "@/shared/lib/session";
+import type { components } from "@/shared/lib/api-types";
 
 type Contract = components["schemas"]["Contract"];
 type ClauseCardOut = components["schemas"]["ClauseCardOut"];

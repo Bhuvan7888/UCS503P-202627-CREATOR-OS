@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import client from "@/lib/api";
-import { loadSession, clearSession } from "@/lib/auth";
-import { StatusPill } from "@/components/StatusPill";
+import client from "@/shared/lib/api-client";
+import { loadSession, clearSession } from "@/shared/lib/session";
+import { StatusPill } from "@/shared/components/ui/StatusPill";
 import {
   LayoutGrid,
   BarChart3,

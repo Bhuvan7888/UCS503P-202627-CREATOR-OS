@@ -2,8 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { StatusPill, StatusVariant } from "@/components/StatusPill";
-import type { components } from "@/lib/api-types";
+import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
+import type { components } from "@/shared/lib/api-types";
 
 type Deal = components["schemas"]["Deal"];
 

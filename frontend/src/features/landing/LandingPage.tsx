@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import styles from "./landing.module.css";
-import { GradientPanel } from "@/components/GradientPanel";
+import { GradientPanel } from "@/shared/components/ui/GradientPanel";
 
 export default function LandingPage() {
   function scrollToSection(e: React.MouseEvent<HTMLAnchorElement>, id: string) {

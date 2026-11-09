@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import type { components } from "@/lib/api-types";
+import type { components } from "@/shared/lib/api-types";
 
 type ForecastPoint = components["schemas"]["ForecastPoint"];
 
