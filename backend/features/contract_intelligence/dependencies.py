@@ -9,7 +9,7 @@ from features.contract_intelligence.supabase_repository import (
     SupabaseClauseCardRepo,
     SupabaseEscalationRepo,
 )
-from infrastructure.supabase.repos import SupabaseContractRepo
+from features.contracts.supabase_repository import SupabaseContractRepo
 from shared.llm.gemini_adapter import GeminiAdapter
 from shared.supabase_client import get_supabase_client
 

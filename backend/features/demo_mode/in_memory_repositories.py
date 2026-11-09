@@ -3,10 +3,10 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from domain.models.contract import Contract
 from features.activity_log import ActivityLog
 from features.brands import Brand, BrandMember
 from features.contract_intelligence import ClauseCardOut, EscalationOut
+from features.contracts import Contract
 from features.creators import Creator, GrowthSnapshot
 from features.deals import Deal
 from features.deliverables import Deliverable

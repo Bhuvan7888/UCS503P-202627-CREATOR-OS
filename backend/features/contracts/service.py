@@ -1,10 +1,10 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from domain.interfaces.repositories import ContractRepo
-from domain.logic.transitions import is_valid_contract_transition
-from domain.models.contract import Contract, ContractStatusUpdateRequest
 from features.activity_log import ActivityLog, ActivityLogRepo
+from features.contracts.models import Contract, ContractStatusUpdateRequest
+from features.contracts.repository import ContractRepo
+from features.contracts.rules import is_valid_contract_transition
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 
 

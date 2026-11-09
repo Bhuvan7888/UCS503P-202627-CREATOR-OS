@@ -1,9 +1,9 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from domain.models.contract import Contract
 from features.activity_log import ActivityLog
 from features.brands import Brand, BrandMember
+from features.contracts import Contract
 from features.creators import Creator
 from features.deals import Deal
 from features.deliverables import Deliverable

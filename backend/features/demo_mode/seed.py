@@ -7,9 +7,9 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from domain.models.contract import Contract
 from features.brands import Brand, BrandMember
 from features.contract_intelligence import ClauseCardOut
+from features.contracts import Contract
 from features.creators import Creator, GrowthSnapshot
 from features.deals import Deal
 from features.deliverables import Deliverable

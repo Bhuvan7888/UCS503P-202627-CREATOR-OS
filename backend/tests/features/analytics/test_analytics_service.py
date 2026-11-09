@@ -3,8 +3,8 @@ from uuid import uuid4
 
 import pytest
 
-from domain.models.contract import Contract
 from features.analytics import AnalyticsService
+from features.contracts import Contract
 from features.creators import Creator
 from features.deals import Deal
 from features.payments import Payment

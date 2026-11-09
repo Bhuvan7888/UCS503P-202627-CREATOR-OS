@@ -233,3 +233,21 @@ Every move, rename, merge, and deletion, with a one-line reason. Newest at the b
 | rule | feature indexes | wiring modules (`router.py`, `dependencies.py`, `supabase_repository.py`, `*_adapter.py`) are never exported from an index; including `dependencies.py` caused a circular import (index → dependencies → supabase repo → demo store → index) |
 | fix | `features/contract_intelligence/repository.py` | added the missing `ClauseCardOut`/`EscalationOut` import (baseline F821 ×13, annotation-only, no runtime effect) |
 | edit | `backend/.importlinter` | documented exception `shared.llm.gemini_adapter -> features.contract_intelligence` (ClauseInput is the Gemini structured-output schema); rule modules added to the domain layer |
+
+## Phase 3.3 — Backend feature: `contracts`
+
+| Action | Path | Reason |
+|---|---|---|
+| move | `backend/interface/routers/contracts.py` → `backend/features/contracts/router.py` | feature folder |
+| move | `backend/application/services/contracts.py` → `backend/features/contracts/service.py` | feature folder |
+| move | `backend/domain/models/contract.py` → `backend/features/contracts/models.py` | feature folder |
+| move | `backend/infrastructure/pdf.py` → `backend/features/contracts/contract_pdf.py` | feature folder |
+| move | `backend/infrastructure/supabase/storage.py` → `backend/features/contracts/contract_storage_adapter.py` | feature folder |
+| split | `is_valid_contract_transition` from `backend/domain/logic/transitions.py` → `backend/features/contracts/rules.py` | one repository/port per feature |
+| split | `SupabaseContractRepo` from `backend/infrastructure/supabase/repos.py` → `backend/features/contracts/supabase_repository.py` | one repository/port per feature |
+| split | `ContractRepo` from `backend/domain/interfaces/repositories.py` → `backend/features/contracts/repository.py` | one repository/port per feature |
+| split | `test_create_contract_persists_and_logs`, `test_contract_valid_transition`, `test_contract_invalid_transition` from `backend/tests/unit/test_services.py` → `backend/tests/features/contracts/test_contracts_service.py` | tests mirror the feature |
+| split | `client`, `test_invalid_contract_transition` from `backend/tests/integration/test_routers.py` → `backend/tests/features/contracts/test_contracts_api.py` | tests mirror the feature |
+| add | `backend/features/contracts/__init__.py` | public API (generated from names other packages import) |
+| edit | all importers | rewritten by AST codemod; cross-feature imports go through the package index |
+| remove | `backend/domain/logic/transitions.py`, `backend/tests/integration/test_routers.py`, `backend/tests/unit/test_services.py` | empty after their contents were split into the feature folders |

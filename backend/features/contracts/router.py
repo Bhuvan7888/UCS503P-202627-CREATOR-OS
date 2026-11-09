@@ -4,21 +4,21 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 
-from application.services.contracts import ContractService
-from domain.models.contract import (
-    Contract,
-    ContractCreatorStatusUpdateRequest,
-    ContractStatusUpdateRequest,
-)
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from features.contract_intelligence import ClauseInput, ContractIntelligenceService
 from features.contract_intelligence.dependencies import (
     get_contract_intelligence_service,
 )
+from features.contracts.contract_pdf import extract_text, generate_sample_contract_pdf
+from features.contracts.contract_storage_adapter import SupabaseStorage
+from features.contracts.models import (
+    Contract,
+    ContractCreatorStatusUpdateRequest,
+    ContractStatusUpdateRequest,
+)
+from features.contracts.service import ContractService
+from features.contracts.supabase_repository import SupabaseContractRepo
 from features.deals.supabase_repository import SupabaseDealRepo
-from infrastructure.pdf import extract_text, generate_sample_contract_pdf
-from infrastructure.supabase.repos import SupabaseContractRepo
-from infrastructure.supabase.storage import SupabaseStorage
 from interface.dependencies import ActorContext, get_current_actor, get_current_brand
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 from shared.llm.gemini_adapter import GeminiAdapter

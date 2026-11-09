@@ -3,8 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from application.services.contracts import ContractService
-from domain.models.contract import Contract, ContractStatusUpdateRequest
+from features.contracts import Contract, ContractService, ContractStatusUpdateRequest
 from shared.errors import (
     InvalidStatusTransition,
 )
@@ -34,6 +33,7 @@ async def test_create_contract_persists_and_logs():
     logs = await activity_log_repo.list_for_deal(deal_id)
     assert len(logs) == 1
     assert logs[0].action == "contract_created"
+
 
 @pytest.mark.asyncio
 async def test_contract_valid_transition():
@@ -68,6 +68,7 @@ async def test_contract_valid_transition():
     assert len(logs) == 1
     assert logs[0].action == "contract_status_updated"
     assert logs[0].metadata["to_status"] == "uploaded"
+
 
 @pytest.mark.asyncio
 async def test_contract_invalid_transition():

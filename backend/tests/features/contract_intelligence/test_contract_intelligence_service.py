@@ -3,7 +3,6 @@ from uuid import uuid4
 
 import pytest
 
-from domain.models.contract import Contract
 from features.contract_intelligence import (
     ClauseCardOut,
     ClauseExplanationService,
@@ -11,6 +10,7 @@ from features.contract_intelligence import (
     ContractIntelligenceService,
     EscalateRequest,
 )
+from features.contracts import Contract
 from tests.fakes.fake_repos import (
     FakeClauseCardRepo,
     FakeContractRepo,

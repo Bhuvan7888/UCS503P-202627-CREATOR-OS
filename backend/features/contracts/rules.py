@@ -1,3 +1,7 @@
+"""Contract status transition rules."""
+
+
+
 def is_valid_contract_transition(from_status: str, to_status: str) -> bool:
     """
     Valid transitions:

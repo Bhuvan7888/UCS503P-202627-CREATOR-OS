@@ -8,16 +8,16 @@ from main import app
 
 client = TestClient(app)
 
+
 @pytest.mark.asyncio
 async def test_invalid_contract_transition():
     # Fully fake-repo-based — proves an invalid transition returns 400 with the
     # typed exception's message, not a 500. No real Supabase credentials needed.
     from datetime import datetime
 
-    from application.services.contracts import ContractService
-    from domain.models.contract import Contract
+    from features.contracts import Contract, ContractService
+    from features.contracts.router import get_contract_service
     from interface.dependencies import ActorContext, get_current_brand
-    from interface.routers.contracts import get_contract_service
     from tests.fakes.fake_repos import FakeActivityLogRepo, FakeContractRepo
 
     repo = FakeContractRepo()

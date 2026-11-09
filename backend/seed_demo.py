@@ -24,9 +24,7 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from application.services.auth import AuthService
-from application.services.contracts import ContractService
 from domain.models.auth import BrandSignupRequest, CreatorSignupRequest
-from domain.models.contract import ContractStatusUpdateRequest
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from features.brands.supabase_repository import (
     SupabaseBrandMemberRepo,
@@ -41,6 +39,13 @@ from features.contract_intelligence.supabase_repository import (
     SupabaseClauseCardRepo,
     SupabaseEscalationRepo,
 )
+from features.contracts import (
+    ContractService,
+    ContractStatusUpdateRequest,
+    extract_text,
+)
+from features.contracts.contract_storage_adapter import SupabaseStorage
+from features.contracts.supabase_repository import SupabaseContractRepo
 from features.creators import CreatorService, GrowthSnapshot
 from features.creators.supabase_repository import (
     SupabaseCreatorRepo,
@@ -68,9 +73,6 @@ from features.negotiation.supabase_repository import (
 )
 from features.payments import PaymentCreateRequest, PaymentService
 from features.payments.supabase_repository import SupabasePaymentRepo
-from infrastructure.pdf import extract_text
-from infrastructure.supabase.repos import SupabaseContractRepo
-from infrastructure.supabase.storage import SupabaseStorage
 from shared.llm.gemini_adapter import GeminiAdapter
 from shared.supabase_client import get_supabase_client
 

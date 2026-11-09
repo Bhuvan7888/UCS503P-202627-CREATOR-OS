@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from domain.interfaces.repositories import ContractRepo
 from features.contract_intelligence.clause_explanation_service import (
     ClauseExplanationService,
 )
@@ -17,6 +16,7 @@ from features.contract_intelligence.models import (
 )
 from features.contract_intelligence.red_flag_rules import detect_flags
 from features.contract_intelligence.repository import ClauseCardRepo, EscalationRepo
+from features.contracts import ContractRepo
 from shared.errors import NotFoundError, ValidationError
 
 DEFAULT_FLAG_EXPLANATIONS = {
