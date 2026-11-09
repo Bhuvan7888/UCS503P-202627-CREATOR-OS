@@ -9,6 +9,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+
 async def run_query(query: Any) -> Any:
     """Execute a built PostgREST/Supabase query (anything with `.execute()`) off the event loop."""
     return await asyncio.to_thread(query.execute)
