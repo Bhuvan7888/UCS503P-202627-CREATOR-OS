@@ -8,17 +8,13 @@ import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import { ArrowLeft } from "lucide-react";
 import type { components } from "@/shared/lib/api-types";
+import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
 type Contract = components["schemas"]["Contract"];
 type Deliverable = components["schemas"]["Deliverable"];
 type Payment = components["schemas"]["Payment"];
-
-const DEAL_STAGE_LABEL: Record<string, string> = {
-  lead: "Lead", negotiating: "Negotiating", contracted: "Contracted",
-  in_production: "In production", completed: "Completed", cancelled: "Cancelled",
-};
 
 const DELIVERABLE_STATUS_LABEL: Record<string, string> = {
   pending: "Not started", in_production: "In progress", editing: "Video editing phase",

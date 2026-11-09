@@ -5,18 +5,13 @@ import { LayoutGrid } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import type { components } from "@/shared/lib/api-types";
+import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 
 type Deal = components["schemas"]["Deal"];
 type WeeklyValuePoint = components["schemas"]["WeeklyValuePoint"];
 
-const STAGES: { key: string; label: string }[] = [
-  { key: "lead", label: "Lead" },
-  { key: "negotiating", label: "Negotiating" },
-  { key: "contracted", label: "Contracted" },
-  { key: "in_production", label: "In production" },
-  { key: "completed", label: "Completed" },
-  { key: "cancelled", label: "Cancelled" },
-];
+// Kanban columns, in pipeline order.
+const STAGES: { key: string; label: string }[] = Object.entries(DEAL_STAGE_LABEL).map(([key, label]) => ({ key, label }));
 
 function money(n: number) {
   return `₹${Math.round(n).toLocaleString("en-IN")}`;

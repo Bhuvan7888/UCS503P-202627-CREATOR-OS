@@ -8,17 +8,13 @@ import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
+import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 
 type Creator = components["schemas"]["Creator"];
 type Deal = components["schemas"]["Deal"];
 type Payment = components["schemas"]["Payment"];
 type Contract = components["schemas"]["Contract"];
 type Message = components["schemas"]["Message"];
-
-const DEAL_STAGE_LABEL: Record<string, string> = {
-  lead: "Lead", negotiating: "Negotiating", contracted: "Contracted",
-  in_production: "In production", completed: "Completed", cancelled: "Cancelled",
-};
 
 const POLL_MS = 4000;
 

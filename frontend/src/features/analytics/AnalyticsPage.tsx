@@ -5,17 +5,9 @@ import { BarChart3 } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import type { components } from "@/shared/lib/api-types";
+import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 
 type BrandAnalytics = components["schemas"]["BrandAnalytics"];
-
-const DEAL_STAGE_LABEL: Record<string, string> = {
-  lead: "Lead",
-  negotiating: "Negotiating",
-  contracted: "Contracted",
-  in_production: "In production",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
 
 function money(n: number) {
   return `₹${Math.round(n).toLocaleString("en-IN")}`;

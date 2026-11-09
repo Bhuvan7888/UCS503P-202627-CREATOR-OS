@@ -8,6 +8,7 @@ import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
+import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 
 type Deal = components["schemas"]["Deal"];
 type Creator = components["schemas"]["Creator"];
@@ -19,15 +20,6 @@ const FOLLOWER_TIERS = [
   { value: "macro", label: "Macro (200K – 1M followers)" },
   { value: "mega", label: "Mega (1M+ followers)" },
 ];
-
-const STAGE_LABEL: Record<string, string> = {
-  lead: "Lead",
-  negotiating: "Negotiating",
-  contracted: "Contracted",
-  in_production: "In production",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
 
 function variantFor(status: string): StatusVariant {
   switch (status) {
@@ -251,7 +243,7 @@ export default function BrandDealsPage() {
                 </td>
                 <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>{d.campaign_name}</td>
                 <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                  <StatusPill status={STAGE_LABEL[d.status] ?? d.status} variant={variantFor(d.status)} />
+                  <StatusPill status={DEAL_STAGE_LABEL[d.status] ?? d.status} variant={variantFor(d.status)} />
                   {!d.brand_viewed_at && (
                     <span style={{ marginLeft: "6px" }}>
                       <StatusPill status="Unread" variant="warning" />

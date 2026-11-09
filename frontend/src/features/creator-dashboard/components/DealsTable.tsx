@@ -4,17 +4,9 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { StatusPill, StatusVariant } from "@/shared/components/ui/StatusPill";
 import type { components } from "@/shared/lib/api-types";
+import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 
 type Deal = components["schemas"]["Deal"];
-
-const DEAL_STAGE_LABEL: Record<string, string> = {
-  lead: "Lead",
-  negotiating: "Negotiating",
-  contracted: "Contracted",
-  in_production: "In production",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
 
 function dealVariant(status: string): StatusVariant {
   switch (status) {
