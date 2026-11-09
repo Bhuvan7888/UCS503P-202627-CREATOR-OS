@@ -389,7 +389,7 @@
     "status": 200
   },
   "creator GET /deliverables": {
-    "count": 6,
+    "count": 2,
     "keys": [
       "contract_id",
       "created_at",

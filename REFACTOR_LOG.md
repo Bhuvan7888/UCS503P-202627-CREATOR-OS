@@ -589,3 +589,11 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | `demo-mode` | — | `POST /auth/creator/login` → 200 | — | ✅ |
 
 Total API operations: 55 (baseline 55). All features OK: True
+
+## Post-refactor end-to-end run — bugs found and fixed
+
+| Action | Path | Reason |
+|---|---|---|
+| fix | `backend/features/demo_mode/in_memory_repositories.py` (`DealOwnerMap`), `demo_store.py` | **Pre-existing demo-mode bug** (same code in baseline `demo_data.py`): in-memory contracts/deliverables/negotiation-session repos only knew deal ownership from maps filled at seed time, so anything attached to a deal created at runtime was saved but never listed (found by the browser e2e: "add deliverable" on a new deal didn't appear). Seeded entries still win; new deals resolve from the demo deal store |
+| fix | `DemoDeliverableRepo.list_for_creator` | **Pre-existing demo-mode bug**: returned every brand's deliverables to any creator (and so let them change their status). Now filters by the deal's creator, like the Supabase repository. Demo snapshot entry `creator GET /deliverables` updated 6 → 2 (verified independently: 2 of the 6 seeded deliverables are on Ananya's deals) |
+| add | `backend/tests/features/demo_mode/test_demo_store.py` | regression tests for both |

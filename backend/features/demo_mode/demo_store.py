@@ -1,4 +1,5 @@
 from features.demo_mode.in_memory_repositories import (
+    DealOwnerMap,
     DemoActivityLogRepo,
     DemoBrandMemberRepo,
     DemoBrandRepo,
@@ -36,6 +37,12 @@ class DemoStore:
         self.benchmark_repo = DemoRateBenchmarkRepo()
         self.clause_card_repo = DemoClauseCardRepo()
         self.escalation_repo = DemoEscalationRepo()
+        # Resolve deal ownership for deals created after seeding (see DealOwnerMap).
+        for repo in (self.contract_repo, self.negotiation_session_repo):
+            repo.deal_brand_map = DealOwnerMap(self.deal_repo, "brand_id")
+            repo.deal_creator_map = DealOwnerMap(self.deal_repo, "creator_id")
+        self.deliverable_repo.deal_brand_map = DealOwnerMap(self.deal_repo, "brand_id")
+        self.deliverable_repo.deal_creator_map = DealOwnerMap(self.deal_repo, "creator_id")
         self._seeded = False
 
     def seed_if_needed(self):

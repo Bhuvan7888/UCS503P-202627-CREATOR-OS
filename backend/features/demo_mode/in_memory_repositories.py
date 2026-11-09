@@ -147,6 +147,25 @@ class DemoDealRepo:
         return deal
 
 
+class DealOwnerMap(dict):
+    """deal_id -> brand_id / creator_id.
+
+    Seeded entries win; deals created at runtime are resolved from the demo deal store, so
+    contracts, deliverables and negotiation sessions on new deals show up in list views.
+    """
+
+    def __init__(self, deal_repo: "DemoDealRepo", attribute: str):
+        super().__init__()
+        self._deal_repo = deal_repo
+        self._attribute = attribute
+
+    def get(self, deal_id, default=None):
+        if deal_id in self:
+            return self[deal_id]
+        deal = self._deal_repo.data.get(deal_id)
+        return getattr(deal, self._attribute) if deal else default
+
+
 class DemoContractRepo:
     def __init__(self):
         self.data: dict[UUID, Contract] = {}
@@ -215,6 +234,7 @@ class DemoDeliverableRepo:
     def __init__(self):
         self.data: dict[UUID, Deliverable] = {}
         self.deal_brand_map: dict[UUID, UUID] = {}
+        self.deal_creator_map: dict[UUID, UUID] = {}
 
     async def create(self, deliverable: Deliverable) -> Deliverable:
         self.data[deliverable.id] = deliverable
@@ -232,7 +252,11 @@ class DemoDeliverableRepo:
     async def list_for_creator(
         self, creator_id: UUID, limit: int = 50, offset: int = 0
     ) -> list[Deliverable]:
-        return list(self.data.values())[offset : offset + limit]
+        # Same rule as the Supabase repository: only deliverables on the creator's own deals.
+        matches = [
+            d for d in self.data.values() if self.deal_creator_map.get(d.deal_id) == creator_id
+        ]
+        return matches[offset : offset + limit]
 
     async def update_status(
         self, id: UUID, status: str, previous_status: str | None = None
@@ -416,9 +440,9 @@ class DemoMessageRepo:
         count = 0
         for m in self.data.values():
             if getattr(m, "read_at", None) is None:
-                if actor_type == "brand" and m.brand_id == actor_id and m.sender_type == "creator":
-                    count += 1
-                elif (
+                if (
+                    actor_type == "brand" and m.brand_id == actor_id and m.sender_type == "creator"
+                ) or (
                     actor_type == "creator"
                     and m.creator_id == actor_id
                     and m.sender_type == "brand"
