@@ -461,3 +461,9 @@ Backend suite: **114 passed, 0 failed** (was 6 failed).
 | Action | Path | Reason |
 |---|---|---|
 | F6 | new `frontend/src/shared/lib/status-variants.ts` (`contractStatusVariant`, `dealStatusVariant`, `paymentStatusVariant`); replaced 2 contract `variantFor` functions + 2 identical inline contract ternaries, 2 identical deal mappings (`variantFor`, `dealVariant`), 3 identical payment ternaries. Deliberately left local (they differ): deliverables page deal colours (`dealStageVariant`, commented) and deliverable colours (renamed `deliverableStatusVariant`), deal-detail deliverable ternary (no `submitted` case), creator-profile/creator-dashboard contract & payment ternaries | ContractsPage, ClauseReviewPage, DealDetailPage, BrandDealsPage, DealsTable, PaymentsPage |
+
+## Phase 4 — F7 API base URL and uploads
+
+| Action | Path | Reason |
+|---|---|---|
+| F7 | `frontend/src/shared/lib/api-client.ts` now exports `API_BASE_URL` (was a hard-coded fallback in 7 places) and `postWithSession(path, file?)` (same method, `Authorization: Bearer <token or empty>` header, multipart field `file`). Replaced 4 multipart uploads, 1 body-less POST (sample contract), 1 download URL; each call site keeps its own `res.ok` / error handling | ContractsPage ×4, DealDetailPage, CreatorProfilePage |

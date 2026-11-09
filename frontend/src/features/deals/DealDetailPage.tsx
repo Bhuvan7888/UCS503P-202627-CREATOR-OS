@@ -2,10 +2,9 @@
 
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
-import client from "@/shared/lib/api-client";
+import client, { postWithSession } from "@/shared/lib/api-client";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
-import { loadSession } from "@/shared/lib/session";
 import { ArrowLeft } from "lucide-react";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
@@ -64,12 +63,7 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
     const file = fileInput.files?.[0];
     if (!file) return;
     setBusy(true);
-    const body = new FormData();
-    body.append("file", file);
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/deals/${id}/contracts`,
-      { method: "POST", headers: { Authorization: `Bearer ${loadSession()?.access_token ?? ""}` }, body }
-    );
+    const res = await postWithSession(`/deals/${id}/contracts`, file);
     setBusy(false);
     if (res.ok) { formEl.reset(); reload(); }
   }

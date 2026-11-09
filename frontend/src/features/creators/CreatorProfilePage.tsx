@@ -3,10 +3,9 @@
 import React, { useEffect, useRef, useState, use } from "react";
 import Link from "next/link";
 import { Users2 } from "lucide-react";
-import client from "@/shared/lib/api-client";
+import client, { postWithSession } from "@/shared/lib/api-client";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
-import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 import { formatInr } from "@/shared/lib/format-currency";
@@ -78,12 +77,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
     const file = fileInput.files?.[0];
     if (!file || !uploadDealId) return;
     setUploadBusy(true);
-    const body = new FormData();
-    body.append("file", file);
-    await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/deals/${uploadDealId}/contracts`,
-      { method: "POST", headers: { Authorization: `Bearer ${loadSession()?.access_token ?? ""}` }, body }
-    );
+    await postWithSession(`/deals/${uploadDealId}/contracts`, file);
     setUploadBusy(false);
     formEl.reset();
     reload();

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileText } from "lucide-react";
-import client from "@/shared/lib/api-client";
+import client, { postWithSession, API_BASE_URL } from "@/shared/lib/api-client";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { loadSession } from "@/shared/lib/session";
@@ -53,12 +53,7 @@ export default function ContractsPage() {
     const file = fileInput.files?.[0];
     if (!file) return;
     setBusy(true);
-    const body = new FormData();
-    body.append("file", file);
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/creators/me/contracts`,
-      { method: "POST", headers: { Authorization: `Bearer ${loadSession()?.access_token ?? ""}` }, body }
-    );
+    const res = await postWithSession(`/creators/me/contracts`, file);
     setBusy(false);
     if (!res.ok) { setFormError("Couldn't upload contract."); return; }
     formEl.reset();
@@ -136,16 +131,7 @@ export default function ContractsPage() {
       dealId = created.id;
     }
 
-    const body = new FormData();
-    body.append("file", file);
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/deals/${dealId}/contracts`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${loadSession()?.access_token ?? ""}` },
-        body,
-      }
-    );
+    const res = await postWithSession(`/deals/${dealId}/contracts`, file);
     setBusy(false);
     if (!res.ok) { setFormError("Couldn't upload contract."); return; }
     formEl.reset();
@@ -158,13 +144,7 @@ export default function ContractsPage() {
     setBusy(true);
     setFormError("");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/contracts/upload-sample`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${loadSession()?.access_token ?? ""}` },
-        }
-      );
+      const res = await postWithSession(`/contracts/upload-sample`);
       if (!res.ok) {
         setFormError("Couldn't scan sample contract.");
         return;
@@ -178,8 +158,7 @@ export default function ContractsPage() {
   }
 
   function handleDownloadSample() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-    window.open(`${apiUrl}/contracts/sample-contract-pdf`, "_blank");
+    window.open(`${API_BASE_URL}/contracts/sample-contract-pdf`, "_blank");
   }
 
   if (error) {
