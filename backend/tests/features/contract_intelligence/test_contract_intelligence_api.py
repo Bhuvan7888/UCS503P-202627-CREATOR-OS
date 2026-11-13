@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
-from features.auth.dependencies import ActorContext, get_current_brand
+from features.auth.dependencies import ActorContext, get_current_actor, get_current_brand
 from features.contract_intelligence import (
     ClauseCardOut,
     ClauseExplanationService,
@@ -14,20 +14,24 @@ from features.contract_intelligence.dependencies import (
     get_contract_intelligence_service,
 )
 from features.contracts import Contract
+from features.deals import Deal
 from main import app
+from tests.fakes.access import use_fake_access_repos
 from tests.fakes.fake_repos import (
     FakeClauseCardRepo,
     FakeContractRepo,
+    FakeDealRepo,
     FakeEmailPort,
     FakeEscalationRepo,
     FakeLLMPort,
 )
 
 client = TestClient(app)
+OWNER_BRAND = uuid4()
 
 
 @pytest.fixture
-def fake_ci_service():
+def fake_ci_service(monkeypatch):
     contract_repo = FakeContractRepo()
     clause_card_repo = FakeClauseCardRepo()
     escalation_repo = FakeEscalationRepo()
@@ -37,9 +41,22 @@ def fake_ci_service():
 
     # Seed data
     contract_id = uuid4()
+    deal_id = uuid4()
+    deal_repo = FakeDealRepo()
+    deal_repo.data[deal_id] = Deal(
+        id=deal_id,
+        brand_id=OWNER_BRAND,
+        creator_id=uuid4(),
+        campaign_name="c",
+        contact_email="a@b.c",
+        status="contracted",
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+    use_fake_access_repos(monkeypatch, deal_repo=deal_repo, contract_repo=contract_repo)
     contract = Contract(
         id=contract_id,
-        deal_id=uuid4(),
+        deal_id=deal_id,
         status="uploaded",
         previous_status=None,
         s3_path=None,
@@ -77,7 +94,10 @@ async def test_escalation_lifecycle(fake_ci_service):
 
     app.dependency_overrides[get_contract_intelligence_service] = lambda: service
     app.dependency_overrides[get_current_brand] = lambda: ActorContext(
-        user_id=uuid4(), actor_type="brand", brand_id=uuid4()
+        user_id=uuid4(), actor_type="brand", brand_id=OWNER_BRAND
+    )
+    app.dependency_overrides[get_current_actor] = lambda: ActorContext(
+        user_id=uuid4(), actor_type="brand", brand_id=OWNER_BRAND
     )
 
     # 1. Get clauses

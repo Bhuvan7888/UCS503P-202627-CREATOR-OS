@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from features.auth.dependencies import ActorContext, get_current_actor
 from features.creators.supabase_repository import SupabaseGrowthSnapshotRepo
+from features.deals.dependencies import load_accessible_deal
 from features.deals.supabase_repository import SupabaseDealRepo
 from features.negotiation.models import (
     ChecklistState,
@@ -58,14 +59,7 @@ async def create_session(
     # creator (creators need this for their own unlinked projects, which
     # have no brand to ever do it for them) — but only for a deal they
     # actually own.
-    deal = await service.deal_repo.get(request.deal_id)
-    if not deal:
-        raise HTTPException(status_code=404, detail="Deal not found")
-    owns_deal = (actor.actor_type == "brand" and deal.brand_id == actor.brand_id) or (
-        actor.actor_type == "creator" and deal.creator_id == actor.creator_id
-    )
-    if not owns_deal:
-        raise HTTPException(status_code=403, detail="This deal isn't yours")
+    await load_accessible_deal(request.deal_id, actor)
     return await service.create_session(request)
 
 
@@ -82,11 +76,24 @@ async def list_sessions(
     return await service.list_for_brand(actor.brand_id, limit, offset)
 
 
-@router.get("/{id}/rate-range", response_model=RateRangeOut)
-async def get_rate_range(id: UUID, service: NegotiationService = Depends(get_negotiation_service)):
+async def _accessible_session(
+    id: UUID, actor: ActorContext, service: NegotiationService
+) -> NegotiationSession:
+    """Load a negotiation session the caller may access (via its deal), or raise 404 / 403."""
     session = await service.session_repo.get(id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+    await load_accessible_deal(session.deal_id, actor)
+    return session
+
+
+@router.get("/{id}/rate-range", response_model=RateRangeOut)
+async def get_rate_range(
+    id: UUID,
+    actor: ActorContext = Depends(get_current_actor),
+    service: NegotiationService = Depends(get_negotiation_service),
+):
+    session = await _accessible_session(id, actor, service)
     low, high = calculate_range(session.base_rate)
     return RateRangeOut(base_rate=session.base_rate, range_low=low, range_high=high)
 
@@ -96,8 +103,10 @@ async def get_forecast(
     id: UUID,
     weekly_growth_rate: float | None = None,
     weeks: int = 12,
+    actor: ActorContext = Depends(get_current_actor),
     service: NegotiationService = Depends(get_negotiation_service),
 ):
+    await _accessible_session(id, actor, service)
     # weekly_growth_rate omitted => derive it from the creator's real
     # growth-snapshot history instead of a manual assumption (falls back to
     # a default rate if they don't have enough history yet).
@@ -109,8 +118,10 @@ async def get_forecast(
 async def update_checklist(
     id: UUID,
     checklist: ChecklistState,
+    actor: ActorContext = Depends(get_current_actor),
     service: NegotiationService = Depends(get_negotiation_service),
 ):
+    await _accessible_session(id, actor, service)
     return await service.update_checklist(id, checklist)
 
 
@@ -121,6 +132,7 @@ async def create_counter_offer(
     actor: ActorContext = Depends(get_current_actor),
     service: NegotiationService = Depends(get_negotiation_service),
 ):
+    await _accessible_session(id, actor, service)
     with map_errors(
         {ValueError: 400}, by_message={"Checklist is not complete": 409, "Session not found": 404}
     ):
@@ -138,6 +150,7 @@ async def analyze_conversation(
 ):
     if not actor.creator_id:
         raise HTTPException(status_code=403, detail="This action requires a creator account")
+    await _accessible_session(id, actor, service)
     try:
         return await service.analyze_conversation(id, request.brand_name, request.conversation_text)
     except ValueError as e:
@@ -152,8 +165,11 @@ async def analyze_conversation(
 
 @router.get("/{id}/conversations", response_model=list[NegotiationConversation])
 async def list_conversations(
-    id: UUID, service: NegotiationService = Depends(get_negotiation_service)
+    id: UUID,
+    actor: ActorContext = Depends(get_current_actor),
+    service: NegotiationService = Depends(get_negotiation_service),
 ):
+    await _accessible_session(id, actor, service)
     return await service.list_conversations(id)
 
 
@@ -163,6 +179,7 @@ async def list_offers(
     actor: ActorContext = Depends(get_current_actor),
     service: NegotiationService = Depends(get_negotiation_service),
 ):
+    await _accessible_session(id, actor, service)
     return await service.list_offers(id)
 
 
@@ -170,8 +187,10 @@ async def list_offers(
 async def generate_script(
     id: UUID,
     request: ScriptGenerateRequest,
+    actor: ActorContext = Depends(get_current_actor),
     service: NegotiationService = Depends(get_negotiation_service),
 ):
+    await _accessible_session(id, actor, service)
     with map_errors(
         {ValueError: 400}, by_message={"Checklist is not complete": 409, "Session not found": 404}
     ):

@@ -35,3 +35,8 @@ def is_demo_mode() -> bool:
     except Exception:
         _supabase_available = False
         return True
+
+
+def demo_access_enabled() -> bool:
+    """Demo accounts work only on the offline demo dataset, and never in production."""
+    return is_demo_mode() and not settings.is_production

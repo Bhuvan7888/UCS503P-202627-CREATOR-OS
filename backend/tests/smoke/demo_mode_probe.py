@@ -79,7 +79,7 @@ def collect(client: TestClient) -> dict[str, Any]:
     get("brand GET /analytics/brand", "/analytics/brand", brand)
     get("brand GET /benchmarks", "/benchmarks", brand)
     if creators:
-        get("GET /creators/{id}", f"/creators/{creators[0]['id']}")
+        get("GET /creators/{id}", f"/creators/{creators[0]['id']}", brand)
         get("brand GET /messages?with_id", f"/messages?with_id={creators[0]['id']}", brand)
     get("creator GET /creators/me/brands", "/creators/me/brands", creator)
     get("creator GET /creators/me/growth-snapshots", "/creators/me/growth-snapshots", creator)

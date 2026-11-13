@@ -11,10 +11,10 @@ repositories, which import `DemoFallbackMixin` from this package.
 from typing import TYPE_CHECKING, Any
 
 from features.demo_mode.fallback import DemoFallbackMixin
-from features.demo_mode.mode import is_demo_mode
+from features.demo_mode.mode import demo_access_enabled, is_demo_mode
 
 if TYPE_CHECKING:
-    from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS
+    from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS, DEMO_PASSWORD
     from features.demo_mode.demo_auth import (
         authenticate_demo_brand,
         authenticate_demo_creator,
@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 _LAZY = {
     "DEMO_BRANDS": "features.demo_mode.accounts",
     "DEMO_CREATORS": "features.demo_mode.accounts",
+    "DEMO_PASSWORD": "features.demo_mode.accounts",
     "authenticate_demo_brand": "features.demo_mode.demo_auth",
     "authenticate_demo_creator": "features.demo_mode.demo_auth",
     "resolve_demo_actor": "features.demo_mode.demo_auth",
@@ -45,10 +46,12 @@ def __getattr__(name: str) -> Any:
 __all__ = [
     "DEMO_BRANDS",
     "DEMO_CREATORS",
+    "DEMO_PASSWORD",
     "DemoFallbackMixin",
     "DemoStore",
     "authenticate_demo_brand",
     "authenticate_demo_creator",
+    "demo_access_enabled",
     "is_demo_mode",
     "resolve_demo_actor",
     "store",

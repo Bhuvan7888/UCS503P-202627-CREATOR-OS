@@ -10,14 +10,22 @@ client = TestClient(app)
 
 
 @pytest.mark.asyncio
-async def test_payment_mark_paid_400():
+async def test_payment_mark_paid_400(monkeypatch):
     from datetime import datetime
     from decimal import Decimal
 
     from features.auth.dependencies import ActorContext, get_current_brand
+    from features.contracts import Contract
+    from features.deals import Deal
     from features.payments import Payment, PaymentService
     from features.payments.router import get_payment_service
-    from tests.fakes.fake_repos import FakeActivityLogRepo, FakePaymentRepo
+    from tests.fakes.access import use_fake_access_repos
+    from tests.fakes.fake_repos import (
+        FakeActivityLogRepo,
+        FakeContractRepo,
+        FakeDealRepo,
+        FakePaymentRepo,
+    )
 
     repo = FakePaymentRepo()
     activity_repo = FakeActivityLogRepo()
@@ -25,6 +33,23 @@ async def test_payment_mark_paid_400():
 
     p_id = uuid4()
     contract_id = uuid4()
+    brand_id, deal_id = uuid4(), uuid4()
+    deal_repo, contract_repo = FakeDealRepo(), FakeContractRepo()
+    now = datetime.now(UTC)
+    deal_repo.data[deal_id] = Deal(
+        id=deal_id,
+        brand_id=brand_id,
+        creator_id=uuid4(),
+        campaign_name="c",
+        contact_email="a@b.c",
+        status="contracted",
+        created_at=now,
+        updated_at=now,
+    )
+    contract_repo.data[contract_id] = Contract(
+        id=contract_id, deal_id=deal_id, status="signed", created_at=now, updated_at=now
+    )
+    use_fake_access_repos(monkeypatch, deal_repo=deal_repo, contract_repo=contract_repo)
     repo.data[p_id] = Payment(
         id=p_id,
         contract_id=contract_id,
@@ -38,7 +63,7 @@ async def test_payment_mark_paid_400():
 
     app.dependency_overrides[get_payment_service] = lambda: service
     app.dependency_overrides[get_current_brand] = lambda: ActorContext(
-        user_id=uuid4(), actor_type="brand", brand_id=uuid4()
+        user_id=uuid4(), actor_type="brand", brand_id=brand_id
     )
 
     # Happy path

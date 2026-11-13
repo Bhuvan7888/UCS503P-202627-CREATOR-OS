@@ -2,6 +2,9 @@
 
 from uuid import UUID
 
+# Shown on the login pages; only accepted while demo access is enabled (see mode.py).
+DEMO_PASSWORD = "DemoPass123!"
+
 # --- Known Demo Accounts Definitions ---
 DEMO_BRANDS = {
     "demo.brand1@creatoros.dev": {

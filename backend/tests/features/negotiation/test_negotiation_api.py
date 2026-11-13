@@ -10,7 +10,7 @@ client = TestClient(app)
 
 
 @pytest.mark.asyncio
-async def test_negotiation_counter_offer_409():
+async def test_negotiation_counter_offer_409(monkeypatch):
     from datetime import datetime
 
     from features.auth.dependencies import ActorContext, get_current_actor
@@ -21,6 +21,7 @@ async def test_negotiation_counter_offer_409():
         NegotiationSession,
     )
     from features.negotiation.router import get_negotiation_service
+    from tests.fakes.access import use_fake_access_repos
     from tests.fakes.fake_repos import (
         FakeActivityLogRepo,
         FakeDealRepo,
@@ -34,10 +35,12 @@ async def test_negotiation_counter_offer_409():
 
     session_id = uuid4()
     deal_id = uuid4()
+    creator_id = uuid4()
+    use_fake_access_repos(monkeypatch, deal_repo=deal_repo)
     deal_repo.data[deal_id] = Deal(
         id=deal_id,
         brand_id=uuid4(),
-        creator_id=uuid4(),
+        creator_id=creator_id,
         campaign_name="Test Campaign",
         contact_email="a@a.com",
         status="negotiating",
@@ -62,7 +65,7 @@ async def test_negotiation_counter_offer_409():
 
     app.dependency_overrides[get_negotiation_service] = lambda: service
     app.dependency_overrides[get_current_actor] = lambda: ActorContext(
-        user_id=uuid4(), actor_type="creator", brand_id=uuid4()
+        user_id=uuid4(), actor_type="creator", brand_id=uuid4(), creator_id=creator_id
     )
 
     res = client.post(

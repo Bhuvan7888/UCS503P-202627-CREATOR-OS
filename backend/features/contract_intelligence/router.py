@@ -1,8 +1,8 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
-from features.auth.dependencies import ActorContext, get_current_brand
+from features.auth.dependencies import ActorContext, get_current_actor, get_current_brand
 from features.contract_intelligence.dependencies import (
     get_contract_intelligence_service,
 )
@@ -14,16 +14,18 @@ from features.contract_intelligence.models import (
     ScanContractRequest,
 )
 from features.contract_intelligence.service import ContractIntelligenceService
+from features.contracts.dependencies import load_accessible_contract
 
-# Assuming a get_service dependency exists, or we mock it.
 router = APIRouter(prefix="/contracts", tags=["contract_intelligence"])
 
 
 @router.get("/{contract_id}/clauses", response_model=list[ClauseCardOut])
 async def get_clauses(
     contract_id: UUID,
+    actor: ActorContext = Depends(get_current_actor),
     service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
 ):
+    await load_accessible_contract(contract_id, actor)
     return await service.get_clauses(contract_id)
 
 
@@ -31,8 +33,10 @@ async def get_clauses(
 async def scan_contract(
     contract_id: UUID,
     req: ScanContractRequest,
+    actor: ActorContext = Depends(get_current_actor),
     service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
 ):
+    await load_accessible_contract(contract_id, actor)
     return await service.scan_contract(contract_id, req.clauses)
 
 
@@ -40,8 +44,10 @@ async def scan_contract(
 async def escalate_clause(
     contract_id: UUID,
     req: EscalateRequest,
+    actor: ActorContext = Depends(get_current_actor),
     service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
 ):
+    await load_accessible_contract(contract_id, actor)
     return await service.escalate_clause(contract_id, req)
 
 
@@ -56,4 +62,8 @@ async def resolve_escalation(
     actor: ActorContext = Depends(get_current_brand),
     service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
 ):
+    escalation = await service.escalation_repo.get(escalation_id)
+    if escalation is None:
+        raise HTTPException(status_code=404, detail="Escalation not found")
+    await load_accessible_contract(escalation.contract_id, actor)
     return await service.resolve_escalation(escalation_id, req, actor.actor_id)

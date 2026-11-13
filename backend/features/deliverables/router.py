@@ -8,6 +8,7 @@ from features.auth.dependencies import (
     get_current_actor,
     get_current_brand,
 )
+from features.deals.dependencies import load_accessible_deal
 from features.deliverables.models import (
     Deliverable,
     DeliverableCreateRequest,
@@ -54,6 +55,7 @@ async def create_deliverable(
     # Ensure URL deal_id matches body deal_id
     if request.deal_id != deal_id:
         raise HTTPException(status_code=400, detail="Deal ID mismatch")
+    await load_accessible_deal(deal_id, actor)
     return await service.create_deliverable(
         request, actor.brand_id, actor.actor_id, actor.actor_type
     )
@@ -67,7 +69,13 @@ async def update_deliverable_status(
     actor: ActorContext = Depends(get_current_actor),
     service: DeliverableService = Depends(get_deliverable_service),
 ):
+    deliverable = await service.deliverable_repo.get(id)
+    if deliverable is None:
+        raise HTTPException(status_code=404, detail="Deliverable not found")
+    # The deal comes from the deliverable itself; the deal_id query parameter is kept for
+    # API compatibility but never trusted.
+    deal = await load_accessible_deal(deliverable.deal_id, actor)
     with map_errors({InvalidStatusTransition: 400, ValueError: 404, PermissionDeniedError: 403}):
         return await service.update_status(
-            id, request, actor.actor_id, actor.actor_type, actor.brand_id, deal_id, actor.creator_id
+            id, request, actor.actor_id, actor.actor_type, actor.brand_id, deal.id, actor.creator_id
         )

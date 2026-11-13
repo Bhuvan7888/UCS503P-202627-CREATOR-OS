@@ -1,11 +1,20 @@
-"""Passwordless demo login and demo-token resolution. Active in every environment today; see AUDIT.md section 1.5 (security)."""
+"""Demo-account login and demo-token resolution, enabled only on the offline demo dataset outside production (see mode.demo_access_enabled)."""
+
+import hmac
 
 from features.auth import AuthSession
-from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS
+from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS, DEMO_PASSWORD
 from features.demo_mode.demo_store import store
+from features.demo_mode.mode import demo_access_enabled
 
 
-def authenticate_demo_brand(email: str) -> AuthSession | None:
+def _demo_login_allowed(password: str) -> bool:
+    return demo_access_enabled() and hmac.compare_digest(password, DEMO_PASSWORD)
+
+
+def authenticate_demo_brand(email: str, password: str) -> AuthSession | None:
+    if not _demo_login_allowed(password):
+        return None
     store.seed_if_needed()
     info = DEMO_BRANDS.get(email.lower().strip())
     if not info:
@@ -20,7 +29,9 @@ def authenticate_demo_brand(email: str) -> AuthSession | None:
     )
 
 
-def authenticate_demo_creator(email: str) -> AuthSession | None:
+def authenticate_demo_creator(email: str, password: str) -> AuthSession | None:
+    if not _demo_login_allowed(password):
+        return None
     store.seed_if_needed()
     info = DEMO_CREATORS.get(email.lower().strip())
     if not info:
@@ -37,19 +48,21 @@ def authenticate_demo_creator(email: str) -> AuthSession | None:
 
 
 def resolve_demo_actor(token: str):
+    if not demo_access_enabled():
+        return None
     store.seed_if_needed()
     from features.auth.dependencies import ActorContext
 
     # Check brand tokens
     for info in DEMO_BRANDS.values():
-        if token in (f"demo-token-brand-{info['brand_id']}", str(info["user_id"])):
+        if token == f"demo-token-brand-{info['brand_id']}":
             return ActorContext(
                 user_id=info["user_id"], actor_type="brand", brand_id=info["brand_id"]
             )
 
     # Check creator tokens
     for info in DEMO_CREATORS.values():
-        if token in (f"demo-token-creator-{info['creator_id']}", str(info["user_id"])):
+        if token == f"demo-token-creator-{info['creator_id']}":
             return ActorContext(
                 user_id=info["user_id"],
                 actor_type="creator",

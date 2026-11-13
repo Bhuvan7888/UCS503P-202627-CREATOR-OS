@@ -6,8 +6,8 @@
 
 Routes marked "public" are NOT requested here (they would hit the real
 database). They are listed so that any change to the public surface shows up
-as a diff in this file. See AUDIT.md §1.5 for why several of them are a
-security concern.
+as a diff in this file. Only sign-up/login and the static sample contract PDF
+are public.
 """
 
 import re
@@ -30,7 +30,7 @@ API_CONTRACT: list[tuple[str, str, str]] = [
     ("POST", "/creators/me/link-brand", "actor"),
     ("POST", "/creators/me/growth-snapshots", "actor"),
     ("GET", "/creators/me/growth-snapshots", "actor"),
-    ("GET", "/creators/{id}", "public"),
+    ("GET", "/creators/{id}", "actor"),
     ("POST", "/deals", "actor"),
     ("GET", "/deals", "actor"),
     ("GET", "/deals/stats", "actor"),
@@ -52,23 +52,23 @@ API_CONTRACT: list[tuple[str, str, str]] = [
     ("POST", "/activity-log", "actor"),
     ("POST", "/negotiation/sessions", "actor"),
     ("GET", "/negotiation/sessions", "actor"),
-    ("GET", "/negotiation/sessions/{id}/rate-range", "public"),
-    ("GET", "/negotiation/sessions/{id}/forecast", "public"),
-    ("PATCH", "/negotiation/sessions/{id}/checklist", "public"),
+    ("GET", "/negotiation/sessions/{id}/rate-range", "actor"),
+    ("GET", "/negotiation/sessions/{id}/forecast", "actor"),
+    ("PATCH", "/negotiation/sessions/{id}/checklist", "actor"),
     ("POST", "/negotiation/sessions/{id}/counter-offer", "actor"),
     ("POST", "/negotiation/sessions/{id}/conversations", "actor"),
-    ("GET", "/negotiation/sessions/{id}/conversations", "public"),
+    ("GET", "/negotiation/sessions/{id}/conversations", "actor"),
     ("GET", "/negotiation/sessions/{id}/offers", "actor"),
-    ("POST", "/negotiation/sessions/{id}/script", "public"),
+    ("POST", "/negotiation/sessions/{id}/script", "actor"),
     ("POST", "/payments", "brand"),
     ("GET", "/payments", "actor"),
     ("PATCH", "/payments/{contract_id}/mark-paid", "brand"),
     ("PATCH", "/payments/{contract_id}/status", "brand"),
-    ("GET", "/contracts/{contract_id}/clauses", "public"),
-    ("POST", "/contracts/{contract_id}/scan", "public"),
-    ("POST", "/contracts/{contract_id}/escalate", "public"),
+    ("GET", "/contracts/{contract_id}/clauses", "actor"),
+    ("POST", "/contracts/{contract_id}/scan", "actor"),
+    ("POST", "/contracts/{contract_id}/escalate", "actor"),
     ("POST", "/escalations/{escalation_id}/resolve", "brand"),
-    ("GET", "/benchmarks", "public"),
+    ("GET", "/benchmarks", "actor"),
     ("GET", "/analytics/brand", "brand"),
     ("GET", "/messages/unread", "actor"),
     ("POST", "/messages/read", "actor"),

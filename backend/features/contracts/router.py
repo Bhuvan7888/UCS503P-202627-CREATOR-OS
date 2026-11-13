@@ -16,6 +16,7 @@ from features.contract_intelligence.dependencies import (
 )
 from features.contracts.contract_pdf import extract_text, generate_sample_contract_pdf
 from features.contracts.contract_storage_adapter import SupabaseStorage
+from features.contracts.dependencies import load_accessible_contract
 from features.contracts.models import (
     Contract,
     ContractCreatorStatusUpdateRequest,
@@ -23,6 +24,7 @@ from features.contracts.models import (
 )
 from features.contracts.service import ContractService
 from features.contracts.supabase_repository import SupabaseContractRepo
+from features.deals.dependencies import load_accessible_deal
 from features.deals.supabase_repository import SupabaseDealRepo
 from shared.errors import InvalidStatusTransition, PermissionDeniedError
 from shared.http_errors import map_errors
@@ -135,6 +137,7 @@ async def upload_contract(
     service: ContractService = Depends(get_contract_service),
     ci_service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
 ):
+    await load_accessible_deal(deal_id, actor)
     content = await file.read()
     path = f"contracts/{deal_id}/{file.filename}"
     uploaded_path = await storage.upload_file("creator-os-assets", path, content)
@@ -210,12 +213,8 @@ async def upload_personal_contract(
 async def get_contract(
     id: UUID,
     actor: ActorContext = Depends(get_current_actor),
-    service: ContractService = Depends(get_contract_service),
 ):
-    contract = await service.get(id)
-    if not contract:
-        raise HTTPException(status_code=404, detail="Contract not found")
-    return contract
+    return await load_accessible_contract(id, actor)
 
 
 @router.get("/contracts", response_model=list[Contract])
@@ -251,6 +250,7 @@ async def update_contract_status(
     actor: ActorContext = Depends(get_current_brand),
     service: ContractService = Depends(get_contract_service),
 ):
+    await load_accessible_contract(id, actor)
     with map_errors({InvalidStatusTransition: 400, ValueError: 404}):
         return await service.update_status(
             id, request, actor.actor_id, actor.actor_type, actor.brand_id

@@ -45,7 +45,7 @@ async def brand_signup(
 async def brand_login(request: BrandLoginRequest, service: AuthService = Depends(get_auth_service)):
     from features.demo_mode import authenticate_demo_brand
 
-    demo_session = authenticate_demo_brand(request.email)
+    demo_session = authenticate_demo_brand(request.email, request.password)
     if demo_session:
         return demo_session
 
@@ -67,7 +67,7 @@ async def creator_login(
 ):
     from features.demo_mode import authenticate_demo_creator
 
-    demo_session = authenticate_demo_creator(request.email)
+    demo_session = authenticate_demo_creator(request.email, request.password)
     if demo_session:
         return demo_session
 

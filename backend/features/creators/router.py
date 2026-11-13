@@ -120,8 +120,21 @@ async def list_growth_snapshots(
 
 
 @router.get("/{id}", response_model=Creator)
-async def get_creator(id: UUID, service: CreatorService = Depends(get_creator_service)):
+async def get_creator(
+    id: UUID,
+    actor: ActorContext = Depends(get_current_actor),
+    service: CreatorService = Depends(get_creator_service),
+):
     creator = await service.creator_repo.get(id)
     if not creator:
         raise HTTPException(status_code=404, detail="Creator not found")
+    if actor.actor_type == "creator":
+        allowed = creator.id == actor.creator_id
+    else:
+        allowed = (
+            creator.brand_id == actor.brand_id
+            or await service.creator_repo.is_linked_to_brand(creator.id, actor.brand_id)
+        )
+    if not allowed:
+        raise HTTPException(status_code=403, detail="This creator isn't on your roster")
     return creator

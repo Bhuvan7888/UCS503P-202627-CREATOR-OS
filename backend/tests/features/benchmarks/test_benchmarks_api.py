@@ -4,11 +4,35 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
+from features.auth.dependencies import ActorContext, get_current_actor
 from features.benchmarks import BenchmarkService
 from features.benchmarks.router import router as benchmarks_router
+from features.deals import Deal
 from features.negotiation import ChecklistState, NegotiationService, NegotiationSession
 from features.negotiation.router import router as negotiation_router
-from tests.fakes.fake_repos import FakeLLMPort, FakeRateBenchmarkRepo
+from tests.fakes.access import use_fake_access_repos
+from tests.fakes.fake_repos import FakeDealRepo, FakeLLMPort, FakeRateBenchmarkRepo
+
+CREATOR = ActorContext(user_id=uuid4(), actor_type="creator", brand_id=uuid4(), creator_id=uuid4())
+
+
+def _creators_deal(monkeypatch):
+    """A deal owned by CREATOR, visible to the routers' access checks."""
+    now = datetime.now(UTC)
+    deal = Deal(
+        id=uuid4(),
+        brand_id=None,
+        creator_id=CREATOR.creator_id,
+        campaign_name="c",
+        contact_email="a@b.c",
+        status="negotiating",
+        created_at=now,
+        updated_at=now,
+    )
+    repo = FakeDealRepo()
+    repo.data[deal.id] = deal
+    use_fake_access_repos(monkeypatch, deal_repo=repo)
+    return deal.id
 
 
 # Mock FastAPI dependencies
@@ -32,6 +56,7 @@ def benchmark_client():
 
     app = FastAPI()
     app.include_router(benchmarks_router)
+    app.dependency_overrides[get_current_actor] = lambda: CREATOR
     return app
 
 
@@ -41,6 +66,7 @@ def negotiation_client():
 
     app = FastAPI()
     app.include_router(negotiation_router)
+    app.dependency_overrides[get_current_actor] = lambda: CREATOR
     return app
 
 
@@ -96,12 +122,12 @@ class MinimalFakeActivityLogRepo:
     pass
 
 
-def test_negotiation_script_fails_checklist(negotiation_client):
+def test_negotiation_script_fails_checklist(negotiation_client, monkeypatch):
     from features.negotiation.router import get_negotiation_service
 
     session = NegotiationSession(
         id=uuid4(),
-        deal_id=uuid4(),
+        deal_id=_creators_deal(monkeypatch),
         status="active",
         views_per_week=10000,
         niche_cpm=50.0,
@@ -129,12 +155,12 @@ def test_negotiation_script_fails_checklist(negotiation_client):
         assert "Checklist is not complete" in res.json()["detail"]
 
 
-def test_negotiation_script_success(negotiation_client):
+def test_negotiation_script_success(negotiation_client, monkeypatch):
     from features.negotiation.router import get_negotiation_service
 
     session = NegotiationSession(
         id=uuid4(),
-        deal_id=uuid4(),
+        deal_id=_creators_deal(monkeypatch),
         status="active",
         views_per_week=10000,
         niche_cpm=50.0,

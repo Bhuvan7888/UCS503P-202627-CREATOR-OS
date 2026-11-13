@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from features.auth.dependencies import (
@@ -8,6 +8,7 @@ from features.auth.dependencies import (
     get_current_actor,
     get_current_brand,
 )
+from features.contracts.dependencies import load_accessible_contract
 from features.payments.models import (
     Payment,
     PaymentCreateRequest,
@@ -32,6 +33,21 @@ def get_payment_service() -> PaymentService:
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
 
+async def _accessible_payment_deal(
+    payment_id: UUID, actor: ActorContext, service: PaymentService
+) -> UUID:
+    """Check the caller may act on the payment (via its contract) and return the payment's deal id.
+    The contract_id / deal_id path and query parameters are kept for API compatibility but
+    never trusted."""
+    payment = await service.payment_repo.get(payment_id)
+    if payment is None:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    contract = await load_accessible_contract(payment.contract_id, actor)
+    if contract.deal_id is None:
+        raise HTTPException(status_code=403, detail="This payment isn't yours")
+    return contract.deal_id
+
+
 @router.post("", response_model=Payment)
 async def create_payment(
     request: PaymentCreateRequest,
@@ -39,6 +55,9 @@ async def create_payment(
     actor: ActorContext = Depends(get_current_brand),
     service: PaymentService = Depends(get_payment_service),
 ):
+    contract = await load_accessible_contract(request.contract_id, actor)
+    if contract.deal_id != deal_id:
+        raise HTTPException(status_code=400, detail="Contract does not belong to this deal")
     return await service.create_payment(
         request, actor.brand_id, actor.actor_id, actor.actor_type, deal_id
     )
@@ -65,6 +84,7 @@ async def mark_paid(
     actor: ActorContext = Depends(get_current_brand),
     service: PaymentService = Depends(get_payment_service),
 ):
+    deal_id = await _accessible_payment_deal(payment_id, actor, service)
     with map_errors(
         {ValueError: 400, InvalidStatusTransition: 400}, by_message={"Payment not found": 404}
     ):
@@ -82,6 +102,7 @@ async def update_payment_status(
     actor: ActorContext = Depends(get_current_brand),
     service: PaymentService = Depends(get_payment_service),
 ):
+    deal_id = await _accessible_payment_deal(payment_id, actor, service)
     with map_errors(
         {ValueError: 400, InvalidStatusTransition: 400}, by_message={"Payment not found": 404}
     ):
