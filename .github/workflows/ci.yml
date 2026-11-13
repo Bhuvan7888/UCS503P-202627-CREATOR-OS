@@ -41,6 +41,16 @@ jobs:
         run: uv sync --frozen
 
       - name: Run tests
+        # No .env in CI: dummy keys put the backend in offline demo mode.
+        env:
+          SUPABASE_URL: http://dummy.invalid
+          SUPABASE_SERVICE_ROLE_KEY: dummy
+          SUPABASE_ANON_KEY: dummy
+          ENVIRONMENT: test
+          GEMINI_API_KEY: dummy
+          GEMINI_MODEL_FLASH: dummy
+          GEMINI_MODEL_PRO: dummy
+          TRANSACTIONAL_EMAIL_API_KEY: dummy
         run: uv run pytest -q
 
   frontend-checks:

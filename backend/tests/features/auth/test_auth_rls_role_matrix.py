@@ -1,17 +1,18 @@
-import os
-
 import pytest
 from supabase import create_client
+
+from features.demo_mode import is_demo_mode
+from shared.config import settings
 
 
 @pytest.mark.asyncio
 async def test_rls_role_matrix():
-    # Only run this test if we have SUPABASE_URL set
-    supabase_url = os.environ.get("SUPABASE_URL")
-    if not supabase_url:
-        pytest.skip("No Supabase URL provided for integration tests.")
+    # Integration test: only runs against a reachable Supabase project (never in demo mode).
+    if is_demo_mode():
+        pytest.skip("Supabase not reachable (demo mode); integration test needs a real project.")
 
-    service_role_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+    supabase_url = settings.SUPABASE_URL
+    service_role_key = settings.SUPABASE_SERVICE_ROLE_KEY
 
     admin_client = create_client(supabase_url, service_role_key)
 

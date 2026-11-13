@@ -1,4 +1,10 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# The single environment file for the whole repo (see /.env.example). Real environment variables
+# take precedence over it, which is how CI and deployments configure the app.
+ROOT_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Settings(BaseSettings):
@@ -11,7 +17,14 @@ class Settings(BaseSettings):
     GEMINI_MODEL_PRO: str
     TRANSACTIONAL_EMAIL_API_KEY: str
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    # extra="ignore": the shared file also holds the frontend's NEXT_PUBLIC_* keys.
+    model_config = SettingsConfigDict(
+        env_file=ROOT_ENV_FILE, env_file_encoding="utf-8", extra="ignore"
+    )
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT.lower() == "production"
 
 
 settings = Settings()
