@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str
     GEMINI_MODEL_FLASH: str
     GEMINI_MODEL_PRO: str
+    # lighter model used when the main one is overloaded (see shared/llm/gemini_adapter.py)
+    GEMINI_MODEL_FALLBACK: str = "gemini-flash-lite-latest"
     TRANSACTIONAL_EMAIL_API_KEY: str
 
     # extra="ignore": the shared file also holds the frontend's NEXT_PUBLIC_* keys.
