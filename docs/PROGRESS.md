@@ -35,8 +35,8 @@ brand side stays as it is.
 ### Phases
 | # | Phase | Status |
 |---|---|---|
-| 1 | Foundations: single .env ✅, security fixes ✅, workspace model + new creator shell (sidebar groups, top bar, ⌘K, bell, page header) | in progress |
-| 2 | Content core: content items, Home, 5-step Add Content wizard, Content Pipeline kanban | pending |
+| 1 | Foundations: single .env ✅, security fixes ✅, workspace backend ✅ (verified on live DB), Google provider configured ✅ | done (Google button built in Phase 2) |
+| 2 | New creator shell + content core: shell, Home, 5-step Add Content wizard, Content Pipeline kanban, Google sign-in, old creator views removed | in progress |
 | 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | pending |
 | 4 | Calendar + Approvals (publish state machine without platform posting) | pending |
 | 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | pending |
@@ -45,7 +45,7 @@ brand side stays as it is.
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
 
 
-### Next steps (Phase 1, remaining) — pick up here
+### Phase 1 notes (done)
 1. ✅ (2026-11-13) Backend feature `features/workspaces/`: models (Workspace, WorkspaceMember, role Literal), repository port,
    supabase_repository, in-memory demo repo + seed one primary workspace per demo creator, rules (slug `ws-` + 8 hex,
    fair-use cap of 3 owned workspaces), service (ensure primary workspace for a creator — idempotent, race-safe via the
@@ -59,9 +59,39 @@ brand side stays as it is.
 4. Then Phase 2 (shell + Home + wizard + pipeline) — the old creator views are removed in Phase 2, in the same change that
    replaces them, so creator login always lands on a working page.
 
+### Phase 2 plan — pick up here
+Backend
+1. Migration 002 `content_items` (workspace-scoped; RLS on): title, description, type (long_form_video | post | reel |
+   story | short_form_video), pillar, hook, target_platforms text[] (youtube | instagram | x | linkedin | facebook —
+   planning tags only, no posting), due_date, assignee_user_id, stage (idea | scripted | in_production | scheduled |
+   published), created_by, timestamps. Owner runs it.
+2. Feature `content`: model/rules/port/Supabase + demo repos/service; router under `/workspaces/{workspace}/content`
+   (GET list, POST create, PATCH update incl. stage move, GET stats for Home KPIs) — every route uses
+   `require_workspace_member`. `GET /workspaces/{workspace}/members` for the wizard's "Assign To".
+3. Google sign-in completion: `POST /auth/creator/oauth` creates the creator profile for a new Supabase (Google) user.
+4. Remove backend code used only by the dropped creator views (negotiation, benchmarks, growth snapshots,
+   `/creators/me*`, deal stats/weekly value, personal contracts, creator contract status, upload-sample), after grepping
+   the brand frontend for any use. Keep `deals.list_for_creator` (Brand CRM, Phase 5).
+Frontend
+5. Remove old creator pages (`/creator`, `/creator/board`, `/creator/negotiate/[dealId]`) and their features;
+   creator login → `/dashboard/<slug>`.
+6. Workspace shell at `src/app/dashboard/[workspace]/` (today's colours): sidebar groups (only built pages listed),
+   workspace switcher, user menu (Sign out), top bar (sidebar toggle, ⌘K palette with quick actions), page header
+   component; custom 404.
+7. Home (KPIs, Recent Content, content-by-platform card instead of followers — no connections, quick actions),
+   onboarding banner; Content Pipeline (empty state + 3 step cards, Filters panel, kanban with drag-and-drop between
+   stages); 5-step Add Content wizard (deal association arrives in Phase 5, AI generate buttons in Phase 3).
+8. Google button on creator login/signup + `/auth/callback`.
+Verify: backend tests, API contract, e2e for every new page/flow, real-DB check after migration 002.
+
 ### Phase log
 - **2026-11-13 — single .env**: root `.env` (backend + `NEXT_PUBLIC_*`); backend loads it by absolute path
   (`shared/config.py`), Next loads it in `next.config.ts`; CI sets dummy demo-mode env. Commit `11bbdea`.
+- **2026-11-13 — Phase 1 verified on live DB**: migration 001 applied by owner (leftover `plan`/`trial_ends_at` columns
+  from the first draft — owner asked to run the two `drop column` lines; harmless meanwhile). Live check with a temporary
+  user: 10 concurrent first requests → 1 primary workspace; slug/id access; stranger refused; cap of 3; cleanup ok.
+  Google + email providers enabled in Supabase. Root `.env`: two owner-added lines fixed (leading spaces, invalid key
+  names → `GOOGLE_OAUTH_CLIENT_SECRET` / `GOOGLE_OAUTH_CLIENT_ID`; unused by the app).
 - **2026-11-13 — free for everyone**: removed plan/trial from migration 001 (with `drop column if exists` in case the
   draft was applied), the Workspace model, service and tests; slot limit renamed to a fair-use cap. Billing dropped from the plan.
 - **2026-11-13 — workspaces backend**: `features/workspaces` (models, rules, port, Supabase + demo repos, service, router `GET/POST /workspaces`, `GET /workspaces/{workspace}`), `get_current_user_id` (identity without a brand/creator profile, cached), `require_workspace_member` (slug or id; 404 unknown, 403 non-member), `DuplicateError` for race-safe primary-workspace creation. 157 backend tests. Commit `65a99b6`.
