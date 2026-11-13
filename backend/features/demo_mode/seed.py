@@ -1,4 +1,4 @@
-"""Seeds the in-memory demo store with brands, creators, deals, contracts, payments, negotiations and messages."""
+"""Seeds the in-memory demo store with brands, creators, deals, contracts, payments and messages."""
 
 from __future__ import annotations
 
@@ -10,12 +10,11 @@ from uuid import UUID, uuid4
 from features.brands import Brand, BrandMember
 from features.contract_intelligence import ClauseCardOut
 from features.contracts import Contract
-from features.creators import Creator, GrowthSnapshot
+from features.creators import Creator
 from features.deals import Deal
 from features.deliverables import Deliverable
 from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS
 from features.messages import Message
-from features.negotiation import ChecklistState, NegotiationSession
 from features.payments import Payment
 
 if TYPE_CHECKING:
@@ -99,8 +98,6 @@ def seed_demo_data(s: DemoStore):
         s.contract_repo.deal_brand_map[deal_id] = brand_id
         s.contract_repo.deal_creator_map[deal_id] = creator_id
         s.deliverable_repo.deal_brand_map[deal_id] = brand_id
-        s.negotiation_session_repo.deal_brand_map[deal_id] = brand_id
-        s.negotiation_session_repo.deal_creator_map[deal_id] = creator_id
         return deal_id
 
     # 1. Mamaearth deals
@@ -116,7 +113,7 @@ def seed_demo_data(s: DemoStore):
         55,
         9720.0,
     )
-    d2 = add_deal(
+    add_deal(
         mama_id,
         ananya_id,
         "Winter Skincare Routine",
@@ -523,55 +520,6 @@ Creator shall receive INR 6,200 upon satisfactory completion of deliverables."""
             ("payment_terms", "4. COMPENSATION: INR 6,600.", "green", None, None),
         ],
     )
-
-    # Growth Snapshots for creators
-    for c_id, base_f in [
-        (ananya_id, 68000),
-        (rohan_id, 145000),
-        (zara_id, 42000),
-        (kabir_id, 112000),
-        (ishita_id, 53000),
-    ]:
-        for w in (8, 4, 0):
-            gs_id = uuid4()
-            snap = GrowthSnapshot(
-                id=gs_id,
-                creator_id=c_id,
-                recorded_at=today - timedelta(weeks=w),
-                followers_count=int(base_f * (1 - 0.01 * w)),
-                engagement_rate=5.0,
-                created_at=now,
-            )
-            s.growth_repo.data[gs_id] = snap
-
-    # Negotiation sessions
-    def add_negotiation(deal_id: UUID, base: float):
-        sid = uuid4()
-        session = NegotiationSession(
-            id=sid,
-            deal_id=deal_id,
-            status="active",
-            views_per_week=20000,
-            niche_cpm=35.0,
-            follower_tier_multiplier=5000.0,
-            engagement_rate_adjustment=2500.0,
-            base_rate=base,
-            range_low=round(base * 0.85, 2),
-            range_high=round(base * 1.25, 2),
-            checklist=ChecklistState(
-                usage_rights_duration_set=True,
-                exclusivity_scope_set=True,
-                revision_limit_set=True,
-                payment_timeline_set=True,
-            ),
-            created_at=now,
-        )
-        s.negotiation_session_repo.data[sid] = session
-
-    add_negotiation(d1, 9720.0)
-    add_negotiation(d2, 5000.0)
-    add_negotiation(d4, 4920.0)
-    add_negotiation(d7, 11625.0)
 
     # Messages
     def add_msg(b_id: UUID, c_id: UUID, sender: str, text: str):

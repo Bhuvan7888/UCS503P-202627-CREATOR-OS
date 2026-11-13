@@ -30,7 +30,6 @@ def test_brand_cannot_reach_another_brands_records(demo: None) -> None:
     contract = client.get("/contracts", headers=owner).json()[0]
     deliverable = client.get("/deliverables", headers=owner).json()[0]
     payment = client.get("/payments", headers=owner).json()[0]
-    session = client.get("/negotiation/sessions", headers=owner).json()[0]
 
     # the owner can
     assert client.get(f"/contracts/{contract['id']}", headers=owner).status_code == 200
@@ -53,8 +52,6 @@ def test_brand_cannot_reach_another_brands_records(demo: None) -> None:
             params={"payment_id": payment["id"], "deal_id": deliverable["deal_id"]},
             json={"status": "paid"},
         ),
-        client.get(f"/negotiation/sessions/{session['id']}/offers", headers=other),
-        client.patch(f"/negotiation/sessions/{session['id']}/checklist", headers=other, json={}),
         client.post(
             f"/deals/{deliverable['deal_id']}/deliverables",
             headers=other,

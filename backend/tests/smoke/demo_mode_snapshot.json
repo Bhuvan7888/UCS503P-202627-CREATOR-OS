@@ -63,12 +63,6 @@
     ],
     "status": 200
   },
-  "brand GET /benchmarks": {
-    "keys": [
-      "detail"
-    ],
-    "status": 422
-  },
   "brand GET /contracts": {
     "count": 2,
     "keys": [
@@ -155,20 +149,6 @@
     ],
     "status": 200
   },
-  "brand GET /deals/stats": {
-    "keys": [
-      "detail"
-    ],
-    "status": 403
-  },
-  "brand GET /deals/weekly-value": {
-    "count": 8,
-    "keys": [
-      "value",
-      "week_start"
-    ],
-    "status": 200
-  },
   "brand GET /deliverables": {
     "count": 2,
     "keys": [
@@ -203,50 +183,6 @@
       "id",
       "read_at",
       "sender_type"
-    ],
-    "status": 200
-  },
-  "brand GET /negotiation/sessions": {
-    "count": 2,
-    "keys": [
-      "base_rate",
-      "checklist",
-      "created_at",
-      "deal_id",
-      "engagement_rate_adjustment",
-      "follower_tier_multiplier",
-      "id",
-      "niche_cpm",
-      "range_high",
-      "range_low",
-      "status",
-      "views_per_week"
-    ],
-    "status": 200
-  },
-  "brand GET /negotiation/sessions/{id}/conversations": {
-    "count": 0,
-    "status": 200
-  },
-  "brand GET /negotiation/sessions/{id}/forecast": {
-    "count": 12,
-    "keys": [
-      "high",
-      "low",
-      "mid",
-      "week"
-    ],
-    "status": 200
-  },
-  "brand GET /negotiation/sessions/{id}/offers": {
-    "count": 0,
-    "status": 200
-  },
-  "brand GET /negotiation/sessions/{id}/rate-range": {
-    "keys": [
-      "base_rate",
-      "range_high",
-      "range_low"
     ],
     "status": 200
   },
@@ -344,18 +280,6 @@
     ],
     "status": 200
   },
-  "creator GET /creators/me/growth-snapshots": {
-    "count": 3,
-    "keys": [
-      "created_at",
-      "creator_id",
-      "engagement_rate",
-      "followers_count",
-      "id",
-      "recorded_at"
-    ],
-    "status": 200
-  },
   "creator GET /deals": {
     "count": 3,
     "keys": [
@@ -369,22 +293,6 @@
       "status",
       "updated_at",
       "value_inr"
-    ],
-    "status": 200
-  },
-  "creator GET /deals/stats": {
-    "keys": [
-      "completed_count",
-      "earnings_per_project",
-      "total_earnings"
-    ],
-    "status": 200
-  },
-  "creator GET /deals/weekly-value": {
-    "count": 8,
-    "keys": [
-      "value",
-      "week_start"
     ],
     "status": 200
   },
@@ -409,50 +317,6 @@
       "by_contact",
       "has_unread",
       "unread_count"
-    ],
-    "status": 200
-  },
-  "creator GET /negotiation/sessions": {
-    "count": 2,
-    "keys": [
-      "base_rate",
-      "checklist",
-      "created_at",
-      "deal_id",
-      "engagement_rate_adjustment",
-      "follower_tier_multiplier",
-      "id",
-      "niche_cpm",
-      "range_high",
-      "range_low",
-      "status",
-      "views_per_week"
-    ],
-    "status": 200
-  },
-  "creator GET /negotiation/sessions/{id}/conversations": {
-    "count": 0,
-    "status": 200
-  },
-  "creator GET /negotiation/sessions/{id}/forecast": {
-    "count": 12,
-    "keys": [
-      "high",
-      "low",
-      "mid",
-      "week"
-    ],
-    "status": 200
-  },
-  "creator GET /negotiation/sessions/{id}/offers": {
-    "count": 0,
-    "status": 200
-  },
-  "creator GET /negotiation/sessions/{id}/rate-range": {
-    "keys": [
-      "base_rate",
-      "range_high",
-      "range_low"
     ],
     "status": 200
   },

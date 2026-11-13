@@ -2,7 +2,7 @@ import logging
 import re
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Response, UploadFile
 
 from features.activity_log.supabase_repository import SupabaseActivityLogRepo
 from features.auth.dependencies import (
@@ -19,14 +19,12 @@ from features.contracts.contract_storage_adapter import SupabaseStorage
 from features.contracts.dependencies import load_accessible_contract
 from features.contracts.models import (
     Contract,
-    ContractCreatorStatusUpdateRequest,
     ContractStatusUpdateRequest,
 )
 from features.contracts.service import ContractService
 from features.contracts.supabase_repository import SupabaseContractRepo
 from features.deals.dependencies import load_accessible_deal
-from features.deals.supabase_repository import SupabaseDealRepo
-from shared.errors import InvalidStatusTransition, PermissionDeniedError
+from shared.errors import InvalidStatusTransition
 from shared.http_errors import map_errors
 from shared.llm.gemini_adapter import GeminiAdapter
 from shared.pagination import clamp_page_size
@@ -94,40 +92,6 @@ async def download_sample_contract_pdf():
     )
 
 
-@router.post("/contracts/upload-sample", response_model=Contract)
-async def upload_sample_contract(
-    actor: ActorContext = Depends(get_current_actor),
-    storage: SupabaseStorage = Depends(get_storage),
-    service: ContractService = Depends(get_contract_service),
-    ci_service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
-):
-    pdf_bytes = generate_sample_contract_pdf()
-    text = extract_text(pdf_bytes)
-
-    if actor.actor_type == "creator":
-        path = f"personal-contracts/{actor.creator_id}/sample-contract.pdf"
-        uploaded_path = await storage.upload_file("creator-os-assets", path, pdf_bytes)
-        contract = await service.create_personal_contract(actor.creator_id, uploaded_path)
-    else:
-        client = get_supabase_client(service_role=True)
-        deal_repo = SupabaseDealRepo(client)
-        deals = await deal_repo.list_for_brand(actor.brand_id, limit=1)
-        deal_id = deals[0].id if deals else UUID(int=1)
-        path = f"contracts/{deal_id}/sample-contract.pdf"
-        uploaded_path = await storage.upload_file("creator-os-assets", path, pdf_bytes)
-        contract = await service.create_contract(
-            deal_id, uploaded_path, actor.brand_id, actor.actor_id, actor.actor_type
-        )
-
-    if text.strip():
-        contract = await service.save_raw_text(contract.id, text)
-        clauses = fallback_segment_clauses(text)
-        if clauses:
-            await ci_service.scan_contract(contract.id, clauses)
-
-    return contract
-
-
 @router.post("/deals/{deal_id}/contracts", response_model=Contract)
 async def upload_contract(
     deal_id: UUID,
@@ -171,44 +135,6 @@ async def upload_contract(
     return contract
 
 
-@router.post("/creators/me/contracts", response_model=Contract)
-async def upload_personal_contract(
-    file: UploadFile = File(...),
-    actor: ActorContext = Depends(get_current_actor),
-    storage: SupabaseStorage = Depends(get_storage),
-    service: ContractService = Depends(get_contract_service),
-    ci_service: ContractIntelligenceService = Depends(get_contract_intelligence_service),
-):
-    if not actor.creator_id:
-        raise HTTPException(status_code=403, detail="This action requires a creator account")
-    content = await file.read()
-    path = f"personal-contracts/{actor.creator_id}/{file.filename}"
-    uploaded_path = await storage.upload_file("creator-os-assets", path, content)
-    contract = await service.create_personal_contract(actor.creator_id, uploaded_path)
-
-    # Same best-effort scan as a deal contract upload: never fail the upload
-    # over an unscannable PDF or a segmentation/LLM hiccup.
-    try:
-        text = extract_text(content)
-        if text.strip():
-            contract = await service.save_raw_text(contract.id, text)
-            clauses = []
-            try:
-                clauses = await GeminiAdapter().segment_clauses(text)
-            except Exception:
-                logger.warning(
-                    "Gemini clause segmentation unavailable; using fallback segmentation"
-                )
-            if not clauses:
-                clauses = fallback_segment_clauses(text)
-            if clauses:
-                await ci_service.scan_contract(contract.id, clauses)
-    except Exception:
-        logger.exception("Automatic contract scan failed for personal contract %s", contract.id)
-
-    return contract
-
-
 @router.get("/contracts/{id}", response_model=Contract)
 async def get_contract(
     id: UUID,
@@ -228,19 +154,6 @@ async def list_contracts(
     if actor.actor_type == "creator":
         return await service.list_for_creator(actor.creator_id, limit, offset)
     return await service.list_for_brand(actor.brand_id, limit, offset)
-
-
-@router.patch("/contracts/{id}/creator-status", response_model=Contract)
-async def update_contract_creator_status(
-    id: UUID,
-    request: ContractCreatorStatusUpdateRequest,
-    actor: ActorContext = Depends(get_current_actor),
-    service: ContractService = Depends(get_contract_service),
-):
-    if not actor.creator_id:
-        raise HTTPException(status_code=403, detail="This action requires a creator account")
-    with map_errors({PermissionDeniedError: 403}):
-        return await service.update_creator_status(id, request.creator_status, actor.creator_id)
 
 
 @router.patch("/contracts/{id}/status", response_model=Contract)

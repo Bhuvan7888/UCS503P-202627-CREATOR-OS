@@ -77,11 +77,3 @@ class SupabaseContractRepo(DemoFallbackMixin):
             self.client.table("contracts").update({"raw_text": raw_text}).eq("id", str(id))
         )
         return Contract.model_validate(res.data[0])
-
-    async def update_creator_status(self, id: UUID, creator_status: str) -> Contract:
-        res = await run_query(
-            self.client.table("contracts")
-            .update({"creator_status": creator_status})
-            .eq("id", str(id))
-        )
-        return Contract.model_validate(res.data[0])

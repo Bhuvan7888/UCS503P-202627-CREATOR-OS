@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
@@ -31,8 +31,3 @@ class DealCreateRequest(BaseModel):
 
 class DealStatusUpdateRequest(BaseModel):
     status: DealStatus
-
-
-class WeeklyValuePoint(BaseModel):
-    week_start: date
-    value: float

@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -27,25 +27,3 @@ class CreatorOnboardRequest(BaseModel):
     followers_count: int | None = None
     engagement_rate: float | None = None
     avg_views_per_week: int | None = None
-
-
-class CreatorProfileUpdateRequest(BaseModel):
-    followers_count: int
-    engagement_rate: float
-    avg_views_per_week: int | None = None
-
-
-class GrowthSnapshot(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: UUID
-    creator_id: UUID
-    recorded_at: date
-    followers_count: int
-    engagement_rate: float | None = None
-    created_at: datetime
-
-
-class GrowthSnapshotCreateRequest(BaseModel):
-    recorded_at: date
-    followers_count: int
-    engagement_rate: float | None = None

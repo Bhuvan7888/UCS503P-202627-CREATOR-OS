@@ -2,7 +2,7 @@
 Seeds three real-brand demo accounts (Mamaearth, Nykaa, boAt), five creator
 accounts spanning multiple niches, and a dozen deals walking every deal
 status, contract type, deliverable stage, and payment state the app
-supports — plus growth history, AI negotiation chat, and brand<->creator
+supports — plus brand<->creator
 messages — so the whole platform can be clicked through end to end without
 any manual setup.
 
@@ -46,11 +46,8 @@ from features.contracts import (
 )
 from features.contracts.contract_storage_adapter import SupabaseStorage
 from features.contracts.supabase_repository import SupabaseContractRepo
-from features.creators import CreatorService, GrowthSnapshot
-from features.creators.supabase_repository import (
-    SupabaseCreatorRepo,
-    SupabaseGrowthSnapshotRepo,
-)
+from features.creators import CreatorService
+from features.creators.supabase_repository import SupabaseCreatorRepo
 from features.deals import DealCreateRequest, DealService
 from features.deals.supabase_repository import SupabaseDealRepo
 from features.deliverables import (
@@ -61,16 +58,6 @@ from features.deliverables import (
 from features.deliverables.supabase_repository import SupabaseDeliverableRepo
 from features.messages import Message
 from features.messages.supabase_repository import SupabaseMessageRepo
-from features.negotiation import (
-    ChecklistState,
-    NegotiationConversation,
-    NegotiationService,
-    NegotiationSessionCreate,
-)
-from features.negotiation.supabase_repository import (
-    SupabaseNegotiationConversationRepo,
-    SupabaseNegotiationSessionRepo,
-)
 from features.payments import PaymentCreateRequest, PaymentService
 from features.payments.supabase_repository import SupabasePaymentRepo
 from shared.llm.gemini_adapter import GeminiAdapter
@@ -164,19 +151,11 @@ async def main() -> None:
     contract_service = ContractService(
         SupabaseContractRepo(client), SupabaseActivityLogRepo(client)
     )
-    negotiation_service = NegotiationService(
-        SupabaseNegotiationSessionRepo(client),
-        SupabaseActivityLogRepo(client),
-        GeminiAdapter(),
-        deal_repo,
-    )
     deliverable_service = DeliverableService(
         SupabaseDeliverableRepo(client), SupabaseActivityLogRepo(client)
     )
     payment_service = PaymentService(SupabasePaymentRepo(client), SupabaseActivityLogRepo(client))
     storage = SupabaseStorage(client)
-    growth_repo = SupabaseGrowthSnapshotRepo(client)
-    conversation_repo = SupabaseNegotiationConversationRepo(client)
     message_repo = SupabaseMessageRepo(client)
 
     clause_card_repo = SupabaseClauseCardRepo(client)
@@ -217,14 +196,12 @@ async def main() -> None:
             niche=kw["niche"],
             follower_tier=kw["tier"],
             followers_count=kw["followers"],
+            engagement_rate=kw["engagement"],
             email=kw["login_email"],
             password=DEMO_PASSWORD,
         )
         session = await _with_retry(fresh_auth_service().creator_signup, req)
         await creator_service.link_brand(session.creator_id, invite_code)
-        await creator_service.update_profile(
-            session.creator_id, kw["followers"], kw["engagement"], kw.get("views")
-        )
         print(f"  creator login: {kw['login_email']} / {DEMO_PASSWORD} ({kw['name']})")
         return session.creator_id
 
@@ -287,34 +264,6 @@ async def main() -> None:
         )
         return contract.id
 
-    async def make_negotiation(
-        brand_id, actor_id, deal_id, views, cpm, tier_mult, eng_adj, checklist_complete, offers
-    ) -> UUID:
-        session = await negotiation_service.create_session(
-            NegotiationSessionCreate(
-                deal_id=deal_id,
-                views_per_week=views,
-                niche_cpm=cpm,
-                follower_tier_multiplier=tier_mult,
-                engagement_rate_adjustment=eng_adj,
-            ),
-        )
-        if checklist_complete:
-            await negotiation_service.update_checklist(
-                session.id,
-                ChecklistState(
-                    usage_rights_duration_set=True,
-                    exclusivity_scope_set=True,
-                    revision_limit_set=True,
-                    payment_timeline_set=True,
-                ),
-            )
-        for actor_type, amount, message in offers:
-            await negotiation_service.create_counter_offer(
-                session.id, amount, message, actor_id, actor_type
-            )
-        return session.id
-
     async def make_deliverable(brand_id, actor_id, deal_id, creator_id, title, desc, status_path):
         d = await deliverable_service.create_deliverable(
             DeliverableCreateRequest(deal_id=deal_id, title=title, description=desc),
@@ -359,36 +308,6 @@ async def main() -> None:
             await payment_service.mark_paid(payment.id, brand_id, actor_id, "brand", deal_id)
         return payment.id
 
-    async def seed_growth_history(creator_id: UUID, start_followers: int, weekly_growth: float):
-        # 3 points ~4 weeks apart, compounding at weekly_growth, ending today —
-        # gives the "Know your worth" forecast a real computed rate out of the box.
-        for weeks_ago in (8, 4, 0):
-            followers = round(start_followers * (1 + weekly_growth) ** (8 - weeks_ago))
-            await growth_repo.create(
-                GrowthSnapshot(
-                    id=uuid4(),
-                    creator_id=creator_id,
-                    recorded_at=TODAY - timedelta(weeks=weeks_ago),
-                    followers_count=followers,
-                    engagement_rate=None,
-                    created_at=datetime.now(UTC),
-                )
-            )
-
-    async def seed_ai_conversation(
-        session_id: UUID, brand_name: str, creator_text: str, ai_reply: str
-    ):
-        await conversation_repo.create(
-            NegotiationConversation(
-                id=uuid4(),
-                session_id=session_id,
-                brand_name=brand_name,
-                conversation_text=creator_text,
-                ai_suggestion=ai_reply,
-                created_at=datetime.now(UTC),
-            )
-        )
-
     async def seed_message_thread(brand_id: UUID, creator_id: UUID, thread: list[tuple[str, str]]):
         for sender_type, body in thread:
             await message_repo.create(
@@ -402,8 +321,7 @@ async def main() -> None:
                 )
             )
 
-    async def seed_deals(brand_id, actor_id, creator_ids, deals_spec) -> dict[str, UUID]:
-        session_ids: dict[str, UUID] = {}
+    async def seed_deals(brand_id, actor_id, creator_ids, deals_spec) -> None:
         for spec in deals_spec:
             deal_id = await make_deal(
                 brand_id,
@@ -423,11 +341,6 @@ async def main() -> None:
             elif spec.get("simple_contract"):
                 contract_id = await make_simple_contract(brand_id, actor_id, deal_id)
 
-            if spec.get("negotiation"):
-                sid = await make_negotiation(brand_id, actor_id, deal_id, **spec["negotiation"])
-                if "key" in spec:
-                    session_ids[spec["key"]] = sid
-
             if spec.get("deliverable"):
                 await make_deliverable(
                     brand_id, actor_id, deal_id, creator_ids[spec["creator"]], **spec["deliverable"]
@@ -437,7 +350,6 @@ async def main() -> None:
                 await make_payment(brand_id, actor_id, deal_id, contract_id, **spec["payment"])
 
             print(f"  deal: {spec['campaign']} ({spec['status']}) — done")
-        return session_ids
 
     creator_ids: dict[str, UUID] = {}
 
@@ -451,7 +363,6 @@ async def main() -> None:
         tier="micro",
         followers=68000,
         engagement=5.2,
-        views=21000,
         login_email="demo.creator1@creatoros.dev",
     )
     creator_ids["rohan"] = await signup_creator(
@@ -462,34 +373,20 @@ async def main() -> None:
         tier="mid",
         followers=145000,
         engagement=3.8,
-        views=48000,
         login_email="demo.creator2@creatoros.dev",
     )
-    mamaearth_sessions = await seed_deals(
+    await seed_deals(
         mamaearth_id,
         mamaearth_actor,
         creator_ids,
         deals_spec=[
             dict(
-                key="ananya_glow",
                 creator="ananya",
                 campaign="Glow Serum Launch",
                 email="priya.nair@mamaearth.demo",
                 status="completed",
                 created_days_ago=55,
                 scanned_contract_text=MAMAEARTH_CONTRACT,
-                negotiation=dict(
-                    views=18000,
-                    cpm=40,
-                    tier_mult=6000,
-                    eng_adj=3000,
-                    checklist_complete=True,
-                    offers=[
-                        ("creator", 13000, "Our standard ask for this scope"),
-                        ("brand", 8500, "Mamaearth's initial budget"),
-                        ("brand", 9720, "Meeting in the middle at our calculated rate"),
-                    ],
-                ),
                 deliverable=dict(
                     title="Instagram Reel — Glow Serum Launch",
                     desc="1x 30s Reel + 2 Stories",
@@ -498,20 +395,11 @@ async def main() -> None:
                 payment=dict(amount=9720, due_date=TODAY - timedelta(days=10), paid=True),
             ),
             dict(
-                key="ananya_winter",
                 creator="ananya",
                 campaign="Winter Skincare Routine",
                 email="priya.nair@mamaearth.demo",
                 status="negotiating",
                 created_days_ago=6,
-                negotiation=dict(
-                    views=18000,
-                    cpm=30,
-                    tier_mult=4000,
-                    eng_adj=2000,
-                    checklist_complete=False,
-                    offers=[("brand", 5000, "Mamaearth's opening offer, still negotiating terms")],
-                ),
             ),
             dict(
                 creator="rohan",
@@ -520,17 +408,6 @@ async def main() -> None:
                 status="contracted",
                 created_days_ago=28,
                 simple_contract=True,
-                negotiation=dict(
-                    views=40000,
-                    cpm=25,
-                    tier_mult=8000,
-                    eng_adj=3000,
-                    checklist_complete=True,
-                    offers=[
-                        ("creator", 16000, "Initial ask"),
-                        ("brand", 12000, "Final agreed rate"),
-                    ],
-                ),
                 deliverable=dict(
                     title="Instagram Reel — Face Wash Launch",
                     desc="1x Reel, before/after routine",
@@ -558,38 +435,24 @@ async def main() -> None:
         tier="micro",
         followers=42000,
         engagement=6.1,
-        views=15000,
         login_email="demo.creator3@creatoros.dev",
     )
     # Ananya works with both brands — demonstrates the "linked brands" feature
     # showing more than one pill.
     await creator_service.link_brand(creator_ids["ananya"], str(nykaa_id))
     print("  (linked existing creator Ananya Sharma to Nykaa too)")
-    nykaa_sessions = await seed_deals(
+    await seed_deals(
         nykaa_id,
         nykaa_actor,
         creator_ids,
         deals_spec=[
             dict(
-                key="zara_festive",
                 creator="zara",
                 campaign="Festive Fashion Edit",
                 email="karan.oberoi@nykaa.demo",
                 status="completed",
                 created_days_ago=50,
                 scanned_contract_text=NYKAA_CONTRACT,
-                negotiation=dict(
-                    views=12000,
-                    cpm=35,
-                    tier_mult=3000,
-                    eng_adj=1500,
-                    checklist_complete=True,
-                    offers=[
-                        ("creator", 6600, "Initial ask"),
-                        ("brand", 4200, "Nykaa's initial budget"),
-                        ("brand", 4920, "Final agreed rate"),
-                    ],
-                ),
                 deliverable=dict(
                     title="Instagram Reel — Festive Fashion Edit",
                     desc="3-look styled Reel + shoppable story set",
@@ -598,20 +461,11 @@ async def main() -> None:
                 payment=dict(amount=4920, due_date=TODAY - timedelta(days=18), paid=True),
             ),
             dict(
-                key="zara_spring",
                 creator="zara",
                 campaign="Spring Capsule Wardrobe",
                 email="karan.oberoi@nykaa.demo",
                 status="negotiating",
                 created_days_ago=5,
-                negotiation=dict(
-                    views=12000,
-                    cpm=32,
-                    tier_mult=3000,
-                    eng_adj=1500,
-                    checklist_complete=False,
-                    offers=[("brand", 3600, "Nykaa's opening offer")],
-                ),
             ),
             dict(
                 creator="zara",
@@ -627,14 +481,6 @@ async def main() -> None:
                 status="in_production",
                 created_days_ago=15,
                 simple_contract=True,
-                negotiation=dict(
-                    views=20000,
-                    cpm=28,
-                    tier_mult=4000,
-                    eng_adj=2000,
-                    checklist_complete=True,
-                    offers=[("creator", 8500, "Initial ask"), ("brand", 6200, "Final agreed rate")],
-                ),
                 deliverable=dict(
                     title="Unboxing Reel — Beauty Box",
                     desc="1x unboxing + haul Reel",
@@ -655,7 +501,6 @@ async def main() -> None:
         tier="mid",
         followers=112000,
         engagement=4.5,
-        views=27000,
         login_email="demo.creator4@creatoros.dev",
     )
     creator_ids["ishita"] = await signup_creator(
@@ -666,34 +511,20 @@ async def main() -> None:
         tier="micro",
         followers=53000,
         engagement=5.5,
-        views=17000,
         login_email="demo.creator5@creatoros.dev",
     )
-    boat_sessions = await seed_deals(
+    await seed_deals(
         boat_id,
         boat_actor,
         creator_ids,
         deals_spec=[
             dict(
-                key="kabir_earbuds",
                 creator="kabir",
                 campaign="Wireless Earbuds Review",
                 email="arjun.mehra@boat.demo",
                 status="completed",
                 created_days_ago=48,
                 scanned_contract_text=BOAT_CONTRACT,
-                negotiation=dict(
-                    views=25000,
-                    cpm=45,
-                    tier_mult=7000,
-                    eng_adj=3500,
-                    checklist_complete=True,
-                    offers=[
-                        ("creator", 15500, "Our standard ask"),
-                        ("brand", 9900, "boAt's initial budget"),
-                        ("brand", 11625, "Final agreed rate"),
-                    ],
-                ),
                 deliverable=dict(
                     title="YouTube Review — Wireless Earbuds",
                     desc="60-90s review + 1 Reel",
@@ -702,20 +533,11 @@ async def main() -> None:
                 payment=dict(amount=11625, due_date=TODAY - timedelta(days=12), paid=True),
             ),
             dict(
-                key="kabir_watch",
                 creator="kabir",
                 campaign="Smartwatch Launch Teaser",
                 email="arjun.mehra@boat.demo",
                 status="negotiating",
                 created_days_ago=4,
-                negotiation=dict(
-                    views=25000,
-                    cpm=38,
-                    tier_mult=6000,
-                    eng_adj=3000,
-                    checklist_complete=False,
-                    offers=[("brand", 8000, "boAt's opening offer")],
-                ),
             ),
             dict(
                 creator="ishita",
@@ -724,14 +546,6 @@ async def main() -> None:
                 status="in_production",
                 created_days_ago=20,
                 simple_contract=True,
-                negotiation=dict(
-                    views=15000,
-                    cpm=28,
-                    tier_mult=4000,
-                    eng_adj=2000,
-                    checklist_complete=True,
-                    offers=[("creator", 8500, "Initial ask"), ("brand", 6600, "Final agreed rate")],
-                ),
                 deliverable=dict(
                     title="Travel Vlog — Travel Speaker",
                     desc="1x destination vlog, 3-5 min",
@@ -749,41 +563,6 @@ async def main() -> None:
         ],
     )
 
-    # --- Growth history for all 5 creators ----------------------------
-    print("\n=== Growth history ===")
-    await seed_growth_history(creator_ids["ananya"], 61000, 0.012)
-    await seed_growth_history(creator_ids["rohan"], 134000, 0.009)
-    await seed_growth_history(creator_ids["zara"], 37000, 0.014)
-    await seed_growth_history(creator_ids["kabir"], 103000, 0.008)
-    await seed_growth_history(creator_ids["ishita"], 47000, 0.011)
-    print("  logged 3 snapshots each for all 5 creators")
-
-    # --- AI negotiation chat history (one active negotiation per brand) ---
-    print("\n=== AI negotiation chat history ===")
-    await seed_ai_conversation(
-        mamaearth_sessions["ananya_winter"],
-        "Mamaearth",
-        "They offered ₹5,000 for the Winter Skincare Routine campaign but my calculated range starts higher. "
-        "How should I respond?",
-        "Their offer sits below your suggested range floor. Counter close to your range's midpoint and cite your "
-        "recent growth — you've room to hold firm since your engagement is well above your niche's median.",
-    )
-    await seed_ai_conversation(
-        nykaa_sessions["zara_spring"],
-        "Nykaa",
-        "Nykaa opened at ₹3,600 for the Spring Capsule Wardrobe Reel. They mentioned budget is tight this quarter.",
-        "A tight-budget line is a common opener, not a ceiling — ask what specifically is driving the number before "
-        "moving. If they won't budge on rate, trade scope instead: fewer looks or a shorter usage window for the same price.",
-    )
-    await seed_ai_conversation(
-        boat_sessions["kabir_watch"],
-        "boAt",
-        "boAt offered ₹8,000 for the Smartwatch Launch Teaser. Is that fair for a mid-tier tech creator?",
-        "That's roughly 30% under your suggested range. Since this is a launch teaser (high-visibility, time-sensitive "
-        "for them), you have leverage — counter near your range's low end and flag the tight turnaround as added value.",
-    )
-    print("  seeded 1 conversation turn per brand's active negotiation")
-
     # --- Brand <-> creator direct messages -----------------------------
     print("\n=== Direct messages ===")
     await seed_message_thread(
@@ -796,7 +575,7 @@ async def main() -> None:
             ),
             (
                 "creator",
-                "Thank you! Really happy with how it turned out. Sent over my rate calculator numbers on the negotiation page.",
+                "Thank you! Really happy with how it turned out.",
             ),
             ("brand", "Got it, reviewing now — will follow up there today."),
         ],
@@ -827,7 +606,7 @@ async def main() -> None:
                 "creator",
                 "That's great news! Happy to talk about the Smartwatch teaser whenever you're ready.",
             ),
-            ("brand", "Let's connect on the negotiation page — sent an opening number there."),
+            ("brand", "Sent over an opening number for the campaign — let us know your thoughts."),
         ],
     )
     print("  seeded a message thread per brand with one creator")

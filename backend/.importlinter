@@ -26,7 +26,6 @@ containers =
     features.activity_log
     features.analytics
     features.auth
-    features.benchmarks
     features.brands
     features.contract_intelligence
     features.content
@@ -35,7 +34,6 @@ containers =
     features.deals
     features.deliverables
     features.messages
-    features.negotiation
     features.payments
     features.workspaces
 layers =

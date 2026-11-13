@@ -6,10 +6,8 @@ from features.brands import Brand, BrandRepo
 from features.creators.models import (
     Creator,
     CreatorOnboardRequest,
-    GrowthSnapshot,
-    GrowthSnapshotCreateRequest,
 )
-from features.creators.repository import CreatorRepo, GrowthSnapshotRepo
+from features.creators.repository import CreatorRepo
 from shared.errors import ValidationError
 
 
@@ -19,12 +17,10 @@ class CreatorService:
         creator_repo: CreatorRepo,
         activity_log_repo: ActivityLogRepo,
         brand_repo: BrandRepo | None = None,
-        growth_snapshot_repo: GrowthSnapshotRepo | None = None,
     ):
         self.creator_repo = creator_repo
         self.activity_log_repo = activity_log_repo
         self.brand_repo = brand_repo
-        self.growth_snapshot_repo = growth_snapshot_repo
 
     async def onboard_creator(
         self, request: CreatorOnboardRequest, brand_id: UUID, actor_id: UUID, actor_type: str
@@ -63,17 +59,6 @@ class CreatorService:
     ) -> list[Creator]:
         return await self.creator_repo.list_for_brand(brand_id, limit, offset)
 
-    async def update_profile(
-        self,
-        creator_id: UUID,
-        followers_count: int,
-        engagement_rate: float,
-        avg_views_per_week: int | None = None,
-    ) -> Creator:
-        return await self.creator_repo.update_profile(
-            creator_id, followers_count, engagement_rate, avg_views_per_week
-        )
-
     async def link_brand(self, creator_id: UUID, invite_code: str) -> Brand:
         try:
             brand_id = UUID(invite_code)
@@ -104,21 +89,3 @@ class CreatorService:
 
     async def list_linked_brands(self, creator_id: UUID) -> list[Brand]:
         return await self.creator_repo.list_linked_brands(creator_id)
-
-    async def add_growth_snapshot(
-        self, creator_id: UUID, request: GrowthSnapshotCreateRequest
-    ) -> GrowthSnapshot:
-        snapshot = GrowthSnapshot(
-            id=uuid4(),
-            creator_id=creator_id,
-            recorded_at=request.recorded_at,
-            followers_count=request.followers_count,
-            engagement_rate=request.engagement_rate,
-            created_at=datetime.now(UTC),
-        )
-        return await self.growth_snapshot_repo.create(snapshot)
-
-    async def list_growth_snapshots(
-        self, creator_id: UUID, limit: int = 60
-    ) -> list[GrowthSnapshot]:
-        return await self.growth_snapshot_repo.list_for_creator(creator_id, limit)

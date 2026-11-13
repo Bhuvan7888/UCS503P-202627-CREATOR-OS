@@ -9,16 +9,10 @@ from features.brands import Brand, BrandMember
 from features.content.models import ContentItem
 from features.contract_intelligence import ClauseCardOut, EscalationOut
 from features.contracts import Contract
-from features.creators import Creator, GrowthSnapshot
+from features.creators import Creator
 from features.deals import Deal
 from features.deliverables import Deliverable
 from features.messages import Message
-from features.negotiation import (
-    ChecklistState,
-    NegotiationConversation,
-    NegotiationOffer,
-    NegotiationSession,
-)
 from features.payments import Payment
 from features.workspaces.models import Workspace, WorkspaceMember, WorkspaceRole
 from shared.errors import DuplicateError
@@ -87,34 +81,6 @@ class DemoCreatorRepo:
             self.brands[bid] for cid, bid in self.links if cid == creator_id and bid in self.brands
         ]
 
-    async def update_profile(
-        self,
-        id: UUID,
-        followers_count: int,
-        engagement_rate: float,
-        avg_views_per_week: int | None = None,
-    ) -> Creator:
-        creator = self.data[id]
-        creator.followers_count = followers_count
-        creator.engagement_rate = engagement_rate
-        if avg_views_per_week is not None:
-            creator.avg_views_per_week = avg_views_per_week
-        return creator
-
-
-class DemoGrowthSnapshotRepo:
-    def __init__(self):
-        self.data: dict[UUID, GrowthSnapshot] = {}
-
-    async def create(self, snapshot: GrowthSnapshot) -> GrowthSnapshot:
-        self.data[snapshot.id] = snapshot
-        return snapshot
-
-    async def list_for_creator(self, creator_id: UUID, limit: int = 60) -> list[GrowthSnapshot]:
-        matches = [s for s in self.data.values() if s.creator_id == creator_id]
-        matches.sort(key=lambda s: s.recorded_at, reverse=True)
-        return matches[:limit]
-
 
 class DemoDealRepo:
     def __init__(self):
@@ -155,7 +121,7 @@ class DealOwnerMap(dict):
     """deal_id -> brand_id / creator_id.
 
     Seeded entries win; deals created at runtime are resolved from the demo deal store, so
-    contracts, deliverables and negotiation sessions on new deals show up in list views.
+    contracts and deliverables on new deals show up in list views.
     """
 
     def __init__(self, deal_repo: "DemoDealRepo", attribute: str):
@@ -250,12 +216,6 @@ class DemoContractRepo:
     async def update_raw_text(self, id: UUID, raw_text: str) -> Contract:
         contract = self.data[id]
         contract.raw_text = raw_text
-        contract.updated_at = datetime.now(UTC)
-        return contract
-
-    async def update_creator_status(self, id: UUID, creator_status: str) -> Contract:
-        contract = self.data[id]
-        contract.creator_status = creator_status
         contract.updated_at = datetime.now(UTC)
         return contract
 
@@ -381,64 +341,6 @@ class DemoPaymentRepo:
         return p
 
 
-class DemoNegotiationSessionRepo:
-    def __init__(self):
-        self.data: dict[UUID, NegotiationSession] = {}
-        self.offers: dict[UUID, NegotiationOffer] = {}
-        self.deal_brand_map: dict[UUID, UUID] = {}
-        self.deal_creator_map: dict[UUID, UUID] = {}
-
-    async def create(self, session: NegotiationSession) -> NegotiationSession:
-        self.data[session.id] = session
-        return session
-
-    async def get(self, id: UUID) -> NegotiationSession | None:
-        return self.data.get(id)
-
-    async def list_for_brand(
-        self, brand_id: UUID, limit: int = 50, offset: int = 0
-    ) -> list[NegotiationSession]:
-        matches = [s for s in self.data.values() if self.deal_brand_map.get(s.deal_id) == brand_id]
-        return matches[offset : offset + limit]
-
-    async def list_for_creator(
-        self, creator_id: UUID, limit: int = 50, offset: int = 0
-    ) -> list[NegotiationSession]:
-        matches = [
-            s for s in self.data.values() if self.deal_creator_map.get(s.deal_id) == creator_id
-        ]
-        return matches[offset : offset + limit]
-
-    async def update_checklist(self, id: UUID, checklist: ChecklistState) -> NegotiationSession:
-        session = self.data[id]
-        session.checklist = checklist
-        session.updated_at = datetime.now(UTC)
-        return session
-
-    async def save_offer(self, offer: NegotiationOffer) -> NegotiationOffer:
-        self.offers[offer.id] = offer
-        return offer
-
-    async def list_offers(self, session_id: UUID) -> list[NegotiationOffer]:
-        matches = [o for o in self.offers.values() if o.session_id == session_id]
-        matches.sort(key=lambda o: o.sent_at)
-        return matches
-
-
-class DemoNegotiationConversationRepo:
-    def __init__(self):
-        self.data: dict[UUID, NegotiationConversation] = {}
-
-    async def create(self, conv: NegotiationConversation) -> NegotiationConversation:
-        self.data[conv.id] = conv
-        return conv
-
-    async def list_for_session(self, session_id: UUID) -> list[NegotiationConversation]:
-        matches = [c for c in self.data.values() if c.session_id == session_id]
-        matches.sort(key=lambda c: c.created_at, reverse=True)
-        return matches
-
-
 class DemoMessageRepo:
     def __init__(self):
         self.data: dict[UUID, Message] = {}
@@ -495,20 +397,6 @@ class DemoMessageRepo:
                     bid = str(m.brand_id)
                     counts[bid] = counts.get(bid, 0) + 1
         return counts
-
-
-class DemoRateBenchmarkRepo:
-    def __init__(self):
-        self.benchmarks: dict[tuple[str, str], list[float]] = {
-            ("beauty", "micro"): [8500.0, 9720.0, 11000.0, 12500.0],
-            ("fitness", "mid"): [12000.0, 14500.0, 16000.0, 18000.0],
-            ("fashion", "micro"): [4200.0, 4920.0, 6000.0, 6600.0],
-            ("tech", "mid"): [9900.0, 11625.0, 13500.0, 15500.0],
-            ("travel", "micro"): [6600.0, 7500.0, 8500.0, 9500.0],
-        }
-
-    async def get_historical_rates(self, niche: str, follower_tier: str) -> list[float]:
-        return self.benchmarks.get((niche, follower_tier), [5000.0, 8000.0, 10000.0])
 
 
 class DemoClauseCardRepo:

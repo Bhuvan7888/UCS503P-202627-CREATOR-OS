@@ -52,36 +52,23 @@ def collect(client: TestClient) -> dict[str, Any]:
 
     for role, h in (("brand", brand), ("creator", creator)):
         deals = get(f"{role} GET /deals", "/deals", h)
-        get(f"{role} GET /deals/stats", "/deals/stats", h)
-        get(f"{role} GET /deals/weekly-value", "/deals/weekly-value", h)
         contracts = get(f"{role} GET /contracts", "/contracts", h)
         get(f"{role} GET /deliverables", "/deliverables", h)
         get(f"{role} GET /payments", "/payments", h)
         get(f"{role} GET /activity-log", "/activity-log", h)
         get(f"{role} GET /messages/unread", "/messages/unread", h)
-        sessions = get(f"{role} GET /negotiation/sessions", "/negotiation/sessions", h)
         if contracts:
             cid = contracts[0]["id"]
             get(f"{role} GET /contracts/{{id}}", f"/contracts/{cid}", h)
             get(f"{role} GET /contracts/{{id}}/clauses", f"/contracts/{cid}/clauses", h)
-        if sessions:
-            sid = sessions[0]["id"]
-            for leaf in ("rate-range", "forecast", "conversations", "offers"):
-                get(
-                    f"{role} GET /negotiation/sessions/{{id}}/{leaf}",
-                    f"/negotiation/sessions/{sid}/{leaf}",
-                    h,
-                )
         if deals:
             result[f"{role} deals statuses"] = sorted(d["status"] for d in deals)
 
     creators = get("brand GET /creators", "/creators", brand)
     get("brand GET /analytics/brand", "/analytics/brand", brand)
-    get("brand GET /benchmarks", "/benchmarks", brand)
     if creators:
         get("GET /creators/{id}", f"/creators/{creators[0]['id']}", brand)
         get("brand GET /messages?with_id", f"/messages?with_id={creators[0]['id']}", brand)
     get("creator GET /creators/me/brands", "/creators/me/brands", creator)
-    get("creator GET /creators/me/growth-snapshots", "/creators/me/growth-snapshots", creator)
     get("GET /contracts/sample-contract-pdf", "/contracts/sample-contract-pdf")
     return result

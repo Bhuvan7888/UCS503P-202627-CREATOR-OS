@@ -8,7 +8,6 @@ from features.contracts import Contract
 from features.creators import Creator
 from features.deals import Deal
 from features.deliverables import Deliverable
-from features.negotiation import ChecklistState, NegotiationOffer, NegotiationSession
 from features.payments import Payment
 
 
@@ -73,20 +72,6 @@ class FakeCreatorRepo:
         return [
             self.brands[bid] for cid, bid in self.links if cid == creator_id and bid in self.brands
         ]
-
-    async def update_profile(
-        self,
-        id: UUID,
-        followers_count: int,
-        engagement_rate: float,
-        avg_views_per_week: int | None = None,
-    ) -> Creator:
-        creator = self.data[id]
-        creator.followers_count = followers_count
-        creator.engagement_rate = engagement_rate
-        if avg_views_per_week is not None:
-            creator.avg_views_per_week = avg_views_per_week
-        return creator
 
 
 class FakeDealRepo:
@@ -160,11 +145,6 @@ class FakeContractRepo:
     async def update_raw_text(self, id: UUID, raw_text: str) -> Contract:
         contract = self.data[id]
         contract.raw_text = raw_text
-        return contract
-
-    async def update_creator_status(self, id: UUID, creator_status: str) -> Contract:
-        contract = self.data[id]
-        contract.creator_status = creator_status
         return contract
 
 
@@ -272,42 +252,6 @@ class FakePaymentRepo:
         return payment
 
 
-class FakeNegotiationSessionRepo:
-    def __init__(self):
-        self.data: dict[UUID, NegotiationSession] = {}
-        self.offers_data: dict[UUID, NegotiationOffer] = {}
-
-    async def create(self, session: NegotiationSession) -> NegotiationSession:
-        self.data[session.id] = session
-        return session
-
-    async def get(self, id: UUID) -> NegotiationSession | None:
-        return self.data.get(id)
-
-    async def list_for_brand(
-        self, brand_id: UUID, limit: int = 50, offset: int = 0
-    ) -> list[NegotiationSession]:
-        return list(self.data.values())[offset : offset + limit]
-
-    async def list_for_creator(
-        self, creator_id: UUID, limit: int = 50, offset: int = 0
-    ) -> list[NegotiationSession]:
-        return list(self.data.values())[offset : offset + limit]
-
-    async def update_checklist(self, id: UUID, checklist: ChecklistState) -> NegotiationSession:
-        session = self.data[id]
-        session.checklist = checklist
-        return session
-
-    async def save_offer(self, offer: NegotiationOffer) -> NegotiationOffer:
-        self.offers_data[offer.id] = offer
-        return offer
-
-    async def list_offers(self, session_id: UUID) -> list[NegotiationOffer]:
-        matches = [o for o in self.offers_data.values() if o.session_id == session_id]
-        return sorted(matches, key=lambda o: o.sent_at)
-
-
 class FakeEmailPort:
     def __init__(self):
         self.sent_emails = []
@@ -322,22 +266,6 @@ class FakeLLMPort:
         self.explanation = explanation
 
     async def explain_clause(self, clause_text: str, flag_reason: str | None) -> str:
-        if self.should_fail:
-            raise Exception("LLM connection failed.")
-        return self.explanation
-
-    async def draft_script(self, session: NegotiationSession, kind: str) -> str:
-        if self.should_fail:
-            raise Exception("LLM connection failed.")
-        return self.explanation
-
-    async def suggest_negotiation_move(
-        self,
-        session: NegotiationSession,
-        brand_name: str,
-        conversation_text: str,
-        history: list[tuple[str, str]],
-    ) -> str:
         if self.should_fail:
             raise Exception("LLM connection failed.")
         return self.explanation
@@ -410,11 +338,3 @@ class FakeEscalationRepo:
             for e in self.data.values()
             if self.contracts_brand_data.get(e.contract_id) == brand_id
         ]
-
-
-class FakeRateBenchmarkRepo:
-    def __init__(self, data: dict[tuple[str, str], list[float]] | None = None):
-        self.data = data or {}
-
-    async def get_historical_rates(self, niche: str, follower_tier: str) -> list[float]:
-        return self.data.get((niche, follower_tier), [])

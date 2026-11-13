@@ -1,16 +1,10 @@
-from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
 
 from features.deals import DealCreateRequest, DealService
-from features.negotiation import ChecklistState, NegotiationSession
 from shared.errors import NotFoundError, PermissionDeniedError
-from tests.fakes.fake_repos import (
-    FakeActivityLogRepo,
-    FakeDealRepo,
-    FakeNegotiationSessionRepo,
-)
+from tests.fakes.fake_repos import FakeActivityLogRepo, FakeDealRepo
 
 
 @pytest.mark.asyncio
@@ -112,42 +106,3 @@ async def test_update_status_allows_owning_creator_and_logs():
     logs = await activity_log_repo.list_for_deal(deal.id)
     assert logs[-1].action == "deal_status_updated"
     assert logs[-1].metadata["to_status"] == "negotiating"
-
-
-@pytest.mark.asyncio
-async def test_weekly_completed_value_buckets_by_week():
-    deal_repo = FakeDealRepo()
-    session_repo = FakeNegotiationSessionRepo()
-    service = DealService(deal_repo, FakeActivityLogRepo(), negotiation_session_repo=session_repo)
-
-    creator_id = uuid4()
-    deal = await service.create_deal(
-        DealCreateRequest(creator_id=creator_id, campaign_name="Nykaa", contact_email="a@a.com"),
-        uuid4(),
-        uuid4(),
-        "brand",
-    )
-    deal_repo.data[deal.id].status = "completed"
-    deal_repo.data[deal.id].updated_at = datetime.now(UTC)
-
-    await session_repo.create(
-        NegotiationSession(
-            id=uuid4(),
-            deal_id=deal.id,
-            status="active",
-            views_per_week=10000,
-            niche_cpm=50.0,
-            follower_tier_multiplier=1.0,
-            engagement_rate_adjustment=0.0,
-            base_rate=500000.0,
-            range_low=425000.0,
-            range_high=675000.0,
-            checklist=ChecklistState(),
-            created_at=datetime.now(UTC),
-        )
-    )
-
-    points = await service.get_weekly_completed_value("creator", creator_id, weeks=4)
-    assert len(points) == 4
-    assert points[-1].value == 500000.0
-    assert sum(p.value for p in points[:-1]) == 0.0

@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from features.activity_log.router import router as activity_log_router
 from features.analytics.router import router as analytics_router
 from features.auth.router import router as auth_router
-from features.benchmarks.router import router as benchmarks_router
 from features.content.router import router as content_router
 from features.contract_intelligence.router import escalations_router
 from features.contract_intelligence.router import router as contract_intelligence_router
@@ -13,7 +12,6 @@ from features.creators.router import router as creators_router
 from features.deals.router import router as deals_router
 from features.deliverables.router import router as deliverables_router
 from features.messages.router import router as messages_router
-from features.negotiation.router import router as negotiation_router
 from features.payments.router import router as payments_router
 from features.workspaces.router import router as workspaces_router
 
@@ -35,11 +33,9 @@ app.include_router(deals_router)
 app.include_router(contracts_router)
 app.include_router(deliverables_router)
 app.include_router(activity_log_router)
-app.include_router(negotiation_router)
 app.include_router(payments_router)
 app.include_router(contract_intelligence_router)
 app.include_router(escalations_router)
-app.include_router(benchmarks_router)
 app.include_router(analytics_router)
 app.include_router(messages_router)
 app.include_router(workspaces_router)

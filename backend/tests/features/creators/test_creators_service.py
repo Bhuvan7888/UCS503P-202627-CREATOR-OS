@@ -40,22 +40,6 @@ async def test_creator_onboarding_writes_activity_log():
 
 
 @pytest.mark.asyncio
-async def test_creator_profile_update():
-    creator_repo = FakeCreatorRepo()
-    service = CreatorService(creator_repo, FakeActivityLogRepo())
-
-    req = CreatorOnboardRequest(
-        display_name="Test", instagram_handle="@test", niche="tech", follower_tier="nano"
-    )
-    creator = await service.onboard_creator(req, uuid4(), uuid4(), "brand")
-    assert creator.followers_count is None
-
-    updated = await service.update_profile(creator.id, followers_count=42000, engagement_rate=4.5)
-    assert updated.followers_count == 42000
-    assert updated.engagement_rate == 4.5
-
-
-@pytest.mark.asyncio
 async def test_creator_link_brand():
     creator_repo = FakeCreatorRepo()
     brand_repo = FakeBrandRepo()
