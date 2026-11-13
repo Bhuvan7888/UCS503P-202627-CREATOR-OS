@@ -149,13 +149,14 @@ test("brand: every page loads and every main action works", async ({ page }) => 
     .first()
     .selectOption("paid");
 
-  // Activity log: add a manual note (the list shows the action, not the note text)
+  // Activity log: add a manual note; its text is shown in the list (also after a reload)
   await visit(page, "/activity");
-  const notesBefore = await page.getByText("manual note", { exact: true }).count();
   await page.getByPlaceholder(/Log a manual note/).fill(`E2E note ${RUN}`);
   await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByText("manual note", { exact: true })).toHaveCount(notesBefore + 1);
+  await expect(page.getByText(`E2E note ${RUN}`)).toBeVisible();
   await expect(page.getByPlaceholder(/Log a manual note/)).toHaveValue("");
+  await visit(page, "/activity");
+  await expect(page.getByText(`E2E note ${RUN}`)).toBeVisible();
 
   // Analytics
   await visit(page, "/analytics");
@@ -194,6 +195,9 @@ test("creator: every page loads and every main action works", async ({ page }) =
   await expectSettled(page);
   await page.getByRole("button", { name: "Calculate my rate" }).click();
   await expect(page.getByText("Suggested range", { exact: false })).toBeVisible();
+  // Forecast: a loading state while it's fetched, never "unavailable" for a working session
+  await expect(page.getByText("Loading forecast…")).toHaveCount(0);
+  await expect(page.getByText("Forecast unavailable.")).toHaveCount(0);
   await page.locator("textarea").fill("They offered ₹15,000 for one reel.");
   const aiResponse = page.waitForResponse(
     (r) => r.url().endsWith("/conversations") && r.request().method() === "POST",
@@ -203,6 +207,9 @@ test("creator: every page loads and every main action works", async ({ page }) =
   expect([200, 503]).toContain(ai.status());
   if (ai.status() === 503) {
     expect((await ai.json()).detail).toMatch(/temporarily unavailable/);
+    await expect(
+      page.getByRole("alert").filter({ hasText: /temporarily unavailable/ }),
+    ).toBeVisible();
     await expect(page.locator("textarea")).toHaveValue("They offered ₹15,000 for one reel."); // text kept
   }
   await expect(page.getByRole("button", { name: "Send" })).toBeEnabled();

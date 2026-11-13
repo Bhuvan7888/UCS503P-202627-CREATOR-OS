@@ -604,3 +604,13 @@ Total API operations: 55 (baseline 55). All features OK: True
 
 | Action | Path | Reason |
 |---|---|---|
+
+## UX fixes (requested after the end-to-end run)
+
+| Action | Path | Reason |
+|---|---|---|
+| fix | `frontend/src/features/activity-log/ActivityLogPage.tsx` | the note text (already stored in `metadata.note`) is now shown after the action label |
+| fix | `backend/features/activity_log/router.py`, `service.py` | **root cause found while testing the note fix:** the router passed `str` ids while repositories compare `UUID`s, so the demo-mode activity log was always empty (the baseline snapshot's `count: 0` was this bug). Ids now stay `UUID` end to end (the Supabase repo stringifies itself). Regression test `tests/features/activity_log/test_activity_log_api.py` |
+| fix | `frontend/src/features/negotiation/NegotiationPage.tsx`, `components/NegotiationChat.tsx` | AI chat failures were silently ignored; now the backend's message (e.g. "The AI assistant is temporarily unavailable — try again shortly.") or a fallback is shown as an alert under Send, network errors included; the typed text is kept |
+| fix | `frontend/src/features/negotiation/NegotiationPage.tsx` | forecast state starts as `null` = "Loading forecast…"; "Forecast unavailable." now only appears when the request returned nothing |
+| test | `frontend/tests/e2e/app-flows.spec.ts` | asserts the note text survives a reload, the AI alert is visible on failure, and the forecast never stays loading/unavailable. 3/3 passing |
