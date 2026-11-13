@@ -5,19 +5,19 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from features.activity_log import ActivityLog
-from features.brands import Brand, BrandMember
 from features.ai_assist.models import AiKnowledge, SuggestionSet
 from features.approvals.models import PublishRequest
+from features.brands import Brand, BrandMember
 from features.content.models import ContentItem, ContentScript
-from features.crm.models import CrmDeal
 from features.contract_intelligence import ClauseCardOut, EscalationOut
 from features.contracts import Contract
 from features.creators import Creator
+from features.crm.models import CrmDeal
 from features.deals import Deal
 from features.deliverables import Deliverable
 from features.messages import Message
 from features.payments import Payment
-from features.workspaces.models import Workspace, WorkspaceMember, WorkspaceRole
+from features.workspaces.models import AuditEntry, Invite, Workspace, WorkspaceMember, WorkspaceRole
 from shared.errors import DuplicateError
 
 
@@ -511,6 +511,89 @@ class DemoWorkspaceRepo:
             (m for m in self.members.values() if m.workspace_id == workspace_id),
             key=lambda m: m.created_at,
         )
+
+    async def rename(self, id: UUID, name: str) -> Workspace:
+        self.data[id] = self.data[id].model_copy(
+            update={"name": name, "updated_at": datetime.now(UTC)}
+        )
+        return self.data[id]
+
+    async def update_member_role(
+        self, workspace_id: UUID, user_id: UUID, role: WorkspaceRole
+    ) -> WorkspaceMember:
+        key = (workspace_id, user_id)
+        self.members[key] = self.members[key].model_copy(update={"role": role})
+        return self.members[key]
+
+    async def remove_member(self, workspace_id: UUID, user_id: UUID) -> None:
+        self.members.pop((workspace_id, user_id), None)
+
+
+class DemoTeamRepo:
+    def __init__(self):
+        self.invites: dict[UUID, tuple[Invite, str]] = {}
+        self.permissions: dict[tuple[UUID, str], list[str]] = {}
+
+    async def create_invite(self, invite: Invite, token_hash: str) -> Invite:
+        if any(
+            i.workspace_id == invite.workspace_id
+            and i.email == invite.email
+            and i.accepted_at is None
+            for i, _ in self.invites.values()
+        ):
+            raise DuplicateError("An open invitation already exists")
+        self.invites[invite.id] = (invite, token_hash)
+        return invite
+
+    async def get_invite_by_hash(self, token_hash: str) -> Invite | None:
+        return next((i for i, h in self.invites.values() if h == token_hash), None)
+
+    async def list_open_invites(self, workspace_id: UUID) -> list[Invite]:
+        return [
+            i
+            for i, _ in self.invites.values()
+            if i.workspace_id == workspace_id and i.accepted_at is None
+        ]
+
+    async def mark_accepted(self, invite_id: UUID, user_id: UUID, at: datetime) -> bool:
+        invite, h = self.invites[invite_id]
+        if invite.accepted_at is not None:
+            return False
+        self.invites[invite_id] = (invite.model_copy(update={"accepted_at": at}), h)
+        return True
+
+    async def delete_invite(self, invite_id: UUID) -> None:
+        self.invites.pop(invite_id, None)
+
+    async def get_role_permissions(self, workspace_id: UUID) -> dict[str, list[str]]:
+        return {role: perms for (ws, role), perms in self.permissions.items() if ws == workspace_id}
+
+    async def set_role_permissions(
+        self, workspace_id: UUID, role: str, permissions: list[str]
+    ) -> None:
+        self.permissions[(workspace_id, role)] = permissions
+
+
+class DemoAuditRepo:
+    def __init__(self):
+        self.entries: list[AuditEntry] = []
+
+    async def add(self, entry: AuditEntry) -> None:
+        self.entries.append(entry)
+
+    async def list_for_workspace(self, workspace_id: UUID, limit: int) -> list[AuditEntry]:
+        mine = [e for e in self.entries if e.workspace_id == workspace_id]
+        return sorted(mine, key=lambda e: e.created_at, reverse=True)[:limit]
+
+    async def last_open(self, workspace_id: UUID, user_id: UUID) -> datetime | None:
+        opens = [
+            e.created_at
+            for e in self.entries
+            if e.workspace_id == workspace_id
+            and e.actor_user_id == user_id
+            and e.action == "Opened the workspace"
+        ]
+        return max(opens, default=None)
 
 
 class DemoUserDirectory:

@@ -7,7 +7,10 @@ from features.approvals.service import ApprovalService
 from features.approvals.supabase_repository import SupabasePublishRequestRepo
 from features.content.router import get_content_service
 from features.content.service import ContentService
-from features.workspaces.dependencies import WorkspaceContext, require_workspace_member
+from features.workspaces.dependencies import (
+    WorkspaceContext,
+    require_permission,
+)
 from shared.errors import ConflictError, NotFoundError
 from shared.http_errors import map_errors
 from shared.supabase_client import get_supabase_client
@@ -26,7 +29,7 @@ def get_approval_service(
 
 @router.get("", response_model=list[PublishRequest])
 async def list_requests(
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("view_schedule")),
     service: ApprovalService = Depends(get_approval_service),
 ):
     return await service.list(ctx.workspace.id)
@@ -35,7 +38,7 @@ async def list_requests(
 @router.post("", response_model=PublishRequest, status_code=201)
 async def request_publish(
     body: PublishRequestCreate,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("create_content", "edit_scripts")),
     service: ApprovalService = Depends(get_approval_service),
 ):
     with map_errors(_ERRORS):
@@ -45,7 +48,7 @@ async def request_publish(
 @router.post("/{request_id}/approve", response_model=PublishRequest)
 async def approve(
     request_id: UUID,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("manage_workspace")),
     service: ApprovalService = Depends(get_approval_service),
 ):
     with map_errors(_ERRORS):
@@ -56,7 +59,7 @@ async def approve(
 async def reject(
     request_id: UUID,
     body: RejectRequest,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("manage_workspace")),
     service: ApprovalService = Depends(get_approval_service),
 ):
     with map_errors(_ERRORS):

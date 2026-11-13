@@ -2,22 +2,24 @@ from features.demo_mode.in_memory_repositories import (
     ContractOwnerMap,
     DealOwnerMap,
     DemoActivityLogRepo,
+    DemoAuditRepo,
     DemoBrandMemberRepo,
     DemoBrandRepo,
     DemoClauseCardRepo,
     DemoContentRepo,
-    DemoKnowledgeRepo,
-    DemoPublishRequestRepo,
-    DemoScriptRepo,
-    DemoSuggestionRepo,
     DemoContractRepo,
-    DemoCrmDealRepo,
     DemoCreatorRepo,
+    DemoCrmDealRepo,
     DemoDealRepo,
     DemoDeliverableRepo,
     DemoEscalationRepo,
+    DemoKnowledgeRepo,
     DemoMessageRepo,
     DemoPaymentRepo,
+    DemoPublishRequestRepo,
+    DemoScriptRepo,
+    DemoSuggestionRepo,
+    DemoTeamRepo,
     DemoUserDirectory,
     DemoWorkspaceRepo,
 )
@@ -43,6 +45,8 @@ class DemoStore:
         self.suggestion_repo = DemoSuggestionRepo()
         self.publish_request_repo = DemoPublishRequestRepo()
         self.crm_deal_repo = DemoCrmDealRepo()
+        self.team_repo = DemoTeamRepo()
+        self.audit_repo = DemoAuditRepo()
         self.user_directory = DemoUserDirectory()
         self.clause_card_repo = DemoClauseCardRepo()
         self.escalation_repo = DemoEscalationRepo()

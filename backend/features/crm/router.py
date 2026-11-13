@@ -7,7 +7,10 @@ from features.crm.models import CrmDeal, CrmDealCreate, CrmDealUpdate, CrmStats,
 from features.crm.service import CrmService
 from features.crm.supabase_repository import SupabaseCrmDealRepo
 from features.deals.supabase_repository import SupabaseDealRepo
-from features.workspaces.dependencies import WorkspaceContext, require_workspace_member
+from features.workspaces.dependencies import (
+    WorkspaceContext,
+    require_permission,
+)
 from shared.errors import NotFoundError, ValidationError
 from shared.http_errors import map_errors
 from shared.supabase_client import get_supabase_client
@@ -25,7 +28,7 @@ def get_crm_service() -> CrmService:
 
 @router.get("/deals", response_model=list[CrmDeal])
 async def list_deals(
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("view_brand_deals")),
     service: CrmService = Depends(get_crm_service),
 ):
     return await service.list_deals(ctx.workspace.id)
@@ -33,7 +36,7 @@ async def list_deals(
 
 @router.get("/stats", response_model=CrmStats)
 async def deal_stats(
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("view_brand_deals")),
     service: CrmService = Depends(get_crm_service),
 ):
     return await service.stats(ctx.workspace.id)
@@ -41,7 +44,7 @@ async def deal_stats(
 
 @router.get("/platform-deals", response_model=list[PlatformDeal])
 async def platform_deals(
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("view_brand_deals")),
     service: CrmService = Depends(get_crm_service),
 ):
     return await service.platform_deals(ctx.workspace.creator_id)
@@ -50,7 +53,7 @@ async def platform_deals(
 @router.post("/deals", response_model=CrmDeal, status_code=201)
 async def create_deal(
     request: CrmDealCreate,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("view_brand_deals")),
     service: CrmService = Depends(get_crm_service),
 ):
     return await service.create(ctx.workspace.id, ctx.user_id, request)
@@ -60,7 +63,7 @@ async def create_deal(
 async def update_deal(
     deal_id: UUID,
     request: CrmDealUpdate,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("view_brand_deals")),
     service: CrmService = Depends(get_crm_service),
 ):
     with map_errors(_ERRORS):
@@ -70,7 +73,7 @@ async def update_deal(
 @router.delete("/deals/{deal_id}", status_code=204)
 async def delete_deal(
     deal_id: UUID,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("view_brand_deals")),
     service: CrmService = Depends(get_crm_service),
 ):
     with map_errors(_ERRORS):

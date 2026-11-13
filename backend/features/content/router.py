@@ -13,7 +13,11 @@ from features.content.models import (
 from features.content.service import ContentService
 from features.content.supabase_repository import SupabaseContentRepo, SupabaseScriptRepo
 from features.crm.supabase_repository import SupabaseCrmDealRepo
-from features.workspaces.dependencies import WorkspaceContext, require_workspace_member
+from features.workspaces.dependencies import (
+    WorkspaceContext,
+    require_permission,
+    require_workspace_member,
+)
 from features.workspaces.supabase_repository import SupabaseWorkspaceRepo
 from shared.errors import NotFoundError, ValidationError
 from shared.http_errors import map_errors
@@ -51,7 +55,7 @@ async def content_stats(
 @router.post("", response_model=ContentItem, status_code=201)
 async def create_content(
     request: ContentItemCreate,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("create_content")),
     service: ContentService = Depends(get_content_service),
 ):
     with map_errors({ValidationError: 400}):
@@ -62,7 +66,7 @@ async def create_content(
 async def update_content(
     item_id: UUID,
     request: ContentItemUpdate,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("create_content", "edit_scripts")),
     service: ContentService = Depends(get_content_service),
 ):
     with map_errors({NotFoundError: 404, ValidationError: 400}):
@@ -72,7 +76,7 @@ async def update_content(
 @router.get("/{item_id}/script", response_model=ContentScript)
 async def get_script(
     item_id: UUID,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("view_scripts")),
     service: ContentService = Depends(get_content_service),
 ):
     with map_errors({NotFoundError: 404}):
@@ -83,7 +87,7 @@ async def get_script(
 async def save_script(
     item_id: UUID,
     request: ScriptSave,
-    ctx: WorkspaceContext = Depends(require_workspace_member),
+    ctx: WorkspaceContext = Depends(require_permission("edit_scripts")),
     service: ContentService = Depends(get_content_service),
 ):
     with map_errors({NotFoundError: 404}):

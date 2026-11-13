@@ -3,13 +3,13 @@
 from features.contract_intelligence.clause_explanation_service import (
     ClauseExplanationService,
 )
-from features.contract_intelligence.resend_email_adapter import ResendAdapter
 from features.contract_intelligence.service import ContractIntelligenceService
 from features.contract_intelligence.supabase_repository import (
     SupabaseClauseCardRepo,
     SupabaseEscalationRepo,
 )
 from features.contracts.supabase_repository import SupabaseContractRepo
+from shared.email.resend_adapter import ResendAdapter
 from shared.llm.gemini_adapter import GeminiAdapter
 from shared.supabase_client import get_supabase_client
 

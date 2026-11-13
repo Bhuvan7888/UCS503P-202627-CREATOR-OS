@@ -34,7 +34,7 @@ from features.contract_intelligence import (
     ClauseExplanationService,
     ContractIntelligenceService,
 )
-from features.contract_intelligence.resend_email_adapter import ResendAdapter
+from shared.email.resend_adapter import ResendAdapter
 from features.contract_intelligence.supabase_repository import (
     SupabaseClauseCardRepo,
     SupabaseEscalationRepo,

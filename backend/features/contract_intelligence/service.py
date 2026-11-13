@@ -4,7 +4,6 @@ from uuid import UUID
 from features.contract_intelligence.clause_explanation_service import (
     ClauseExplanationService,
 )
-from features.contract_intelligence.email_port import EmailPort
 from features.contract_intelligence.escalation_rules import open_case, resolve
 from features.contract_intelligence.models import (
     ClauseCardOut,
@@ -20,6 +19,7 @@ from features.contract_intelligence.red_flag_rules import (
 )
 from features.contract_intelligence.repository import ClauseCardRepo, EscalationRepo
 from features.contracts import ContractRepo
+from shared.email.email_port import EmailPort
 from shared.errors import NotFoundError, ValidationError
 
 

@@ -3,8 +3,8 @@ import logging
 
 import resend
 
-from features.contract_intelligence.email_port import EmailPort
 from shared.config import settings
+from shared.email.email_port import EmailPort
 
 logger = logging.getLogger(__name__)
 

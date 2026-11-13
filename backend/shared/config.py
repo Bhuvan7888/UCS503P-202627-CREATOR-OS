@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     # lighter model used when the main one is overloaded (see shared/llm/gemini_adapter.py)
     GEMINI_MODEL_FALLBACK: str = "gemini-flash-lite-latest"
     TRANSACTIONAL_EMAIL_API_KEY: str
+    # public address of the frontend, used in links sent by email (workspace invitations)
+    APP_URL: str = "http://localhost:3000"
 
     # extra="ignore": the shared file also holds the frontend's NEXT_PUBLIC_* keys.
     model_config = SettingsConfigDict(
