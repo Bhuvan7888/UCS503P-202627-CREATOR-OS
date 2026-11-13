@@ -2,8 +2,14 @@ from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from features.creators import CreatorRepo
-from features.workspaces.models import MyWorkspace, Workspace, WorkspaceMember, WorkspaceRole
-from features.workspaces.repository import WorkspaceRepo
+from features.workspaces.models import (
+    MemberOut,
+    MyWorkspace,
+    Workspace,
+    WorkspaceMember,
+    WorkspaceRole,
+)
+from features.workspaces.repository import UserDirectory, WorkspaceRepo
 from features.workspaces.rules import (
     MAX_WORKSPACES_PER_OWNER,
     PRIMARY_WORKSPACE_NAME,
@@ -15,9 +21,15 @@ from shared.errors import DuplicateError, NotFoundError, PermissionDeniedError, 
 
 
 class WorkspaceService:
-    def __init__(self, workspace_repo: WorkspaceRepo, creator_repo: CreatorRepo):
+    def __init__(
+        self,
+        workspace_repo: WorkspaceRepo,
+        creator_repo: CreatorRepo,
+        user_directory: UserDirectory | None = None,
+    ):
         self.workspace_repo = workspace_repo
         self.creator_repo = creator_repo
+        self.user_directory = user_directory
 
     async def list_for_user(self, user_id: UUID) -> list[MyWorkspace]:
         """The caller's workspaces. A creator always has one: it is created on first use."""
@@ -68,6 +80,23 @@ class WorkspaceService:
         if member is None:
             raise PermissionDeniedError("You are not a member of this workspace")
         return MyWorkspace(**ws.model_dump(), role=member.role)
+
+    async def list_members(self, workspace_id: UUID) -> list[MemberOut]:
+        members = await self.workspace_repo.list_members(workspace_id)
+        names = (
+            await self.user_directory.describe([m.user_id for m in members])
+            if self.user_directory
+            else {}
+        )
+        return [
+            MemberOut(
+                user_id=m.user_id,
+                role=m.role,
+                name=names.get(m.user_id, ("Member", None))[0],
+                email=names.get(m.user_id, ("Member", None))[1],
+            )
+            for m in members
+        ]
 
     async def _create(
         self, owner_user_id: UUID, name: str, *, creator_id: UUID | None, is_primary: bool

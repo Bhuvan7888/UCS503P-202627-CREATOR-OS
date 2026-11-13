@@ -1,10 +1,12 @@
 """In-memory repositories backing demo mode (same method signatures as the Supabase repositories)."""
 
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID, uuid4
 
 from features.activity_log import ActivityLog
 from features.brands import Brand, BrandMember
+from features.content.models import ContentItem
 from features.contract_intelligence import ClauseCardOut, EscalationOut
 from features.contracts import Contract
 from features.creators import Creator, GrowthSnapshot
@@ -612,3 +614,40 @@ class DemoWorkspaceRepo:
             (m for m in self.members.values() if m.user_id == user_id), key=lambda m: m.created_at
         )
         return [(self.data[m.workspace_id], m.role) for m in mine if m.workspace_id in self.data]
+
+    async def list_members(self, workspace_id: UUID) -> list[WorkspaceMember]:
+        return sorted(
+            (m for m in self.members.values() if m.workspace_id == workspace_id),
+            key=lambda m: m.created_at,
+        )
+
+
+class DemoUserDirectory:
+    async def describe(self, user_ids: list[UUID]) -> dict[UUID, tuple[str, str | None]]:
+        from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS
+
+        known: dict[UUID, tuple[str, str | None]] = {
+            UUID(str(i["user_id"])): (str(i["display_name"]), e) for e, i in DEMO_CREATORS.items()
+        }
+        known |= {UUID(str(i["user_id"])): (str(i["name"]), e) for e, i in DEMO_BRANDS.items()}
+        return {u: known.get(u, ("Member", None)) for u in user_ids}
+
+
+class DemoContentRepo:
+    def __init__(self):
+        self.data: dict[UUID, ContentItem] = {}
+
+    async def create(self, item: ContentItem) -> ContentItem:
+        self.data[item.id] = item
+        return item
+
+    async def get(self, id: UUID) -> ContentItem | None:
+        return self.data.get(id)
+
+    async def list_for_workspace(self, workspace_id: UUID, limit: int) -> list[ContentItem]:
+        items = [i for i in self.data.values() if i.workspace_id == workspace_id]
+        return sorted(items, key=lambda i: i.updated_at, reverse=True)[:limit]
+
+    async def update(self, id: UUID, changes: dict[str, Any]) -> ContentItem:
+        self.data[id] = self.data[id].model_copy(update=changes)
+        return self.data[id]

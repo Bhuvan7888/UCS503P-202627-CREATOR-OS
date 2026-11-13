@@ -5,6 +5,7 @@ from features.activity_log.router import router as activity_log_router
 from features.analytics.router import router as analytics_router
 from features.auth.router import router as auth_router
 from features.benchmarks.router import router as benchmarks_router
+from features.content.router import router as content_router
 from features.contract_intelligence.router import escalations_router
 from features.contract_intelligence.router import router as contract_intelligence_router
 from features.contracts.router import router as contracts_router
@@ -42,6 +43,7 @@ app.include_router(benchmarks_router)
 app.include_router(analytics_router)
 app.include_router(messages_router)
 app.include_router(workspaces_router)
+app.include_router(content_router)
 
 
 def main():

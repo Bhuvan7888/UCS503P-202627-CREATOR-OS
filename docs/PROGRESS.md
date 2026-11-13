@@ -61,11 +61,11 @@ brand side stays as it is.
 
 ### Phase 2 plan — pick up here
 Backend
-1. Migration 002 `content_items` (workspace-scoped; RLS on): title, description, type (long_form_video | post | reel |
+1. ✅ Migration 002 `content_items` (workspace-scoped; RLS on): title, description, type (long_form_video | post | reel |
    story | short_form_video), pillar, hook, target_platforms text[] (youtube | instagram | x | linkedin | facebook —
    planning tags only, no posting), due_date, assignee_user_id, stage (idea | scripted | in_production | scheduled |
    published), created_by, timestamps. Owner runs it.
-2. Feature `content`: model/rules/port/Supabase + demo repos/service; router under `/workspaces/{workspace}/content`
+2. ✅ Feature `content`: model/rules/port/Supabase + demo repos/service; router under `/workspaces/{workspace}/content`
    (GET list, POST create, PATCH update incl. stage move, GET stats for Home KPIs) — every route uses
    `require_workspace_member`. `GET /workspaces/{workspace}/members` for the wizard's "Assign To".
 3. Google sign-in completion: `POST /auth/creator/oauth` creates the creator profile for a new Supabase (Google) user.
@@ -85,6 +85,7 @@ Frontend
 Verify: backend tests, API contract, e2e for every new page/flow, real-DB check after migration 002.
 
 ### Phase log
+- **2026-11-13 — content backend (Phase 2, items 1–2)**: migration 002 `content_items` written (`supabase/migrations/20261113010000_content_items.sql`, **owner must run it**); feature `features/content` (models, rules incl. 30-day KPI deltas, port, Supabase + demo repos, service, router `/workspaces/{workspace}/content` GET/POST/PATCH + `/stats`); `GET /workspaces/{workspace}/members` (names via `UserDirectory`). Assignee must be a member; items from another workspace → 404; non-members → 403. 169 backend tests; no new ruff/mypy errors (older baseline errors in seed/demo code remain — CI runs pytest only).
 - **2026-11-13 — single .env**: root `.env` (backend + `NEXT_PUBLIC_*`); backend loads it by absolute path
   (`shared/config.py`), Next loads it in `next.config.ts`; CI sets dummy demo-mode env. Commit `11bbdea`.
 - **2026-11-13 — Phase 1 verified on live DB**: migration 001 applied by owner (leftover `plan`/`trial_ends_at` columns

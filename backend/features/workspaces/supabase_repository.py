@@ -1,5 +1,6 @@
 """Supabase implementation of the workspaces repository."""
 
+import asyncio
 from uuid import UUID
 
 from postgrest.exceptions import APIError
@@ -79,3 +80,35 @@ class SupabaseWorkspaceRepo(DemoFallbackMixin):
             .order("created_at")
         )
         return [(Workspace.model_validate(row["workspaces"]), row["role"]) for row in res.data]
+
+    async def list_members(self, workspace_id: UUID) -> list[WorkspaceMember]:
+        res = await run_query(
+            self.client.table("workspace_members")
+            .select("*")
+            .eq("workspace_id", str(workspace_id))
+            .order("created_at")
+        )
+        return [WorkspaceMember.model_validate(row) for row in res.data]
+
+
+class SupabaseUserDirectory(DemoFallbackMixin):
+    _fallback_repo_name = "user_directory"
+
+    def __init__(self, client: Client):
+        self.client = client
+
+    async def describe(self, user_ids: list[UUID]) -> dict[UUID, tuple[str, str | None]]:
+        users = await asyncio.gather(
+            *(asyncio.to_thread(self.client.auth.admin.get_user_by_id, str(u)) for u in user_ids)
+        )
+        out: dict[UUID, tuple[str, str | None]] = {}
+        for uid, res in zip(user_ids, users, strict=True):
+            meta = res.user.user_metadata or {}
+            email = res.user.email
+            name = (
+                meta.get("full_name")
+                or meta.get("name")
+                or (email.split("@")[0] if email else "Member")
+            )
+            out[uid] = (name, email)
+        return out

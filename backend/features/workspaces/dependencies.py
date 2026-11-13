@@ -10,7 +10,7 @@ from features.auth.dependencies import get_current_user_id
 from features.creators.supabase_repository import SupabaseCreatorRepo
 from features.workspaces.models import MyWorkspace
 from features.workspaces.service import WorkspaceService
-from features.workspaces.supabase_repository import SupabaseWorkspaceRepo
+from features.workspaces.supabase_repository import SupabaseUserDirectory, SupabaseWorkspaceRepo
 from shared.errors import NotFoundError, PermissionDeniedError
 from shared.http_errors import map_errors
 from shared.supabase_client import get_supabase_client
@@ -24,7 +24,9 @@ class WorkspaceContext:
 
 def get_workspace_service() -> WorkspaceService:
     client = get_supabase_client(service_role=True)
-    return WorkspaceService(SupabaseWorkspaceRepo(client), SupabaseCreatorRepo(client))
+    return WorkspaceService(
+        SupabaseWorkspaceRepo(client), SupabaseCreatorRepo(client), SupabaseUserDirectory(client)
+    )
 
 
 async def require_workspace_member(

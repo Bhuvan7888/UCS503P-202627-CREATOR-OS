@@ -8,7 +8,7 @@ from features.workspaces.dependencies import (
     get_workspace_service,
     require_workspace_member,
 )
-from features.workspaces.models import MyWorkspace, WorkspaceCreateRequest
+from features.workspaces.models import MemberOut, MyWorkspace, WorkspaceCreateRequest
 from features.workspaces.service import WorkspaceService
 from shared.errors import ValidationError
 from shared.http_errors import map_errors
@@ -37,3 +37,11 @@ async def create_workspace(
 @router.get("/{workspace}", response_model=MyWorkspace)
 async def get_workspace(ctx: WorkspaceContext = Depends(require_workspace_member)):
     return ctx.workspace
+
+
+@router.get("/{workspace}/members", response_model=list[MemberOut])
+async def list_members(
+    ctx: WorkspaceContext = Depends(require_workspace_member),
+    service: WorkspaceService = Depends(get_workspace_service),
+):
+    return await service.list_members(ctx.workspace.id)

@@ -77,6 +77,11 @@ API_CONTRACT: list[tuple[str, str, str]] = [
     ("GET", "/workspaces", "user"),
     ("POST", "/workspaces", "user"),
     ("GET", "/workspaces/{workspace}", "user"),
+    ("GET", "/workspaces/{workspace}/members", "user"),
+    ("GET", "/workspaces/{workspace}/content", "user"),
+    ("POST", "/workspaces/{workspace}/content", "user"),
+    ("GET", "/workspaces/{workspace}/content/stats", "user"),
+    ("PATCH", "/workspaces/{workspace}/content/{item_id}", "user"),
 ]
 
 _PLACEHOLDER_ID = "00000000-0000-0000-0000-000000000001"

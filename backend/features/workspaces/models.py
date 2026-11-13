@@ -31,5 +31,12 @@ class MyWorkspace(Workspace):
     role: WorkspaceRole
 
 
+class MemberOut(BaseModel):
+    user_id: UUID
+    role: WorkspaceRole
+    name: str
+    email: str | None = None
+
+
 class WorkspaceCreateRequest(BaseModel):
     name: str = Field(min_length=1, max_length=80)
