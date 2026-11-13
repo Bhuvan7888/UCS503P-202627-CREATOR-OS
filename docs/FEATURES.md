@@ -10,6 +10,7 @@ Every feature has the same name everywhere. The backend uses `snake_case` becaus
 | `creators` | `backend/features/creators/` | `frontend/src/features/creators/` | `backend/tests/features/creators/` |
 | `workspaces` | `backend/features/workspaces/` | `frontend/src/features/workspaces/` (creator shell) | `backend/tests/features/workspaces/`, e2e |
 | `content` | `backend/features/content/` | `frontend/src/features/content/` | `backend/tests/features/content/`, e2e |
+| `crm` | `backend/features/crm/` | `frontend/src/features/crm/` | `backend/tests/features/crm/`, e2e |
 | `approvals` | `backend/features/approvals/` | `frontend/src/features/approvals/` | `backend/tests/features/approvals/`, e2e |
 | `ai-assist` | `backend/features/ai_assist/` | `frontend/src/features/ai-assist/` | `backend/tests/features/ai_assist/`, e2e |
 | `deals` | `backend/features/deals/` | `frontend/src/features/deals/` | `backend/tests/features/deals/` |
@@ -152,6 +153,17 @@ Each item has one script (Scripts page, auto-saved; the first script moves an id
 - **Backend:** `router.py`, `service.py` (`ContentService`: assignee must be a member, other workspaces' items are 404, scripts), `rules.py` (KPIs with 30-day deltas; Scripted = has a script or moved past Idea; `apply_stage_rules`: scheduling moves an item to Scheduled, Published stamps `published_at`), `models.py`, `repository.py` (`ContentRepo`, `ScriptRepo`), `supabase_repository.py`
 - **Database:** `supabase/migrations/20261113010000_content_items.sql`, `20261114000000_scripts_and_ai.sql` (`content_scripts`), `20261115000000_calendar_and_approvals.sql` (`scheduled_at`, `published_at`)
 - **Depends on:** `workspaces`; frontend uses `ai-assist` (`GenerateButton`)
+
+## `crm`
+Brand CRM: the creator's own brand deals (prospect → paid, cancelled) with KPIs, filters, sorting, paging, CSV export
+and Pipeline & Insights, plus a read-only "On Creator OS" list of deals brands made with them on the platform.
+Totals stay per currency (no conversion). Content links to a deal through "Deal Association" (`content_items.crm_deal_id`).
+- **Pages:** `/dashboard/[workspace]/crm` → `CrmPage.tsx`
+- **Frontend internals:** `components/DealWizard.tsx` (Create/Edit Deal, 4 steps; optional linked content item), `constants/crm.ts`, `crm.module.css`
+- **API:** `GET/POST /workspaces/{workspace}/crm/deals`, `PATCH/DELETE …/crm/deals/{deal_id}`, `GET …/crm/stats`, `GET …/crm/platform-deals`
+- **Backend:** `router.py`, `service.py` (`CrmService`; other workspaces' deals → 404; platform deals via `deals.list_for_creator` + `workspaces.creator_id`), `rules.py` (`crm_stats`), `models.py`, `repository.py`, `supabase_repository.py`
+- **Database:** `supabase/migrations/20261116000000_brand_crm.sql` (`crm_deals`, `content_items.crm_deal_id`)
+- **Depends on:** `workspaces`, `deals`, `brands`; used by `content` (deal association check)
 
 ## `approvals`
 The human checkpoint: a member sends an item for approval (agents with API keys arrive in Phase 6); a signed-in person

@@ -35,7 +35,7 @@ def test_kpis_keep_currencies_apart_and_ignore_cancelled_value():
     assert (
         s.by_status["paid"] == 1 and s.by_status["cancelled"] == 1 and s.by_status["prospect"] == 0
     )
-    assert s.top_brands[0] == ("Nykaa", 2)
+    assert (s.top_brands[0].name, s.top_brands[0].deals) == ("Nykaa", 2)
 
 
 def test_follow_ups_due_counts_open_deals_only():

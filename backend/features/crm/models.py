@@ -61,6 +61,11 @@ class CrmDeal(CrmDealCreate):
     updated_at: datetime
 
 
+class BrandCount(BaseModel):
+    name: str
+    deals: int
+
+
 class CrmStats(BaseModel):
     total: int
     # no currency conversion: totals are kept per currency
@@ -68,7 +73,7 @@ class CrmStats(BaseModel):
     closed: int
     conversion_pct: float
     by_status: dict[str, int]
-    top_brands: list[tuple[str, int]]
+    top_brands: list[BrandCount]
     follow_ups_due: int
 
 

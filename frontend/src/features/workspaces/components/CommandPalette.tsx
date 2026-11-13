@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   CalendarDays,
   FileText,
+  Handshake,
   House,
   KanbanSquare,
   PenLine,
@@ -98,6 +99,13 @@ export function CommandPalette({
         hint: "View and manage your content calendar",
         href: `${base}/schedule`,
         icon: CalendarDays,
+        quick: true,
+      },
+      {
+        label: "Manage Brands",
+        hint: "Access your Brand CRM",
+        href: `${base}/crm`,
+        icon: Handshake,
         quick: true,
       },
       { label: "Home", hint: "Workspace overview", href: base, icon: House, quick: true },

@@ -3,7 +3,7 @@
 from collections import Counter, defaultdict
 from datetime import date
 
-from features.crm.models import CrmDeal, CrmStats, CrmStatus
+from features.crm.models import BrandCount, CrmDeal, CrmStats, CrmStatus
 
 STATUSES: tuple[CrmStatus, ...] = (
     "prospect",
@@ -34,7 +34,7 @@ def crm_stats(deals: list[CrmDeal], today: date) -> CrmStats:
         closed=closed,
         conversion_pct=round(closed * 100 / len(deals), 1) if deals else 0.0,
         by_status={s: sum(1 for d in deals if d.status == s) for s in STATUSES},
-        top_brands=by_brand.most_common(TOP_BRANDS),
+        top_brands=[BrandCount(name=n, deals=c) for n, c in by_brand.most_common(TOP_BRANDS)],
         follow_ups_due=sum(
             1
             for d in deals

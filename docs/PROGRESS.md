@@ -38,9 +38,9 @@ brand side stays as it is.
 | 1 | Foundations: single .env ✅, security fixes ✅, workspace backend ✅ (verified on live DB), Google provider configured ✅ | done (Google button built in Phase 2) |
 | 2 | New creator shell + content core: shell, Home, 5-step Add Content wizard, Content Pipeline kanban, Google sign-in, old creator views removed | done (verified on live DB) |
 | 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | done (verified on live DB + live Gemini) |
-| 4 | Calendar + Approvals (publish state machine without platform posting) | done — owner: run migration 004 **before deploying**, then live check |
-| 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | next |
-| 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | pending |
+| 4 | Calendar + Approvals (publish state machine without platform posting) | done (verified on live DB) |
+| 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | done — owner: run migration 005 **before deploying**, then live check |
+| 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | next |
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | pending |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
 
@@ -150,24 +150,61 @@ Phase 4 notes
   (`source='agent'`, `agent_name`) and role rules for who may decide.
 - The feed has no "Native (Graph)" source or Engaged sort: there are no platform connections.
 
-### Phase 5 plan — pick up here (Brand CRM)
+### Phase 5 (done, 2026-11-16)
 Read spec §4.8 Brand CRM (`/crm`) and workflow 5 ("New Deal → content") in the Rebuild Spec PDF first.
 Owner decision already made: brand deals made on Creator OS with this creator show in the CRM.
 Backend
-1. Migration 005: `crm_deals` (workspace_id, contact name/company/email, deal size, currency, status prospect|pending|
+1. ✅ Migration 005: `crm_deals` (workspace_id, contact name/company/email, deal size, currency, status prospect|pending|
    negotiating|signed|active|completed|lost, priority, start/end/next-follow-up dates, notes, deliverables text,
    created_by, timestamps) — RLS on; `content_items.crm_deal_id` (nullable FK) for the wizard's Deal Association.
-2. `features/crm`: CRUD + KPIs (pipeline value, active, won, follow-ups due); a read-only list of Creator OS brand
+2. ✅ `features/crm`: CRUD + KPIs (pipeline value, active, won, follow-ups due); a read-only list of Creator OS brand
    deals for the workspace's creator (`deals.list_for_creator` via `workspaces.creator_id`) merged into the CRM table
    (marked "On Creator OS").
-3. Content: optional `crm_deal_id` on create/update, validated to the same workspace.
+3. ✅ Content: optional `crm_deal_id` on create/update, validated to the same workspace.
 Frontend
-4. Brand CRM page (KPI cards, filters, deals table, status pills), 4-step New Deal wizard (Contact, Deal, Timeline &
+4. ✅ Brand CRM page (KPI cards, filters, deals table, status pills), 4-step New Deal wizard (Contact, Deal, Timeline &
    Notes, Content — "Create a content item for this deal"), deal drawer/edit.
-5. Wizard step 4 Deal Association search; sidebar "Monetize › Brand CRM"; ⌘K "Manage Brands".
-6. Decide (with the owner) what happens to the unreachable creator branches in the shared brand deal pages.
+5. ✅ Wizard step 4 Deal Association search; sidebar "Monetize › Brand CRM"; ⌘K "Manage Brands".
+6. ✅ Decide (with the owner) what happens to the unreachable creator branches in the shared brand deal pages.
 Verify: rules/service/API tests (cross-workspace), e2e for CRM + deal association, live DB after migration 005.
+Phase 5 notes
+- **Deploy order:** run `supabase/migrations/20261116000000_brand_crm.sql` BEFORE deploying this backend (content
+  inserts write `crm_deal_id`).
+- One status vocabulary everywhere (the spec mixed Lead/Prospect/Closed/Urgent): prospect, pending, negotiating,
+  signed, active, completed, paid, cancelled; Closed = completed + paid; priorities low/medium/high.
+- Total Value is shown per currency; there is no FX conversion.
+- Item 6: creator-only branches removed from chat, contracts, deliverables and payments (commit `e49effc`).
+  **Kept pending an owner decision:** the creator "Flagged Clauses Review" view in
+  `features/contract-intelligence/ClauseReviewPage.tsx` — it is the only UI that shows red-flag clause scanning, and
+  creators can no longer reach it. Options: show it to brands, move it into the creator workspace, or delete it.
+- `AppShell` renders brand pages only once the session is known not to be a creator's (a creator opening `/chat` used
+  to fire brand-only API calls before the redirect).
+- Skipped from the spec table: bulk-select checkboxes and the column-visibility toggle.
+
+### Phase 6 plan — pick up here (Workspace & team)
+Read spec §4.12 Settings (Workspace, Members, Roles, API keys, Webhooks, Audit log) and workflows 5.3–5.5 first.
+Backend
+1. Migration 006: `workspace_invites` (email, role, token hash, expires, accepted_at), `api_keys` (name, prefix,
+   hash, scopes, approval_required, last_used_at, revoked_at), `webhooks` (url, secret, events, active),
+   `audit_log` (actor, action, target, allowed/denied, at) — RLS on.
+2. Members: invite by email (Resend), accept link → membership (invited users have no creator profile; they use
+   `get_current_user_id`), change role, remove; owner can't be removed; 2 seats per role (spec).
+3. Roles → permissions map in `workspaces/rules.py` (owner all; script_writer: content + scripts; video_editor:
+   content + calendar; brand_manager: CRM + approvals); enforce with a `require_permission(...)` dependency on every
+   workspace route; hide sidebar items the role can't open.
+4. API keys (hashed, shown once) with scopes; agent requests create publish requests with `source='agent'`; no key can
+   approve. Webhooks with HMAC-signed payloads for content.stage_changed, publish.* events; audit log writes.
+Frontend
+5. Settings tabs: Workspace (rename), Members, Roles, API keys, Webhooks, Audit log; invite accept page.
+Verify: permission matrix tests per role and endpoint, invite flow e2e, live DB after migration 006.
 ### Phase log
+- **2026-11-16 — Phase 5 (Brand CRM)**: migration 005; `features/crm` (CRUD, KPIs per currency, pipeline overview,
+  top brands, follow-ups due, read-only Creator OS brand deals); content `crm_deal_id` (same-workspace only); CRM page
+  (KPIs, filter panel, sortable table, paging, CSV export, Pipeline & Insights, On Creator OS), 4-step Create/Edit
+  Deal wizard with linked content item, Deal Association in the Add Content wizard, sidebar Monetize, ⌘K Manage
+  Brands. Brand pages: creator-only branches removed; AppShell gates rendering. A parallel cleanup's staged deletions
+  slipped into `25e7b78` and were restored in `0f20717`. Checks: 171 backend tests, contracts kept, mypy 113,
+  tsc/eslint/prettier, build, smoke 26/26, e2e 7/7. Phase 4 verified live (incl. simultaneous approve/reject → one wins).
 - **2026-11-15 — Phase 4 (Calendar + Approvals)**: migration 004; content `scheduled_at`/`published_at` with
   `apply_stage_rules`; `features/approvals` (request, approve → Published, reject with reason, one pending per item,
   atomic decisions); Calendar (week/month, day → wizard with due date, chips, feed with platform/range/search) and

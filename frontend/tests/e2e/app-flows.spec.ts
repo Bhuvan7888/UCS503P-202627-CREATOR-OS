@@ -195,7 +195,7 @@ test("creator: workspace home, add-content wizard, pipeline board and navigation
   await wizard.getByRole("button", { name: "Instagram" }).click();
   await wizard.getByRole("button", { name: "Next" }).click();
   await wizard.locator('input[type="date"]').fill("2026-12-01");
-  await wizard.locator("select").selectOption({ index: 1 });
+  await wizard.getByLabel("Assign To").selectOption({ index: 1 });
   await wizard.getByRole("button", { name: "Next" }).click();
   await expect(wizard.getByText("Review Content Details")).toBeVisible();
   await expect(wizard.getByText("Instagram")).toBeVisible();
@@ -406,6 +406,84 @@ test("creator: calendar scheduling and approvals", async ({ page }) => {
       .getByRole("region", { name: "Published", exact: true })
       .locator("article", { hasText: title }),
   ).toBeVisible();
+
+  expect(problems).toEqual([]);
+});
+
+test("creator: brand CRM deals, linked content and deal association", async ({ page }) => {
+  const problems = watchForProblems(page);
+  await loginWithDemo(page, "creator", "1. Ananya Sharma (Mamaearth, Nykaa)");
+  const company = `Lakme ${RUN}`;
+
+  await page.getByRole("link", { name: "Brand CRM", exact: true }).click();
+  // brand deals made on Creator OS show read-only
+  await expect(
+    page.getByRole("region", { name: "On Creator OS" }).locator("li").first(),
+  ).toBeVisible();
+
+  // New Deal wizard (4 steps) with a linked content item
+  await page.getByRole("button", { name: "New Deal" }).click();
+  const wizard = page.getByRole("dialog", { name: "Create New Deal" });
+  await wizard.getByPlaceholder("Enter company name").fill(company);
+  await wizard.getByPlaceholder("e.g., Jane Doe").fill("Priya");
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.getByLabel("Deal Size").fill("25000");
+  await wizard.getByLabel("Status").selectOption("negotiating");
+  await wizard.getByLabel("Priority").selectOption("high");
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.getByPlaceholder("Add a tag").fill("reel");
+  await wizard.getByRole("button", { name: "Add", exact: true }).click();
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.getByLabel("Create a content item for this deal").check();
+  await wizard.getByPlaceholder("Engaging opening line...").fill("You won't believe this shade");
+  await wizard.getByRole("button", { name: "Finish & Save Deal" }).click();
+  await expect(wizard).toBeHidden();
+  const row = page.locator("tbody tr", { hasText: company });
+  await expect(row).toContainText("Negotiating");
+  await expect(row).toContainText("25,000");
+
+  // Filters and sorting
+  await page.getByRole("button", { name: "Filter", exact: true }).click();
+  await page.getByRole("group", { name: "Status" }).getByRole("button", { name: "Paid" }).click();
+  await expect(row).toHaveCount(0);
+  await page.getByRole("button", { name: "Clear All" }).click();
+  await expect(row).toBeVisible();
+  await page.getByRole("button", { name: "Sort by Value" }).click();
+
+  // Edit → Paid
+  await page.getByRole("button", { name: `Edit ${company}` }).click();
+  const edit = page.getByRole("dialog", { name: "Edit Deal" });
+  await edit.getByRole("button", { name: "Next" }).click();
+  await edit.getByLabel("Status").selectOption("paid");
+  for (let i = 0; i < 2; i++) await edit.getByRole("button", { name: "Next" }).click();
+  await edit.getByRole("button", { name: "Save Deal" }).click();
+  await expect(row).toContainText("Paid");
+
+  // The linked content item is on the board; new content can be associated with the deal
+  await page.getByRole("link", { name: "Content", exact: true }).click();
+  await expect(
+    page.locator("article", { hasText: `${company} — sponsored content` }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Add Content" }).click();
+  const add = page.getByRole("dialog", { name: "Add New Content Idea" });
+  await add.getByRole("button", { name: "Next" }).click();
+  await add.getByPlaceholder("Enter content title...").fill(`Deal follow-up ${RUN}`);
+  await add.getByRole("button", { name: "Next" }).click();
+  await add.getByPlaceholder("e.g., Education, Entertainment...").fill("Beauty");
+  await add.getByPlaceholder("Engaging opening line...").fill("Hook");
+  await add.getByRole("button", { name: "Next" }).click();
+  await add.getByPlaceholder("Search for a deal (company - contact)...").fill(RUN);
+  await add.getByLabel("Deal", { exact: true }).selectOption({ label: `${company} - Priya` });
+  await add.getByRole("button", { name: "Next" }).click();
+  await expect(add.locator("dd", { hasText: company })).toBeVisible();
+  await add.getByRole("button", { name: "Save Content" }).click();
+  await expect(add).toBeHidden();
+
+  // Delete the deal (linked content stays)
+  await page.getByRole("link", { name: "Brand CRM", exact: true }).click();
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: `Delete ${company}` }).click();
+  await expect(row).toHaveCount(0);
 
   expect(problems).toEqual([]);
 });

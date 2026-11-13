@@ -62,7 +62,7 @@ export { default } from "@/features/deals/DealDetailPage";
 
 | Who | Routes | Shell |
 |---|---|---|
-| Brands | `src/app/(brand)/…` (`/brand`, `/deals/[id]`, `/contracts`, …) | `src/app/_shell/AppShell.tsx`; a creator session is redirected to `/dashboard` |
+| Brands | `src/app/(brand)/…` (`/brand`, `/deals/[id]`, `/contracts`, …) | `src/app/_shell/AppShell.tsx`; brand pages render only for non-creator sessions, creators are redirected to `/dashboard` |
 | Creators (and, from Phase 6, invited team members) | `src/app/dashboard/[workspace]/…` | `features/workspaces/WorkspaceShell.tsx`: sidebar, ⌘K, workspace context (`useWorkspace()`), page header (`PageHeader`) |
 
 Creator pages live in their feature (e.g. `features/content/HomePage.tsx`), read the active workspace with

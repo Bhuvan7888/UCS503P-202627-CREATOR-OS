@@ -21,6 +21,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [accountLabel, setAccountLabel] = useState("Brand");
+  // null until the session is read; brand pages render only once we know this isn't a creator
+  const [isCreator, setIsCreator] = useState<boolean | null>(null);
   const hasUnread = useUnreadMessages(pathname);
 
   useEffect(() => {
@@ -30,6 +32,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const session = loadSession();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setAccountLabel(session?.brand_name ?? "Brand");
+    setIsCreator(session?.role === "creator");
     if (session?.role === "creator") {
       // creators work in their workspace (/dashboard); these pages are the brand app
       router.replace("/dashboard");
@@ -134,7 +137,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </div>
-      <div style={{ flex: 1, padding: "20px 22px" }}>{children}</div>
+      <div style={{ flex: 1, padding: "20px 22px" }}>{isCreator === false && children}</div>
     </div>
   );
 }

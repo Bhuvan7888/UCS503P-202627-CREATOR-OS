@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  Handshake,
   House,
   Inbox,
   KanbanSquare,
@@ -18,7 +19,7 @@ export interface NavItem {
   prefix?: boolean;
 }
 
-/** Sidebar groups. Only pages that exist are listed; later phases add Brand CRM, etc. */
+/** Sidebar groups. Only pages that exist are listed; later phases add team, notifications, etc. */
 export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   { label: "Overview", items: [{ label: "Home", path: "", icon: House }] },
   {
@@ -35,6 +36,10 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       { label: "Scripts", path: "/scripts", icon: PenLine },
       { label: "AI Assistant", path: "/ai-suggestions", icon: Sparkles },
     ],
+  },
+  {
+    label: "Monetize",
+    items: [{ label: "Brand CRM", path: "/crm", icon: Handshake }],
   },
   {
     label: "Workspace",

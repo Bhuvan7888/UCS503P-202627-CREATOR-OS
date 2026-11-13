@@ -1056,6 +1056,13 @@ export interface components {
             /** Roster By Niche */
             roster_by_niche: components["schemas"]["NicheBreakdown"][];
         };
+        /** BrandCount */
+        BrandCount: {
+            /** Name */
+            name: string;
+            /** Deals */
+            deals: number;
+        };
         /** BrandLoginRequest */
         BrandLoginRequest: {
             /** Email */
@@ -1595,10 +1602,7 @@ export interface components {
                 [key: string]: number;
             };
             /** Top Brands */
-            top_brands: [
-                string,
-                number
-            ][];
+            top_brands: components["schemas"]["BrandCount"][];
             /** Follow Ups Due */
             follow_ups_due: number;
         };

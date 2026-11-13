@@ -19,6 +19,7 @@ import {
 import styles from "../content.module.css";
 
 type Member = components["schemas"]["MemberOut"];
+type Deal = components["schemas"]["CrmDeal"];
 type Draft = components["schemas"]["ContentItemCreate"];
 
 const STEPS = ["Content Type", "Basic Info", "Content Details", "Assignment", "Review"];
@@ -39,6 +40,7 @@ const EMPTY: Draft = {
   target_platforms: [],
   due_date: null,
   assignee_user_id: null,
+  crm_deal_id: null,
 };
 
 interface Props {
@@ -64,6 +66,8 @@ export function AddContentWizard({
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [members, setMembers] = useState<Member[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [dealQuery, setDealQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -77,6 +81,9 @@ export function AddContentWizard({
     client
       .GET("/workspaces/{workspace}/members", { params: { path: { workspace } } })
       .then(({ data }) => setMembers(data ?? []));
+    client
+      .GET("/workspaces/{workspace}/crm/deals", { params: { path: { workspace } } })
+      .then(({ data }) => setDeals(data ?? []));
   }, [open, workspace]);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
@@ -324,6 +331,43 @@ export function AddContentWizard({
 
       {step === 3 && (
         <div className={styles.fieldset}>
+          <div className={styles.dealBox}>
+            <label className={styles.label} htmlFor="cw-deal-search">
+              Deal Association (Recommended)
+            </label>
+            <input
+              id="cw-deal-search"
+              className="field"
+              placeholder="Search for a deal (company - contact)..."
+              value={dealQuery}
+              onChange={(e) => setDealQuery(e.target.value)}
+            />
+            <select
+              className="field"
+              aria-label="Deal"
+              value={draft.crm_deal_id ?? ""}
+              onChange={(e) => set("crm_deal_id", e.target.value || null)}
+            >
+              <option value="">No deal</option>
+              {deals
+                .filter((d) =>
+                  `${d.company_name} ${d.contact_name ?? ""}`
+                    .toLowerCase()
+                    .includes(dealQuery.trim().toLowerCase()),
+                )
+                .map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.company_name}
+                    {d.contact_name ? ` - ${d.contact_name}` : ""}
+                  </option>
+                ))}
+            </select>
+            {deals.length === 0 && (
+              <small className={styles.help}>
+                No deals yet — add them in <Link href={`${base}/crm`}>Brand CRM</Link>.
+              </small>
+            )}
+          </div>
           <label className={styles.label}>
             Due Date
             <input
@@ -373,6 +417,8 @@ export function AddContentWizard({
             </dd>
             <dt>Due Date</dt>
             <dd>{draft.due_date ?? "Not set"}</dd>
+            <dt>Deal</dt>
+            <dd>{deals.find((d) => d.id === draft.crm_deal_id)?.company_name ?? "None"}</dd>
             <dt>Assigned To</dt>
             <dd>{assignee ? assignee.name : "Unassigned"}</dd>
           </dl>

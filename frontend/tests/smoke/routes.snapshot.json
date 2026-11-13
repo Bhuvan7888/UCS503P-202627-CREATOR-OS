@@ -23,5 +23,6 @@
   "/dashboard/[workspace]/ai-suggestions",
   "/dashboard/[workspace]/settings/ai-knowledge",
   "/dashboard/[workspace]/schedule",
-  "/dashboard/[workspace]/approvals"
+  "/dashboard/[workspace]/approvals",
+  "/dashboard/[workspace]/crm"
 ]

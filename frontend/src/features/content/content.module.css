@@ -1006,3 +1006,16 @@
 .panelCard + .panelCard {
   margin-top: 16px;
 }
+
+.dealBox {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.dealBox :global(.field) {
+  margin: 0;
+}
