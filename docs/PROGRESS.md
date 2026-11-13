@@ -43,12 +43,12 @@ brand side stays as it is.
 
 
 ### Next steps (Phase 1, remaining) — pick up here
-1. Backend feature `features/workspaces/`: models (Workspace, WorkspaceMember, role Literal), repository port,
+1. ✅ (2026-11-13) Backend feature `features/workspaces/`: models (Workspace, WorkspaceMember, role Literal), repository port,
    supabase_repository, in-memory demo repo + seed one primary workspace per demo creator, rules (slug `ws-` + 8 hex,
    10-day trial, 3 workspace slots), service (ensure primary workspace for a creator — idempotent, race-safe via the
    unique index; list mine; resolve slug-or-uuid for a member; create with slot limit), router `/workspaces`
    (GET list, GET {ref}, POST).
-2. Identity: split `features/auth/dependencies.py` so a `get_current_user` (token → user id, demo tokens included)
+2. ✅ (2026-11-13) Identity: split `features/auth/dependencies.py` so a `get_current_user` (token → user id, demo tokens included)
    exists alongside `get_current_actor`; workspace routes use `require_workspace_member(ref)` → WorkspaceContext
    (user, workspace, role). Invited members have no creators/brands row, so they must not depend on get_current_actor.
 3. Google sign-in (after the owner confirms the Supabase Google provider is configured): frontend
@@ -59,6 +59,7 @@ brand side stays as it is.
 ### Phase log
 - **2026-11-13 — single .env**: root `.env` (backend + `NEXT_PUBLIC_*`); backend loads it by absolute path
   (`shared/config.py`), Next loads it in `next.config.ts`; CI sets dummy demo-mode env. Commit `11bbdea`.
+- **2026-11-13 — workspaces backend**: `features/workspaces` (models, rules, port, Supabase + demo repos, service, router `GET/POST /workspaces`, `GET /workspaces/{workspace}`), `get_current_user_id` (identity without a brand/creator profile, cached), `require_workspace_member` (slug or id; 404 unknown, 403 non-member), `DuplicateError` for race-safe primary-workspace creation. 157 backend tests. Commit `65a99b6`.
 - **2026-11-13 — migration 001 written** (`supabase/migrations/20261113000000_creator_workspaces.sql`: `workspaces`,
   `workspace_members`, RLS on). **Owner must run it** before the real-database check of Phase 1.
 - **2026-11-13 — security**: demo accounts only in offline demo mode outside production, demo password required, raw
