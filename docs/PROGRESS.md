@@ -6,6 +6,41 @@
 > `seed_demo.py`) describe the layout at the time and no longer exist. For the current layout see
 > [ARCHITECTURE.md](ARCHITECTURE.md) and [FEATURES.md](FEATURES.md).
 
+## ▶ Current work: creator workspace rebuild (branch `feature/creator-workspace`)
+
+**Read this section first in every session.** Goal: rebuild the *creator* side as the workspace product in
+"CreatorOS — Full Frontend Reference & Rebuild Spec" (Nov 9 2026), keeping today's colours and components; the
+brand side stays as it is.
+
+### Decisions (owner, 2026-11-13)
+- Today's creator views (dashboard, board, negotiation, creator use of contracts/deliverables/payments/chat) are **dropped**.
+- **No** social posting integrations (YouTube, LinkedIn, X, Instagram, Facebook) and **no** payment gateway.
+- Google sign-in via Supabase Auth — owner will configure the Google OAuth client (steps given 2026-11-13).
+- Migrations: Claude writes one SQL file per phase in `supabase/migrations/`; **the owner runs it** in the Supabase SQL editor.
+  Until then features are built and tested on the demo dataset, then re-verified on the real database.
+- Full team model: workspaces, members, roles (Owner, Script Writer, Video Editor, Brand Manager; 2 seats each), 11 permissions, audit log.
+- One `.env` at the repo root for backend and frontend (`/.env.example`).
+
+### Phases
+| # | Phase | Status |
+|---|---|---|
+| 1 | Foundations: single .env ✅, security fixes ✅, workspace model + new creator shell (sidebar groups, top bar, ⌘K, bell, page header) | in progress |
+| 2 | Content core: content items, Home, 5-step Add Content wizard, Content Pipeline kanban | pending |
+| 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | pending |
+| 4 | Calendar + Approvals (publish state machine without platform posting) | pending |
+| 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | pending |
+| 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | pending |
+| 7 | Notifications, Billing (plan/trial/slots, no checkout), Support, remaining Settings tabs | pending |
+| 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
+
+### Phase log
+- **2026-11-13 — single .env**: root `.env` (backend + `NEXT_PUBLIC_*`); backend loads it by absolute path
+  (`shared/config.py`), Next loads it in `next.config.ts`; CI sets dummy demo-mode env. Commit `11bbdea`.
+- **2026-11-13 — security**: demo accounts only in offline demo mode outside production, demo password required, raw
+  user-id tokens rejected; 10 public endpoints now require a session; one access rule (`deals.can_access_deal` via
+  `load_accessible_deal` / `load_accessible_contract`) closes cross-brand IDORs on contracts, deliverables, payments,
+  negotiation sessions, escalations. 146 backend tests incl. cross-tenant 403 tests; e2e 3/3. Commit `2f078ca`.
+
 > This file was rewritten end-to-end to reflect the actual live application
 > (`backend/` + `frontend/`, FastAPI + Supabase + Next.js). The prior version
 > of this file documented a different, since-deleted NestJS/Prisma/Docker

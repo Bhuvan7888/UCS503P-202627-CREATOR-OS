@@ -44,21 +44,25 @@ docs/               ARCHITECTURE.md, FEATURES.md, PROGRESS.md (history), archive
 - Python 3.13 and [`uv`](https://docs.astral.sh/uv/)
 - Node.js 20+ (CI uses 22) and npm
 
+### Environment (one file)
+```bash
+cp .env.example .env      # at the repo root: Supabase, Gemini, Resend and the NEXT_PUBLIC_* values
+```
+Both apps read this single root `.env`; there are no per-app env files.
+
 ### Backend
 ```bash
 cd backend
-cp .env.example .env      # fill in Supabase, Gemini and Resend values
 uv sync                   # installs runtime + dev tools (pytest, ruff, mypy, import-linter)
 uv run uvicorn main:app --reload --port 8000
 ```
 - API: http://localhost:8000. Interactive docs: http://localhost:8000/docs
-- **Demo mode:** if Supabase is unreachable, or the keys contain `dummy`, the API runs on a seeded in-memory dataset. Log in with any demo account (`demo.brand1@creatoros.dev` … `demo.brand3@…`, `demo.creator1@creatoros.dev` … `demo.creator5@…`, password `DemoPass123!`).
+- **Demo mode:** if Supabase is unreachable, or the keys contain `dummy`, the API runs on a seeded in-memory dataset (never when `ENVIRONMENT=production`). Log in with any demo account (`demo.brand1@creatoros.dev` … `demo.brand3@…`, `demo.creator1@creatoros.dev` … `demo.creator5@…`, password `DemoPass123!`).
 - **Demo data in a real Supabase project:** `uv run python -m scripts.reset_demo`, then `uv run python -m scripts.seed_demo`.
 
 ### Frontend
 ```bash
 cd frontend
-cp .env.example .env.local   # NEXT_PUBLIC_API_URL (defaults to http://127.0.0.1:8000)
 npm install
 npm run dev                  # http://localhost:3000
 ```

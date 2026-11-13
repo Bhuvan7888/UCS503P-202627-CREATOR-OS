@@ -93,13 +93,25 @@ A file belongs in `shared/` **only** when two or more features use it. Otherwise
 
 | Concern | Where it lives |
 |---|---|
-| Config / env vars | `backend/shared/config.py` (`.env`, see `backend/.env.example`); `frontend/src/shared/lib/api-client.ts` (`NEXT_PUBLIC_API_URL`, see `frontend/.env.example`) |
+| Config / env vars | one root `.env` (see `/.env.example`): backend `shared/config.py` loads it by absolute path; `frontend/next.config.ts` loads it for Next (`NEXT_PUBLIC_*` only reach the browser) |
 | Authentication | backend `features/auth/dependencies.py` (`get_current_actor`, `get_current_brand`); frontend `shared/lib/session.ts` + bearer middleware in `api-client.ts` |
 | Errors → HTTP | services raise `shared/errors.py` exceptions. Routers translate them with `with map_errors({ExceptionType: status}, by_message={...})`, so each route says exactly what it maps |
 | Database access | `supabase_repository.py` per feature, using `run_query()` / `first_or_none()` from `shared/supabase_query.py` |
 | Demo mode | every Supabase repository inherits `DemoFallbackMixin`; see `features/demo_mode/` |
 | Logging | standard `logging.getLogger(__name__)` per module (backend) |
 | Formatting / lint | backend: `ruff format`, `ruff check` (config in `pyproject.toml`), `mypy`, `lint-imports`. Frontend: `npm run format` (Prettier), `npm run lint` (ESLint), `npx tsc --noEmit` |
+
+## Access control (read before adding an endpoint)
+
+- Every endpoint except sign-up/login and the static sample PDF requires a session: `Depends(get_current_actor)`
+  (or `get_current_brand`). `backend/tests/smoke/test_api_contract.py` lists the public routes; adding one there is a deliberate decision.
+- Anything scoped to a deal or contract **must** go through `load_accessible_deal(deal_id, actor)`
+  (`features/deals/dependencies.py`) or `load_accessible_contract(contract_id, actor)` (`features/contracts/dependencies.py`).
+  Child records (deliverables, payments, negotiation sessions, escalations) are loaded first and checked through their parent —
+  never trust a `deal_id` / `contract_id` sent by the client. The rule itself is `deals.can_access_deal`.
+- Demo accounts work only when `features.demo_mode.demo_access_enabled()` is true (offline demo dataset, not production).
+- Tests: `tests/features/auth/test_access_control_api.py` (cross-tenant 403s). Add a case for every new scoped endpoint;
+  API tests point the access checks at fakes with `tests/fakes/access.py::use_fake_access_repos`.
 
 ## Naming conventions
 
