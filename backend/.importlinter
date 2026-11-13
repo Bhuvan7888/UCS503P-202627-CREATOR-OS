@@ -30,6 +30,7 @@ containers =
     features.contract_intelligence
     features.content
     features.ai_assist
+    features.approvals
     features.contracts
     features.creators
     features.deals

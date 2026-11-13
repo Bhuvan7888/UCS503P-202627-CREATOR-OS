@@ -2,7 +2,7 @@
 
 Creator OS has two sides, free for everyone:
 
-- **Creators** get a workspace to plan content from idea to published: Home with KPIs, a Content Pipeline kanban, a 5-step Add Content wizard, Scripts and AI help (Gemini) (more pages arrive phase by phase — see [docs/PROGRESS.md](docs/PROGRESS.md)).
+- **Creators** get a workspace to plan content from idea to published: Home with KPIs, a Content Pipeline kanban, a 5-step Add Content wizard, Scripts, a Calendar, Approvals and AI help (Gemini) (more pages arrive phase by phase — see [docs/PROGRESS.md](docs/PROGRESS.md)).
 - **Brands** manage sponsorship deals: creator onboarding, contracts with automatic red-flag clause scanning, deliverables, invoices and payments, chat, analytics, and an activity log.
 
 - **Backend:** FastAPI (Python 3.13, `uv`) on Supabase (Postgres, Auth incl. Google sign-in, Storage), Google Gemini for AI features, Resend for email
@@ -14,7 +14,8 @@ Creator OS has two sides, free for everyone:
 |---|---|---|
 | `auth` | Brand and creator sign-up and login (creators: email/password or Google), sessions, demo accounts | `/brand/login`, `/creator/login`, `/brand/signup`, `/creator/signup`, `/auth/callback` |
 | `workspaces` | Creator workspace shell: switcher, sidebar, ⌘K palette | `/dashboard`, `/dashboard/[workspace]` |
-| `content` | Home KPIs, Content Pipeline kanban, Add Content wizard, item editor, Scripts with auto-save | `/dashboard/[workspace]`, `/dashboard/[workspace]/kanban`, `/dashboard/[workspace]/scripts` |
+| `content` | Home KPIs, Content Pipeline kanban, Add Content wizard, item editor, Scripts with auto-save, Calendar | `/dashboard/[workspace]`, `/dashboard/[workspace]/kanban`, `/dashboard/[workspace]/scripts` |
+| `approvals` | Publish requests approved or rejected by a person | `/dashboard/[workspace]/approvals` |
 | `ai-assist` | AI knowledge, Generate Title/Description/Hook/outline, AI Content Suggestions | `/dashboard/[workspace]/ai-suggestions`, `/dashboard/[workspace]/settings/ai-knowledge` |
 | `deals` | Brand deal pipeline and deal workspace | `/brand`, `/deals/[id]` |
 | `creators` | Creator roster and profiles, brand linking | `/creators/[id]` |

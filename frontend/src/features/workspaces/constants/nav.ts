@@ -1,4 +1,13 @@
-import { House, KanbanSquare, PenLine, Settings, Sparkles, type LucideIcon } from "lucide-react";
+import {
+  CalendarDays,
+  House,
+  Inbox,
+  KanbanSquare,
+  PenLine,
+  Settings,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 
 export interface NavItem {
   label: string;
@@ -9,10 +18,17 @@ export interface NavItem {
   prefix?: boolean;
 }
 
-/** Sidebar groups. Only pages that exist are listed; later phases add Calendar, Brand CRM, etc. */
+/** Sidebar groups. Only pages that exist are listed; later phases add Brand CRM, etc. */
 export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   { label: "Overview", items: [{ label: "Home", path: "", icon: House }] },
-  { label: "Plan", items: [{ label: "Content", path: "/kanban", icon: KanbanSquare }] },
+  {
+    label: "Plan",
+    items: [
+      { label: "Content", path: "/kanban", icon: KanbanSquare },
+      { label: "Calendar", path: "/schedule", icon: CalendarDays },
+      { label: "Approvals", path: "/approvals", icon: Inbox },
+    ],
+  },
   {
     label: "Create",
     items: [

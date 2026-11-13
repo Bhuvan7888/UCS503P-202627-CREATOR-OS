@@ -22,6 +22,9 @@ class ContentItem(BaseModel):
     due_date: date | None = None
     assignee_user_id: UUID | None = None
     stage: ContentStage = "idea"
+    # when it is planned to go live (Calendar) and when it was marked published
+    scheduled_at: datetime | None = None
+    published_at: datetime | None = None
     created_by: UUID | None = None
     created_at: datetime
     updated_at: datetime
@@ -57,6 +60,7 @@ class ContentItemUpdate(_ContentFields):
     due_date: date | None = None
     assignee_user_id: UUID | None = None
     stage: ContentStage | None = None
+    scheduled_at: datetime | None = None
 
 
 class ContentScript(BaseModel):

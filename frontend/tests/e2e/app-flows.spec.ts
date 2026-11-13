@@ -332,6 +332,84 @@ test("creator: item editor, scripts with auto-save, AI pages and AI knowledge", 
   expect(problems).toEqual([]);
 });
 
+test("creator: calendar scheduling and approvals", async ({ page }) => {
+  const problems = watchForProblems(page);
+  await loginWithDemo(page, "creator", "3. Zara Khan (Nykaa)");
+  const base = new URL(page.url()).pathname;
+  const title = `Calendar ${RUN}`;
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const todayIso = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const todayLabel = now.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  // Calendar: month view, click today's cell → wizard with today's due date
+  await page.getByRole("link", { name: "Calendar", exact: true }).click();
+  await page.waitForURL(`${WEB}${base}/schedule`);
+  await page.getByRole("button", { name: "Month" }).click();
+  await page.getByRole("button", { name: `Add content for ${todayLabel}` }).click();
+  const wizard = page.getByRole("dialog", { name: "Add New Content Idea" });
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.getByPlaceholder("Enter content title...").fill(title);
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.getByPlaceholder("e.g., Education, Entertainment...").fill("Beauty");
+  await wizard.getByPlaceholder("Engaging opening line...").fill("Hook");
+  await wizard.getByRole("button", { name: "YouTube" }).click();
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await expect(wizard.locator('input[type="date"]')).toHaveValue(todayIso);
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.getByRole("button", { name: "Save Content" }).click();
+  await expect(wizard).toBeHidden();
+  const dueChip = page.getByRole("button", { name: `Due · ${title}` });
+  await expect(dueChip).toBeVisible();
+
+  // Schedule it from the chip's editor; it shows in the feed as Scheduled
+  await dueChip.click();
+  const editor = page.getByRole("dialog", { name: "Edit content" });
+  await editor.getByLabel("Scheduled for").fill(`${todayIso}T18:30`);
+  await editor.getByRole("button", { name: "Save changes" }).click();
+  await expect(editor).toBeHidden();
+  const feed = page.getByRole("region", { name: "Feed" });
+  await expect(feed.locator("li", { hasText: title })).toContainText("Scheduled");
+
+  // Request approval, reject with a reason, request again, approve → Published
+  await dueChip.click();
+  await editor.getByRole("button", { name: "Request approval" }).click();
+  await expect(editor.getByText(/Sent for approval/)).toBeVisible();
+  await editor.getByRole("button", { name: "Close" }).click();
+  await page.getByRole("link", { name: "Approvals", exact: true }).click();
+  await page.getByRole("button", { name: `Reject ${title}` }).click();
+  const rejectDialog = page.getByRole("dialog", { name: "Reject publish" });
+  await expect(rejectDialog.getByRole("button", { name: "Reject" })).toBeDisabled();
+  await rejectDialog.locator("textarea").fill("Fix the thumbnail");
+  await rejectDialog.getByRole("button", { name: "Reject" }).click();
+  const decisions = page.getByRole("region", { name: "Recent decisions" });
+  await expect(decisions.locator("li", { hasText: title })).toContainText("Fix the thumbnail");
+  await expect(page.getByText("Nothing waiting")).toBeVisible();
+
+  await page.getByRole("link", { name: "Calendar", exact: true }).click();
+  await page.getByRole("button", { name: `Due · ${title}` }).click();
+  await editor.getByRole("button", { name: "Request approval" }).click();
+  await expect(editor.getByText(/Sent for approval/)).toBeVisible();
+  await editor.getByRole("button", { name: "Close" }).click();
+  await page.getByRole("link", { name: "Approvals", exact: true }).click();
+  await page.getByRole("button", { name: `Approve ${title}` }).click();
+  await expect(decisions.locator("li", { hasText: title }).first()).toContainText("Approved");
+
+  await page.getByRole("link", { name: "Content", exact: true }).click();
+  await expect(
+    page
+      .getByRole("region", { name: "Published", exact: true })
+      .locator("article", { hasText: title }),
+  ).toBeVisible();
+
+  expect(problems).toEqual([]);
+});
+
 test("unknown URLs show the 404 page", async ({ page }) => {
   await page.goto(`${WEB}/no-such-page-${RUN}`);
   await expect(page.getByRole("heading", { name: "We can't find that page" })).toBeVisible();

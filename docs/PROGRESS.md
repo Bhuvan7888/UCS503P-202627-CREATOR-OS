@@ -37,9 +37,9 @@ brand side stays as it is.
 |---|---|---|
 | 1 | Foundations: single .env ✅, security fixes ✅, workspace backend ✅ (verified on live DB), Google provider configured ✅ | done (Google button built in Phase 2) |
 | 2 | New creator shell + content core: shell, Home, 5-step Add Content wizard, Content Pipeline kanban, Google sign-in, old creator views removed | done (verified on live DB) |
-| 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | done — owner: run migration 003, replace the invalid Gemini key |
-| 4 | Calendar + Approvals (publish state machine without platform posting) | next |
-| 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | pending |
+| 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | done (verified on live DB + live Gemini) |
+| 4 | Calendar + Approvals (publish state machine without platform posting) | done — owner: run migration 004 **before deploying**, then live check |
+| 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | next |
 | 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | pending |
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | pending |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
@@ -129,21 +129,54 @@ Phase 3 notes
 - AI success paths are tested with a fake LLM (`tests/features/ai_assist/test_ai_assist_api.py`); e2e checks the
   "unavailable" path because the e2e backend has no key.
 
-### Phase 4 plan — pick up here (Calendar + Approvals)
+### Phase 4 (done, 2026-11-15)
 Read spec §4.3 Calendar (`/schedule`) and §4.4 Approvals (`/approvals`) in the Rebuild Spec PDF first.
 Backend
-1. Migration 004: `scheduled_at timestamptz` on `content_items` (+ index); `publish_requests` (workspace_id,
+1. ✅ Migration 004: `scheduled_at timestamptz` on `content_items` (+ index); `publish_requests` (workspace_id,
    content_item_id, requested_by, source human|agent, status pending|approved|rejected|published, reason, decided_by,
    timestamps) — RLS on.
-2. content: schedule/unschedule an item (sets `scheduled_at`, moves it to Scheduled); list by date range for the calendar.
-3. `features/approvals`: create a publish request, list pending, approve / reject with a reason; approving marks the item
+2. ✅ content: schedule/unschedule an item (sets `scheduled_at`, moves it to Scheduled); list by date range for the calendar.
+3. ✅ `features/approvals`: create a publish request, list pending, approve / reject with a reason; approving marks the item
    Published (no platform posting — "publish" means the creator confirms it went live). Agents (API keys) arrive in Phase 6.
 Frontend
-4. Calendar page (month/week grid, day cell → Add Content wizard with that date, "Schedule Post" button, drag an item to
+4. ✅ Calendar page (month/week grid, day cell → Add Content wizard with that date, "Schedule Post" button, drag an item to
    a day); Approvals page (pending list, approve/reject dialog, empty state "Nothing waiting").
-5. Sidebar Plan group: Calendar, Approvals; ⌘K "Schedule Content".
+5. ✅ Sidebar Plan group: Calendar, Approvals; ⌘K "Schedule Content".
 Verify: rules/service/API tests (cross-workspace 403/404), e2e for both pages, live DB check after migration 004.
+Phase 4 notes
+- **Deploy order:** run `supabase/migrations/20261115000000_calendar_and_approvals.sql` BEFORE deploying this backend —
+  the new `scheduled_at`/`published_at` fields make content inserts fail on a database without those columns.
+- Requests are created by people for now ("Request approval" in the item editor); Phase 6 adds agent requests
+  (`source='agent'`, `agent_name`) and role rules for who may decide.
+- The feed has no "Native (Graph)" source or Engaged sort: there are no platform connections.
+
+### Phase 5 plan — pick up here (Brand CRM)
+Read spec §4.8 Brand CRM (`/crm`) and workflow 5 ("New Deal → content") in the Rebuild Spec PDF first.
+Owner decision already made: brand deals made on Creator OS with this creator show in the CRM.
+Backend
+1. Migration 005: `crm_deals` (workspace_id, contact name/company/email, deal size, currency, status prospect|pending|
+   negotiating|signed|active|completed|lost, priority, start/end/next-follow-up dates, notes, deliverables text,
+   created_by, timestamps) — RLS on; `content_items.crm_deal_id` (nullable FK) for the wizard's Deal Association.
+2. `features/crm`: CRUD + KPIs (pipeline value, active, won, follow-ups due); a read-only list of Creator OS brand
+   deals for the workspace's creator (`deals.list_for_creator` via `workspaces.creator_id`) merged into the CRM table
+   (marked "On Creator OS").
+3. Content: optional `crm_deal_id` on create/update, validated to the same workspace.
+Frontend
+4. Brand CRM page (KPI cards, filters, deals table, status pills), 4-step New Deal wizard (Contact, Deal, Timeline &
+   Notes, Content — "Create a content item for this deal"), deal drawer/edit.
+5. Wizard step 4 Deal Association search; sidebar "Monetize › Brand CRM"; ⌘K "Manage Brands".
+6. Decide (with the owner) what happens to the unreachable creator branches in the shared brand deal pages.
+Verify: rules/service/API tests (cross-workspace), e2e for CRM + deal association, live DB after migration 005.
 ### Phase log
+- **2026-11-15 — Phase 4 (Calendar + Approvals)**: migration 004; content `scheduled_at`/`published_at` with
+  `apply_stage_rules`; `features/approvals` (request, approve → Published, reject with reason, one pending per item,
+  atomic decisions); Calendar (week/month, day → wizard with due date, chips, feed with platform/range/search) and
+  Approvals pages; editor gets "Scheduled for" and "Request approval". Checks: 161 backend tests, contracts kept,
+  mypy 113, tsc/eslint/prettier, build, smoke 25/25, e2e 6/6.
+- **2026-11-15 — Phase 3 verified live + Gemini resilience**: migration 003 on the live DB (scripts save, idea →
+  Scripted, KPI, knowledge); live Gemini: hook, 2.1k-char outline, 6 suggestions, 24 h cache, dismiss, stranger 403.
+  The configured `gemini-3.8-flash` was returning 503/504 under load → adapter now caps calls at 15 s and falls back
+  to `GEMINI_MODEL_FALLBACK` (default `gemini-flash-lite-latest`, ~2 s). Commit `0fbae22`.
 - **2026-11-14 — Phase 3 (Scripts + AI)**: migration 003; scripts with 1 s debounced auto-save (first script → Scripted;
   Scripted KPI counts scripts); `features/ai_assist` (AI knowledge, Generate title/description/hook/outline, 24 h
   suggestions with Create/Dismiss, 503 when AI is unavailable, 429 per-workspace limit); frontend Scripts page, AI

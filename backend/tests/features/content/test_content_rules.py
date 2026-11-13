@@ -51,3 +51,15 @@ def test_an_idea_with_a_saved_script_counts_as_scripted():
     idea = _item("idea")
     assert content_stats([idea], NOW).scripted.value == 0
     assert content_stats([idea], NOW, frozenset({idea.id})).scripted.value == 1
+
+
+def test_scheduling_moves_early_items_to_scheduled_and_publishing_stamps_the_time():
+    from features.content.rules import apply_stage_rules
+
+    when = NOW + timedelta(days=3)
+    assert apply_stage_rules(_item("scripted"), {"scheduled_at": when}, NOW)["stage"] == "scheduled"
+    assert "stage" not in apply_stage_rules(_item("published"), {"scheduled_at": when}, NOW)
+    published = apply_stage_rules(_item("scheduled"), {"stage": "published"}, NOW)
+    assert published["published_at"] == NOW
+    back = _item("published").model_copy(update={"published_at": NOW})
+    assert apply_stage_rules(back, {"stage": "idea"}, NOW)["published_at"] is None

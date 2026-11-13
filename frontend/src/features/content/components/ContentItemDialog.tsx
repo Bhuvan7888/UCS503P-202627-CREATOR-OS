@@ -2,11 +2,12 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { FileText, Send } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { Dialog } from "@/shared/components/ui/Dialog";
 import { GenerateButton } from "@/features/ai-assist";
 import { CONTENT_TYPES, STAGES, type ContentItem } from "../constants/content";
+import { toLocalInput } from "../utils/calendar-dates";
 import styles from "../content.module.css";
 
 interface Props {
@@ -27,7 +28,9 @@ export function ContentItemDialog({ item, workspace, base, onClose, onSaved }: P
     type: item.type,
     stage: item.stage,
     due_date: item.due_date ?? "",
+    scheduled_at: toLocalInput(item.scheduled_at),
   });
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const set = (key: keyof typeof form, value: string) => setForm((f) => ({ ...f, [key]: value }));
@@ -48,6 +51,8 @@ export function ContentItemDialog({ item, workspace, base, onClose, onSaved }: P
           type: form.type,
           stage: form.stage,
           due_date: form.due_date || null,
+          // datetime-local is in the viewer's time zone; the API stores an absolute time
+          scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
         },
       },
     );
@@ -58,6 +63,21 @@ export function ContentItemDialog({ item, workspace, base, onClose, onSaved }: P
     }
     onSaved(data);
     onClose();
+  }
+
+  async function requestApproval() {
+    setNotice(null);
+    const { error: apiError } = await client.POST("/workspaces/{workspace}/approvals", {
+      params: { path: { workspace } },
+      body: { content_item_id: item.id },
+    });
+    setNotice(
+      apiError
+        ? typeof apiError.detail === "string"
+          ? apiError.detail
+          : "Couldn't send it for approval."
+        : "Sent for approval — decide it on the Approvals page.",
+    );
   }
 
   const draft = { ...form, description: form.description || null };
@@ -79,7 +99,16 @@ export function ContentItemDialog({ item, workspace, base, onClose, onSaved }: P
       width={720}
       footer={
         <>
-          {error && <p className={styles.wizardError}>{error}</p>}
+          {(error || notice) && (
+            <p className={error ? styles.wizardError : styles.wizardNotice} role="status">
+              {error ?? notice}
+            </p>
+          )}
+          {item.stage !== "published" && (
+            <button type="button" className="btn btn-outline btn-row" onClick={requestApproval}>
+              <Send size={14} /> Request approval
+            </button>
+          )}
           <Link href={`${base}/scripts?item=${item.id}`} className="btn btn-outline btn-row">
             <FileText size={14} /> Open script
           </Link>
@@ -175,6 +204,15 @@ export function ContentItemDialog({ item, workspace, base, onClose, onSaved }: P
               type="date"
               value={form.due_date}
               onChange={(e) => set("due_date", e.target.value)}
+            />
+          </label>
+          <label className={styles.label}>
+            Scheduled for
+            <input
+              className="field"
+              type="datetime-local"
+              value={form.scheduled_at}
+              onChange={(e) => set("scheduled_at", e.target.value)}
             />
           </label>
         </div>

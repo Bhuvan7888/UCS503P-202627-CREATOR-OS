@@ -13,6 +13,27 @@ KPI_WINDOW = timedelta(days=30)
 MAX_ITEMS_PER_WORKSPACE_VIEW = 1000
 
 
+def apply_stage_rules(item: ContentItem, changes: dict, now: datetime) -> dict:
+    """Keep stage, schedule and publish time consistent for a PATCH.
+
+    Scheduling an item that hasn't reached Scheduled moves it there; moving to Published stamps
+    published_at (once); moving back from Published clears it.
+    """
+    changes = dict(changes)
+    stage = changes.get("stage", item.stage)
+    if (
+        changes.get("scheduled_at")
+        and "stage" not in changes
+        and STAGES.index(stage) < STAGES.index("scheduled")
+    ):
+        stage = changes["stage"] = "scheduled"
+    if stage == "published" and item.published_at is None:
+        changes["published_at"] = now
+    elif stage != "published" and item.published_at is not None:
+        changes["published_at"] = None
+    return changes
+
+
 def is_scripted(item: ContentItem, scripted_ids: frozenset[UUID]) -> bool:
     # Has a saved script, or was moved past the idea stage on the board.
     return item.id in scripted_ids or item.stage != "idea"

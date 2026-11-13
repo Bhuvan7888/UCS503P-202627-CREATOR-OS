@@ -840,3 +840,169 @@
     grid-template-columns: 1fr;
   }
 }
+
+.wizardNotice {
+  flex: 1;
+  margin: 0;
+  align-self: center;
+  font-size: 13px;
+  color: var(--color-success);
+}
+
+/* Calendar */
+.calBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.calControls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.segmented,
+.chips {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--color-surface-sunken);
+}
+
+.segmented button,
+.chips button {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+}
+
+.segmented button[aria-pressed="true"],
+.chips button[aria-pressed="true"] {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.calHead {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-faint);
+  text-align: center;
+}
+
+.calCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 84px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  min-width: 0;
+}
+
+.calCellTall {
+  min-height: 160px;
+}
+
+.dim {
+  opacity: 0.45;
+}
+
+.today {
+  box-shadow: inset 0 0 0 2px var(--color-ink);
+}
+
+.today .calDay {
+  font-weight: 800;
+}
+
+.calDay {
+  align-self: stretch;
+  padding: 2px 4px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.calDay:hover {
+  background: var(--color-accent-soft);
+}
+
+.chip {
+  padding: 2px 6px;
+  border: none;
+  border-left: 3px solid;
+  border-radius: 4px;
+  background: var(--color-surface-sunken);
+  font: inherit;
+  font-size: 11px;
+  text-align: left;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--color-ink-soft);
+}
+
+.legend span {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 4px;
+  border-radius: 50%;
+}
+
+.feedBar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.feedBar :global(.field) {
+  margin: 0;
+  flex: 1;
+  min-width: 180px;
+}
+
+.panelCard + .panelCard {
+  margin-top: 16px;
+}

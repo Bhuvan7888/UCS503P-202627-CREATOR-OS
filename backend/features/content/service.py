@@ -9,7 +9,7 @@ from features.content.models import (
     ContentStats,
 )
 from features.content.repository import ContentRepo, ScriptRepo
-from features.content.rules import MAX_ITEMS_PER_WORKSPACE_VIEW, content_stats
+from features.content.rules import MAX_ITEMS_PER_WORKSPACE_VIEW, apply_stage_rules, content_stats
 from features.workspaces import WorkspaceRepo
 from shared.errors import NotFoundError, ValidationError
 
@@ -71,8 +71,13 @@ class ContentService:
             return item
         if changes.get("assignee_user_id") is not None:
             await self._check_assignee(workspace_id, changes["assignee_user_id"])
-        changes["updated_at"] = datetime.now(UTC)
+        now = datetime.now(UTC)
+        changes = apply_stage_rules(item, changes, now)
+        changes["updated_at"] = now
         return await self.content_repo.update(item_id, changes)
+
+    async def mark_published(self, workspace_id: UUID, item_id: UUID) -> ContentItem:
+        return await self.update(workspace_id, item_id, ContentItemUpdate(stage="published"))
 
     async def get_script(self, workspace_id: UUID, item_id: UUID) -> ContentScript:
         await self.get(workspace_id, item_id)

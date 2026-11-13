@@ -10,6 +10,7 @@ Every feature has the same name everywhere. The backend uses `snake_case` becaus
 | `creators` | `backend/features/creators/` | `frontend/src/features/creators/` | `backend/tests/features/creators/` |
 | `workspaces` | `backend/features/workspaces/` | `frontend/src/features/workspaces/` (creator shell) | `backend/tests/features/workspaces/`, e2e |
 | `content` | `backend/features/content/` | `frontend/src/features/content/` | `backend/tests/features/content/`, e2e |
+| `approvals` | `backend/features/approvals/` | `frontend/src/features/approvals/` | `backend/tests/features/approvals/`, e2e |
 | `ai-assist` | `backend/features/ai_assist/` | `frontend/src/features/ai-assist/` | `backend/tests/features/ai_assist/`, e2e |
 | `deals` | `backend/features/deals/` | `frontend/src/features/deals/` | `backend/tests/features/deals/` |
 | `contracts` | `backend/features/contracts/` | `frontend/src/features/contracts/` | `backend/tests/features/contracts/` |
@@ -145,11 +146,21 @@ Each item has one script (Scripts page, auto-saved; the first script moves an id
   - `/dashboard/[workspace]` → `HomePage.tsx`
   - `/dashboard/[workspace]/kanban` → `ContentPipelinePage.tsx` (`?new=1` opens the wizard, `?item=<id>` opens the item editor)
   - `/dashboard/[workspace]/scripts` → `ScriptsPage.tsx` (`?item=<id>` selects an item)
-- **Frontend internals:** `components/AddContentWizard.tsx`, `components/ContentItemDialog.tsx` (edit an item, inline AI), `components/KanbanBoard.tsx`, `hooks/useContent.ts`, `constants/content.ts` (types, stages, platforms), `content.module.css`
+  - `/dashboard/[workspace]/schedule` → `CalendarPage.tsx`: week/month grid (due-date and scheduled chips; a day opens the wizard with that due date), feed of scheduled/published items
+- **Frontend internals:** `components/AddContentWizard.tsx`, `components/ContentItemDialog.tsx` (edit an item, inline AI, schedule, request approval), `utils/calendar-dates.ts`, `components/KanbanBoard.tsx`, `hooks/useContent.ts`, `constants/content.ts` (types, stages, platforms), `content.module.css`
 - **API:** `GET /workspaces/{workspace}/content`, `POST /workspaces/{workspace}/content`, `PATCH /workspaces/{workspace}/content/{item_id}`, `GET /workspaces/{workspace}/content/stats`, `GET/PUT /workspaces/{workspace}/content/{item_id}/script`
-- **Backend:** `router.py`, `service.py` (`ContentService`: assignee must be a member, other workspaces' items are 404, scripts), `rules.py` (KPIs with 30-day deltas; Scripted = has a script or moved past Idea), `models.py`, `repository.py` (`ContentRepo`, `ScriptRepo`), `supabase_repository.py`
-- **Database:** `supabase/migrations/20261113010000_content_items.sql`, `20261114000000_scripts_and_ai.sql` (`content_scripts`)
+- **Backend:** `router.py`, `service.py` (`ContentService`: assignee must be a member, other workspaces' items are 404, scripts), `rules.py` (KPIs with 30-day deltas; Scripted = has a script or moved past Idea; `apply_stage_rules`: scheduling moves an item to Scheduled, Published stamps `published_at`), `models.py`, `repository.py` (`ContentRepo`, `ScriptRepo`), `supabase_repository.py`
+- **Database:** `supabase/migrations/20261113010000_content_items.sql`, `20261114000000_scripts_and_ai.sql` (`content_scripts`), `20261115000000_calendar_and_approvals.sql` (`scheduled_at`, `published_at`)
 - **Depends on:** `workspaces`; frontend uses `ai-assist` (`GenerateButton`)
+
+## `approvals`
+The human checkpoint: a member sends an item for approval (agents with API keys arrive in Phase 6); a signed-in person
+approves (the item becomes Published — nothing is posted anywhere) or rejects with a reason.
+- **Pages:** `/dashboard/[workspace]/approvals` → `ApprovalsPage.tsx` (pending cards, reject dialog, recent decisions)
+- **API:** `GET /workspaces/{workspace}/approvals`, `POST /workspaces/{workspace}/approvals`, `POST …/approvals/{request_id}/approve`, `POST …/approvals/{request_id}/reject`
+- **Backend:** `router.py`, `service.py` (`ApprovalService`: one pending request per item → 409, decisions are atomic — a request decided twice → 409), `models.py`, `repository.py`, `supabase_repository.py`
+- **Database:** `supabase/migrations/20261115000000_calendar_and_approvals.sql` (`publish_requests`)
+- **Depends on:** `workspaces`, `content` (`ContentService.get`, `mark_published`)
 
 ## `ai-assist`
 AI help for a workspace, all fed by the workspace's AI knowledge: Generate Title / Description / Hook (wizard and item

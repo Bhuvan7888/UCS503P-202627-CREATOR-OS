@@ -21,5 +21,7 @@
   "/dashboard/[workspace]/kanban",
   "/dashboard/[workspace]/scripts",
   "/dashboard/[workspace]/ai-suggestions",
-  "/dashboard/[workspace]/settings/ai-knowledge"
+  "/dashboard/[workspace]/settings/ai-knowledge",
+  "/dashboard/[workspace]/schedule",
+  "/dashboard/[workspace]/approvals"
 ]

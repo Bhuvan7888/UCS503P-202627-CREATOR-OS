@@ -26,3 +26,7 @@ class ValidationError(CreatorOSError):
 
 class DuplicateError(CreatorOSError):
     """Raised when a write would violate a uniqueness rule (e.g. a concurrent duplicate insert)."""
+
+
+class ConflictError(CreatorOSError):
+    """Raised when the request conflicts with the current state (e.g. deciding an already-decided request)."""

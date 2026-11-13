@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from features.activity_log import ActivityLog
 from features.brands import Brand, BrandMember
 from features.ai_assist.models import AiKnowledge, SuggestionSet
+from features.approvals.models import PublishRequest
 from features.content.models import ContentItem, ContentScript
 from features.contract_intelligence import ClauseCardOut, EscalationOut
 from features.contracts import Contract
@@ -583,3 +584,31 @@ class DemoSuggestionRepo:
     async def save(self, suggestions: SuggestionSet) -> SuggestionSet:
         self.data[suggestions.workspace_id] = suggestions
         return suggestions
+
+
+class DemoPublishRequestRepo:
+    def __init__(self):
+        self.data: dict[UUID, PublishRequest] = {}
+
+    async def create(self, request: PublishRequest) -> PublishRequest:
+        if any(
+            r.content_item_id == request.content_item_id and r.status == "pending"
+            for r in self.data.values()
+        ):
+            raise DuplicateError("A pending request already exists")
+        self.data[request.id] = request
+        return request
+
+    async def get(self, id: UUID) -> PublishRequest | None:
+        return self.data.get(id)
+
+    async def list_for_workspace(self, workspace_id: UUID, limit: int) -> list[PublishRequest]:
+        mine = [r for r in self.data.values() if r.workspace_id == workspace_id]
+        return sorted(mine, key=lambda r: r.created_at, reverse=True)[:limit]
+
+    async def decide(self, id: UUID, changes: dict[str, Any]) -> PublishRequest | None:
+        current = self.data.get(id)
+        if current is None or current.status != "pending":
+            return None
+        self.data[id] = current.model_copy(update=changes)
+        return self.data[id]

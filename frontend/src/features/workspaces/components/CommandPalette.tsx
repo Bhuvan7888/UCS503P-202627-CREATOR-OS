@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  CalendarDays,
   FileText,
   House,
   KanbanSquare,
@@ -90,6 +91,13 @@ export function CommandPalette({
         hint: "Get new content ideas for this workspace",
         href: `${base}/ai-suggestions`,
         icon: Sparkles,
+        quick: true,
+      },
+      {
+        label: "Schedule Content",
+        hint: "View and manage your content calendar",
+        href: `${base}/schedule`,
+        icon: CalendarDays,
         quick: true,
       },
       { label: "Home", hint: "Workspace overview", href: base, icon: House, quick: true },

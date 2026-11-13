@@ -46,17 +46,31 @@ interface Props {
   workspace: string;
   /** Route prefix of the workspace, for the "generate content ideas" link. */
   base: string;
+  /** Pre-filled due date (YYYY-MM-DD), e.g. from a calendar day. */
+  initialDueDate?: string;
   onClose: () => void;
   onSaved: (item: ContentItem) => void;
 }
 
 /** "Add New Content Idea": type → title → pillar/hook/platforms → due date/assignee → review. */
-export function AddContentWizard({ open, workspace, base, onClose, onSaved }: Props) {
+export function AddContentWizard({
+  open,
+  workspace,
+  base,
+  initialDueDate,
+  onClose,
+  onSaved,
+}: Props) {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [members, setMembers] = useState<Member[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- pre-fill when opened from a calendar day
+    if (open && initialDueDate) setDraft((d) => ({ ...d, due_date: initialDueDate }));
+  }, [open, initialDueDate]);
 
   useEffect(() => {
     if (!open) return;
