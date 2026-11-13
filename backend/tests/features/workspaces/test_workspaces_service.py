@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 
 from features.demo_mode.in_memory_repositories import DemoWorkspaceRepo
-from features.workspaces import WORKSPACE_SLOTS, WorkspaceService, parse_workspace_ref
+from features.workspaces import MAX_WORKSPACES_PER_OWNER, WorkspaceService, parse_workspace_ref
 from shared.errors import NotFoundError, PermissionDeniedError, ValidationError
 from tests.fakes.fake_repos import FakeCreatorRepo
 
@@ -29,12 +29,15 @@ def test_slug_or_id_reference():
 
 
 @pytest.mark.asyncio
-async def test_primary_workspace_is_created_once_with_trial_and_owner_membership():
+async def test_primary_workspace_is_created_once_with_owner_membership():
     service, owner, creator = _service(), uuid4(), uuid4()
     first = await service.ensure_primary_workspace(owner, creator)
     again = await service.ensure_primary_workspace(owner, creator)
     assert first.id == again.id
-    assert first.name == "My Workspace" and first.plan == "trial" and first.trial_ends_at
+    assert first.name == "My Workspace"
+    assert (
+        "plan" not in first.model_dump() and "trial_ends_at" not in first.model_dump()
+    )  # free for everyone
     assert re.fullmatch(r"ws-[0-9a-f]{8}", first.slug)
     mine = await service.workspace_repo.list_for_user(owner)
     assert [(w.id, role) for w, role in mine] == [(first.id, "owner")]
@@ -52,10 +55,10 @@ async def test_concurrent_first_requests_create_exactly_one_primary_workspace():
 
 
 @pytest.mark.asyncio
-async def test_slot_limit():
+async def test_fair_use_workspace_cap():
     service, owner = _service(), uuid4()
     await service.ensure_primary_workspace(owner, uuid4())
-    for i in range(WORKSPACE_SLOTS - 1):
+    for i in range(MAX_WORKSPACES_PER_OWNER - 1):
         await service.create_workspace(owner, f"Extra {i}")
     with pytest.raises(ValidationError):
         await service.create_workspace(owner, "One too many")

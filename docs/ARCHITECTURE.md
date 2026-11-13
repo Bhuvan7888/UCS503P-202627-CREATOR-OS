@@ -101,6 +101,12 @@ A file belongs in `shared/` **only** when two or more features use it. Otherwise
 | Logging | standard `logging.getLogger(__name__)` per module (backend) |
 | Formatting / lint | backend: `ruff format`, `ruff check` (config in `pyproject.toml`), `mypy`, `lint-imports`. Frontend: `npm run format` (Prettier), `npm run lint` (ESLint), `npx tsc --noEmit` |
 
+## Product rules
+
+- Creator OS is **free for everyone** (MVP): there is no plan, trial, subscription or billing code or data. Do not add
+  plan checks; the only limit is the fair-use cap `MAX_WORKSPACES_PER_OWNER` (3) in `features/workspaces/rules.py`.
+- No social-platform posting and no payment gateway are integrated.
+
 ## Access control (read before adding an endpoint)
 
 - Every endpoint except sign-up/login and the static sample PDF requires a session: `Depends(get_current_actor)`

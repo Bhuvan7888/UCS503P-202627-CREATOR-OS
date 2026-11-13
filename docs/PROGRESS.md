@@ -15,6 +15,9 @@ brand side stays as it is.
 ### Decisions (owner, 2026-11-13)
 - Today's creator views (dashboard, board, negotiation, creator use of contracts/deliverables/payments/chat) are **dropped**.
 - **No** social posting integrations (YouTube, LinkedIn, X, Instagram, Facebook) and **no** payment gateway.
+- **Free for everyone (MVP), decided 2026-11-13:** no subscription, plan, trial or Billing page anywhere — not in the
+  database, API, sidebar (no "Plan · Trial" row) or docs. The only limit is a fair-use cap of 3 owned workspaces per
+  person (`features/workspaces/rules.py::MAX_WORKSPACES_PER_OWNER`).
 - Google sign-in via Supabase Auth — owner will configure the Google OAuth client (steps given 2026-11-13).
 - Migrations: Claude writes one SQL file per phase in `supabase/migrations/`; **the owner runs it** in the Supabase SQL editor.
   Until then features are built and tested on the demo dataset, then re-verified on the real database.
@@ -38,15 +41,15 @@ brand side stays as it is.
 | 4 | Calendar + Approvals (publish state machine without platform posting) | pending |
 | 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | pending |
 | 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | pending |
-| 7 | Notifications, Billing (plan/trial/slots, no checkout), Support, remaining Settings tabs | pending |
+| 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | pending |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
 
 
 ### Next steps (Phase 1, remaining) — pick up here
 1. ✅ (2026-11-13) Backend feature `features/workspaces/`: models (Workspace, WorkspaceMember, role Literal), repository port,
    supabase_repository, in-memory demo repo + seed one primary workspace per demo creator, rules (slug `ws-` + 8 hex,
-   10-day trial, 3 workspace slots), service (ensure primary workspace for a creator — idempotent, race-safe via the
-   unique index; list mine; resolve slug-or-uuid for a member; create with slot limit), router `/workspaces`
+   fair-use cap of 3 owned workspaces), service (ensure primary workspace for a creator — idempotent, race-safe via the
+   unique index; list mine; resolve slug-or-uuid for a member; create within the cap), router `/workspaces`
    (GET list, GET {ref}, POST).
 2. ✅ (2026-11-13) Identity: split `features/auth/dependencies.py` so a `get_current_user` (token → user id, demo tokens included)
    exists alongside `get_current_actor`; workspace routes use `require_workspace_member(ref)` → WorkspaceContext
@@ -59,6 +62,8 @@ brand side stays as it is.
 ### Phase log
 - **2026-11-13 — single .env**: root `.env` (backend + `NEXT_PUBLIC_*`); backend loads it by absolute path
   (`shared/config.py`), Next loads it in `next.config.ts`; CI sets dummy demo-mode env. Commit `11bbdea`.
+- **2026-11-13 — free for everyone**: removed plan/trial from migration 001 (with `drop column if exists` in case the
+  draft was applied), the Workspace model, service and tests; slot limit renamed to a fair-use cap. Billing dropped from the plan.
 - **2026-11-13 — workspaces backend**: `features/workspaces` (models, rules, port, Supabase + demo repos, service, router `GET/POST /workspaces`, `GET /workspaces/{workspace}`), `get_current_user_id` (identity without a brand/creator profile, cached), `require_workspace_member` (slug or id; 404 unknown, 403 non-member), `DuplicateError` for race-safe primary-workspace creation. 157 backend tests. Commit `65a99b6`.
 - **2026-11-13 — migration 001 written** (`supabase/migrations/20261113000000_creator_workspaces.sql`: `workspaces`,
   `workspace_members`, RLS on). **Owner must run it** before the real-database check of Phase 1.

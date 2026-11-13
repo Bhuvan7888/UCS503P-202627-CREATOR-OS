@@ -1,11 +1,10 @@
-"""Workspace rules: addresses, trial length and slot limits."""
+"""Workspace rules: addresses and how many workspaces one person may own."""
 
 import secrets
 from uuid import UUID
 
-# Workspaces one owner may hold on the base plan (Billing shows "1 of 3").
-WORKSPACE_SLOTS = 3
-TRIAL_DAYS = 10
+# Creator OS is free for everyone; this is a fair-use cap, not a plan limit.
+MAX_WORKSPACES_PER_OWNER = 3
 PRIMARY_WORKSPACE_NAME = "My Workspace"
 
 
@@ -22,5 +21,5 @@ def parse_workspace_ref(ref: str) -> UUID | None:
         return None
 
 
-def has_free_slot(owned_count: int) -> bool:
-    return owned_count < WORKSPACE_SLOTS
+def can_own_another_workspace(owned_count: int) -> bool:
+    return owned_count < MAX_WORKSPACES_PER_OWNER

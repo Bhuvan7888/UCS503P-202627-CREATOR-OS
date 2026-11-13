@@ -5,7 +5,6 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 WorkspaceRole = Literal["owner", "script_writer", "video_editor", "brand_manager"]
-WorkspacePlan = Literal["trial", "monthly", "yearly"]
 
 
 class Workspace(BaseModel):
@@ -15,8 +14,6 @@ class Workspace(BaseModel):
     owner_user_id: UUID
     creator_id: UUID | None = None
     is_primary: bool = False
-    plan: WorkspacePlan = "trial"
-    trial_ends_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 

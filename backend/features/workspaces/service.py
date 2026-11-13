@@ -1,13 +1,13 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from features.creators import CreatorRepo
 from features.workspaces.models import MyWorkspace, Workspace, WorkspaceMember, WorkspaceRole
 from features.workspaces.repository import WorkspaceRepo
 from features.workspaces.rules import (
+    MAX_WORKSPACES_PER_OWNER,
     PRIMARY_WORKSPACE_NAME,
-    TRIAL_DAYS,
-    has_free_slot,
+    can_own_another_workspace,
     new_workspace_slug,
     parse_workspace_ref,
 )
@@ -45,8 +45,8 @@ class WorkspaceService:
             return winner
 
     async def create_workspace(self, owner_user_id: UUID, name: str) -> MyWorkspace:
-        if not has_free_slot(await self.workspace_repo.count_owned(owner_user_id)):
-            raise ValidationError("No workspace slots left on your plan")
+        if not can_own_another_workspace(await self.workspace_repo.count_owned(owner_user_id)):
+            raise ValidationError(f"You can own up to {MAX_WORKSPACES_PER_OWNER} workspaces")
         primary = await self.workspace_repo.get_primary_for_owner(owner_user_id)
         ws = await self._create(
             owner_user_id,
@@ -81,8 +81,6 @@ class WorkspaceService:
                 owner_user_id=owner_user_id,
                 creator_id=creator_id,
                 is_primary=is_primary,
-                plan="trial",
-                trial_ends_at=now + timedelta(days=TRIAL_DAYS),
                 created_at=now,
                 updated_at=now,
             )
