@@ -94,9 +94,11 @@ Contract upload by the brand per deal, the status lifecycle and the sample contr
 - **Depends on:** `auth`, `deals`, `contract-intelligence` (each upload is scanned), `activity-log`
 
 ## `contract-intelligence`
-Rule-based red-flag clause scanning, LLM clause explanations (with canned fallbacks), escalations and their resolution, and the clause review screen.
-- **Pages:** `/contracts/[id]/clauses` → `ClauseReviewPage.tsx`
-- **Frontend internals:** `components/ClauseCard.tsx`, `components/HighlightedText.tsx`, `utils/find-highlights.utils.ts`
+Rule-based red-flag clause scanning, LLM clause explanations (with canned fallbacks), escalations and their resolution, and the clause review screen — shown to both brands and creators (flagged clauses + clean contract toggle).
+- **Pages:**
+  - brand app: `/contracts/[id]/clauses` → `ClauseReviewPage.tsx`
+  - creator workspace: `/dashboard/[workspace]/contracts/[id]` → `WorkspaceClauseReviewPage.tsx` (list: `/dashboard/[workspace]/contracts` → `features/contracts/WorkspaceContractsPage.tsx`)
+- **Frontend internals:** `components/ClauseReview.tsx` (the shared screen), `components/ClauseCard.tsx`, `components/HighlightedText.tsx`, `utils/find-highlights.utils.ts`
 - **API:** `GET /contracts/{contract_id}/clauses`, `POST /contracts/{contract_id}/scan`, `POST /contracts/{contract_id}/escalate`, `POST /escalations/{escalation_id}/resolve`
 - **Backend:**
   - `router.py`

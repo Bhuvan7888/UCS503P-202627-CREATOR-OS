@@ -39,7 +39,7 @@ brand side stays as it is.
 | 2 | New creator shell + content core: shell, Home, 5-step Add Content wizard, Content Pipeline kanban, Google sign-in, old creator views removed | done (verified on live DB) |
 | 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | done (verified on live DB + live Gemini) |
 | 4 | Calendar + Approvals (publish state machine without platform posting) | done (verified on live DB) |
-| 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | done — owner: run migration 005 **before deploying**, then live check |
+| 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | done (verified on live DB) |
 | 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | next |
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | pending |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
@@ -174,9 +174,10 @@ Phase 5 notes
   signed, active, completed, paid, cancelled; Closed = completed + paid; priorities low/medium/high.
 - Total Value is shown per currency; there is no FX conversion.
 - Item 6: creator-only branches removed from chat, contracts, deliverables and payments (commit `e49effc`).
-  **Kept pending an owner decision:** the creator "Flagged Clauses Review" view in
-  `features/contract-intelligence/ClauseReviewPage.tsx` — it is the only UI that shows red-flag clause scanning, and
-  creators can no longer reach it. Options: show it to brands, move it into the creator workspace, or delete it.
+  Owner decision (2026-11-16): the red-flag clause review is shown to **both** brands (`/contracts/[id]/clauses`) and
+  creators (workspace › Monetize › Contracts → `/dashboard/[ws]/contracts/[id]`), one shared `ClauseReview` component.
+  Invited team members (Phase 6) have no creator profile, so `/contracts` (actor-scoped) won't list for them yet —
+  revisit with the permission map.
 - `AppShell` renders brand pages only once the session is known not to be a creator's (a creator opening `/chat` used
   to fire brand-only API calls before the redirect).
 - Skipped from the spec table: bulk-select checkboxes and the column-visibility toggle.
@@ -198,6 +199,10 @@ Frontend
 5. Settings tabs: Workspace (rename), Members, Roles, API keys, Webhooks, Audit log; invite accept page.
 Verify: permission matrix tests per role and endpoint, invite flow e2e, live DB after migration 006.
 ### Phase log
+- **2026-11-16 — clause review for brands and creators; Phase 5 verified live**: shared `ClauseReview` component;
+  brands now see flagged clauses (previously the clean contract only); creator workspace gets Contracts (list of
+  contracts from their Creator OS deals) + review. Live: CRM CRUD, per-currency totals, deal link (cross-workspace
+  400), stranger 403, delete keeps content unlinked, cleanup ok. Checks: tsc/eslint/prettier, build, smoke 28/28, e2e 8/8.
 - **2026-11-16 — Phase 5 (Brand CRM)**: migration 005; `features/crm` (CRUD, KPIs per currency, pipeline overview,
   top brands, follow-ups due, read-only Creator OS brand deals); content `crm_deal_id` (same-workspace only); CRM page
   (KPIs, filter panel, sortable table, paging, CSV export, Pipeline & Insights, On Creator OS), 4-step Create/Edit

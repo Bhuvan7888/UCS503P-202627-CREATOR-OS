@@ -6,6 +6,7 @@ import {
   KanbanSquare,
   PenLine,
   Settings,
+  ShieldCheck,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
@@ -39,7 +40,10 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   },
   {
     label: "Monetize",
-    items: [{ label: "Brand CRM", path: "/crm", icon: Handshake }],
+    items: [
+      { label: "Brand CRM", path: "/crm", icon: Handshake },
+      { label: "Contracts", path: "/contracts", icon: ShieldCheck, prefix: true },
+    ],
   },
   {
     label: "Workspace",

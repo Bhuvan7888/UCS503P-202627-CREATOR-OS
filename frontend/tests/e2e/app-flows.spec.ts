@@ -121,6 +121,9 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   await page.locator("a[href$='/clauses']").first().click();
   await page.waitForURL(/\/clauses$/);
   await expectSettled(page);
+  // brands see the red-flag scan too, and can switch to the clean contract
+  await page.getByRole("button", { name: /Clean Contract View/ }).click();
+  await page.getByRole("button", { name: /Flagged Clauses Review/ }).click();
 
   // Deliverables: create one and move another through a status
   await visit(page, "/deliverables");
@@ -485,6 +488,27 @@ test("creator: brand CRM deals, linked content and deal association", async ({ p
   await page.getByRole("button", { name: `Delete ${company}` }).click();
   await expect(row).toHaveCount(0);
 
+  expect(problems).toEqual([]);
+});
+
+test("creator: contracts with the red-flag clause review in the workspace", async ({ page }) => {
+  const problems = watchForProblems(page);
+  await loginWithDemo(page, "creator", "1. Ananya Sharma (Mamaearth, Nykaa)");
+  const base = new URL(page.url()).pathname;
+  await page.getByRole("link", { name: "Contracts", exact: true }).click();
+  await page.waitForURL(`${WEB}${base}/contracts`);
+  await expectSettled(page);
+  await page.getByRole("link", { name: "Review clauses" }).first().click();
+  await page.waitForURL(new RegExp(`${base}/contracts/[0-9a-f-]{36}$`));
+  await expectSettled(page);
+  await page.getByRole("button", { name: /Clean Contract View/ }).click();
+  await page.getByRole("button", { name: /Flagged Clauses Review/ }).click();
+  await expect(page.getByRole("link", { name: "Contracts", exact: true })).toHaveAttribute(
+    "class",
+    /on/,
+  );
+  await page.getByRole("link", { name: /Back to contracts/ }).click();
+  await page.waitForURL(`${WEB}${base}/contracts`);
   expect(problems).toEqual([]);
 });
 

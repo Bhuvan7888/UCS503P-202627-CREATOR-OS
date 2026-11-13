@@ -24,5 +24,7 @@
   "/dashboard/[workspace]/settings/ai-knowledge",
   "/dashboard/[workspace]/schedule",
   "/dashboard/[workspace]/approvals",
-  "/dashboard/[workspace]/crm"
+  "/dashboard/[workspace]/crm",
+  "/dashboard/[workspace]/contracts",
+  "/dashboard/[workspace]/contracts/[id]"
 ]
