@@ -20,6 +20,14 @@ brand side stays as it is.
   Until then features are built and tested on the demo dataset, then re-verified on the real database.
 - Full team model: workspaces, members, roles (Owner, Script Writer, Video Editor, Brand Manager; 2 seats each), 11 permissions, audit log.
 - One `.env` at the repo root for backend and frontend (`/.env.example`).
+- **Brand link:** deals a brand creates on Creator OS with a creator appear as rows in that creator's Brand CRM
+  (marked "via Creator OS") next to the creator's own CRM deals. Creator-facing brand features (creator replies in brand
+  chat, creator deliverable/contract updates, invite-code linking) are removed with the old creator views.
+- **Sign-in:** creators use Google *and* email/password (both Supabase Auth). Invited team members sign in the same way.
+- **Theme:** today's light palette only — no dark mode, no theme toggle (Appearance keeps only the sidebar settings).
+- **RLS:** live tables already have row-level security on with no public policies (verified 2026-11-13: the public anon
+  key sees 0 rows of non-empty tables). Every new table must `enable row level security` with no policies; the backend
+  uses the service-role key.
 
 ### Phases
 | # | Phase | Status |
@@ -33,9 +41,26 @@ brand side stays as it is.
 | 7 | Notifications, Billing (plan/trial/slots, no checkout), Support, remaining Settings tabs | pending |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
 
+
+### Next steps (Phase 1, remaining) — pick up here
+1. Backend feature `features/workspaces/`: models (Workspace, WorkspaceMember, role Literal), repository port,
+   supabase_repository, in-memory demo repo + seed one primary workspace per demo creator, rules (slug `ws-` + 8 hex,
+   10-day trial, 3 workspace slots), service (ensure primary workspace for a creator — idempotent, race-safe via the
+   unique index; list mine; resolve slug-or-uuid for a member; create with slot limit), router `/workspaces`
+   (GET list, GET {ref}, POST).
+2. Identity: split `features/auth/dependencies.py` so a `get_current_user` (token → user id, demo tokens included)
+   exists alongside `get_current_actor`; workspace routes use `require_workspace_member(ref)` → WorkspaceContext
+   (user, workspace, role). Invited members have no creators/brands row, so they must not depend on get_current_actor.
+3. Google sign-in (after the owner confirms the Supabase Google provider is configured): frontend
+   `signInWithOAuth` → `/auth/callback` → backend endpoint that creates the creator profile for a new Google user.
+4. Then Phase 2 (shell + Home + wizard + pipeline) — the old creator views are removed in Phase 2, in the same change that
+   replaces them, so creator login always lands on a working page.
+
 ### Phase log
 - **2026-11-13 — single .env**: root `.env` (backend + `NEXT_PUBLIC_*`); backend loads it by absolute path
   (`shared/config.py`), Next loads it in `next.config.ts`; CI sets dummy demo-mode env. Commit `11bbdea`.
+- **2026-11-13 — migration 001 written** (`supabase/migrations/20261113000000_creator_workspaces.sql`: `workspaces`,
+  `workspace_members`, RLS on). **Owner must run it** before the real-database check of Phase 1.
 - **2026-11-13 — security**: demo accounts only in offline demo mode outside production, demo password required, raw
   user-id tokens rejected; 10 public endpoints now require a session; one access rule (`deals.can_access_deal` via
   `load_accessible_deal` / `load_accessible_contract`) closes cross-brand IDORs on contracts, deliverables, payments,
