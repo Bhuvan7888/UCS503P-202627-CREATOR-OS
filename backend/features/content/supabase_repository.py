@@ -6,7 +6,7 @@ from uuid import UUID
 from pydantic import TypeAdapter
 from supabase import Client
 
-from features.content.models import ContentItem
+from features.content.models import ContentItem, ContentScript
 from features.demo_mode import DemoFallbackMixin
 from shared.supabase_query import first_or_none, run_query
 
@@ -46,3 +46,33 @@ class SupabaseContentRepo(DemoFallbackMixin):
             .eq("id", str(id))
         )
         return ContentItem.model_validate(res.data[0])
+
+
+class SupabaseScriptRepo(DemoFallbackMixin):
+    _fallback_repo_name = "script_repo"
+
+    def __init__(self, client: Client):
+        self.client = client
+
+    async def get(self, content_item_id: UUID) -> ContentScript | None:
+        res = await run_query(
+            self.client.table("content_scripts")
+            .select("*")
+            .eq("content_item_id", str(content_item_id))
+        )
+        return first_or_none(ContentScript, res)
+
+    async def upsert(self, script: ContentScript) -> ContentScript:
+        res = await run_query(
+            self.client.table("content_scripts").upsert(script.model_dump(mode="json"))
+        )
+        return ContentScript.model_validate(res.data[0])
+
+    async def scripted_item_ids(self, workspace_id: UUID) -> frozenset[UUID]:
+        res = await run_query(
+            self.client.table("content_scripts")
+            .select("content_item_id")
+            .eq("workspace_id", str(workspace_id))
+            .neq("body", "")
+        )
+        return frozenset(UUID(row["content_item_id"]) for row in res.data)

@@ -6,7 +6,8 @@ from uuid import UUID, uuid4
 
 from features.activity_log import ActivityLog
 from features.brands import Brand, BrandMember
-from features.content.models import ContentItem
+from features.ai_assist.models import AiKnowledge, SuggestionSet
+from features.content.models import ContentItem, ContentScript
 from features.contract_intelligence import ClauseCardOut, EscalationOut
 from features.contracts import Contract
 from features.creators import Creator
@@ -521,6 +522,25 @@ class DemoUserDirectory:
         return {u: known.get(u, ("Member", None)) for u in user_ids}
 
 
+class DemoScriptRepo:
+    def __init__(self):
+        self.data: dict[UUID, ContentScript] = {}
+
+    async def get(self, content_item_id: UUID) -> ContentScript | None:
+        return self.data.get(content_item_id)
+
+    async def upsert(self, script: ContentScript) -> ContentScript:
+        self.data[script.content_item_id] = script
+        return script
+
+    async def scripted_item_ids(self, workspace_id: UUID) -> frozenset[UUID]:
+        return frozenset(
+            s.content_item_id
+            for s in self.data.values()
+            if s.workspace_id == workspace_id and s.body
+        )
+
+
 class DemoContentRepo:
     def __init__(self):
         self.data: dict[UUID, ContentItem] = {}
@@ -539,3 +559,27 @@ class DemoContentRepo:
     async def update(self, id: UUID, changes: dict[str, Any]) -> ContentItem:
         self.data[id] = self.data[id].model_copy(update=changes)
         return self.data[id]
+
+
+class DemoKnowledgeRepo:
+    def __init__(self):
+        self.data: dict[UUID, AiKnowledge] = {}
+
+    async def get(self, workspace_id: UUID) -> AiKnowledge | None:
+        return self.data.get(workspace_id)
+
+    async def upsert(self, knowledge: AiKnowledge) -> AiKnowledge:
+        self.data[knowledge.workspace_id] = knowledge
+        return knowledge
+
+
+class DemoSuggestionRepo:
+    def __init__(self):
+        self.data: dict[UUID, SuggestionSet] = {}
+
+    async def get(self, workspace_id: UUID) -> SuggestionSet | None:
+        return self.data.get(workspace_id)
+
+    async def save(self, suggestions: SuggestionSet) -> SuggestionSet:
+        self.data[suggestions.workspace_id] = suggestions
+        return suggestions

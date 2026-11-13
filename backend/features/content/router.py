@@ -2,9 +2,16 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from features.content.models import ContentItem, ContentItemCreate, ContentItemUpdate, ContentStats
+from features.content.models import (
+    ContentItem,
+    ContentItemCreate,
+    ContentItemUpdate,
+    ContentScript,
+    ContentStats,
+    ScriptSave,
+)
 from features.content.service import ContentService
-from features.content.supabase_repository import SupabaseContentRepo
+from features.content.supabase_repository import SupabaseContentRepo, SupabaseScriptRepo
 from features.workspaces.dependencies import WorkspaceContext, require_workspace_member
 from features.workspaces.supabase_repository import SupabaseWorkspaceRepo
 from shared.errors import NotFoundError, ValidationError
@@ -16,7 +23,9 @@ router = APIRouter(prefix="/workspaces/{workspace}/content", tags=["content"])
 
 def get_content_service() -> ContentService:
     client = get_supabase_client(service_role=True)
-    return ContentService(SupabaseContentRepo(client), SupabaseWorkspaceRepo(client))
+    return ContentService(
+        SupabaseContentRepo(client), SupabaseWorkspaceRepo(client), SupabaseScriptRepo(client)
+    )
 
 
 @router.get("", response_model=list[ContentItem])
@@ -54,3 +63,24 @@ async def update_content(
 ):
     with map_errors({NotFoundError: 404, ValidationError: 400}):
         return await service.update(ctx.workspace.id, item_id, request)
+
+
+@router.get("/{item_id}/script", response_model=ContentScript)
+async def get_script(
+    item_id: UUID,
+    ctx: WorkspaceContext = Depends(require_workspace_member),
+    service: ContentService = Depends(get_content_service),
+):
+    with map_errors({NotFoundError: 404}):
+        return await service.get_script(ctx.workspace.id, item_id)
+
+
+@router.put("/{item_id}/script", response_model=ContentScript)
+async def save_script(
+    item_id: UUID,
+    request: ScriptSave,
+    ctx: WorkspaceContext = Depends(require_workspace_member),
+    service: ContentService = Depends(get_content_service),
+):
+    with map_errors({NotFoundError: 404}):
+        return await service.save_script(ctx.workspace.id, item_id, ctx.user_id, request.body)

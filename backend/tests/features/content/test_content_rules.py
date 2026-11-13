@@ -45,3 +45,9 @@ def test_delta_compares_last_30_days_with_the_30_before():
     assert content_stats(items, NOW).total.delta_pct == 100  # 2 vs 1
     assert content_stats([_item(days_ago=5)], NOW).total.delta_pct is None  # no baseline
     assert content_stats([], NOW).total.value == 0
+
+
+def test_an_idea_with_a_saved_script_counts_as_scripted():
+    idea = _item("idea")
+    assert content_stats([idea], NOW).scripted.value == 0
+    assert content_stats([idea], NOW, frozenset({idea.id})).scripted.value == 1

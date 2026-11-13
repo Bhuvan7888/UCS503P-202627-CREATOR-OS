@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Protocol, runtime_checkable
 from uuid import UUID
 
-from features.content.models import ContentItem
+from features.content.models import ContentItem, ContentScript
 
 
 @runtime_checkable
@@ -14,3 +14,10 @@ class ContentRepo(Protocol):
     async def get(self, id: UUID) -> ContentItem | None: ...
     async def list_for_workspace(self, workspace_id: UUID, limit: int) -> list[ContentItem]: ...
     async def update(self, id: UUID, changes: dict[str, Any]) -> ContentItem: ...
+
+
+@runtime_checkable
+class ScriptRepo(Protocol):
+    async def get(self, content_item_id: UUID) -> ContentScript | None: ...
+    async def upsert(self, script: ContentScript) -> ContentScript: ...
+    async def scripted_item_ids(self, workspace_id: UUID) -> frozenset[UUID]: ...

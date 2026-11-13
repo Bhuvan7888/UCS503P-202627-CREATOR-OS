@@ -3,6 +3,7 @@
 from collections import Counter
 from collections.abc import Callable
 from datetime import datetime, timedelta
+from uuid import UUID
 
 from features.content.models import ContentItem, ContentStage, ContentStats, Kpi
 
@@ -12,9 +13,9 @@ KPI_WINDOW = timedelta(days=30)
 MAX_ITEMS_PER_WORKSPACE_VIEW = 1000
 
 
-def is_scripted(item: ContentItem) -> bool:
-    # Until scripts exist (Phase 3), "scripted" means the item has moved past the idea stage.
-    return item.stage != "idea"
+def is_scripted(item: ContentItem, scripted_ids: frozenset[UUID]) -> bool:
+    # Has a saved script, or was moved past the idea stage on the board.
+    return item.id in scripted_ids or item.stage != "idea"
 
 
 def _kpi(items: list[ContentItem], keep: Callable[[ContentItem], bool], now: datetime) -> Kpi:
@@ -25,11 +26,13 @@ def _kpi(items: list[ContentItem], keep: Callable[[ContentItem], bool], now: dat
     return Kpi(value=len(kept), delta_pct=delta)
 
 
-def content_stats(items: list[ContentItem], now: datetime) -> ContentStats:
+def content_stats(
+    items: list[ContentItem], now: datetime, scripted_ids: frozenset[UUID] = frozenset()
+) -> ContentStats:
     platforms = Counter[str](p for i in items for p in i.target_platforms)
     return ContentStats(
         total=_kpi(items, lambda i: True, now),
-        scripted=_kpi(items, is_scripted, now),
+        scripted=_kpi(items, lambda i: is_scripted(i, scripted_ids), now),
         published=_kpi(items, lambda i: i.stage == "published", now),
         ideas=_kpi(items, lambda i: i.stage == "idea", now),
         by_platform=dict(platforms),

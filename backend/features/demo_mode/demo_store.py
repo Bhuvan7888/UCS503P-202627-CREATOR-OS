@@ -6,6 +6,9 @@ from features.demo_mode.in_memory_repositories import (
     DemoBrandRepo,
     DemoClauseCardRepo,
     DemoContentRepo,
+    DemoKnowledgeRepo,
+    DemoScriptRepo,
+    DemoSuggestionRepo,
     DemoContractRepo,
     DemoCreatorRepo,
     DemoDealRepo,
@@ -33,6 +36,9 @@ class DemoStore:
         self.message_repo = DemoMessageRepo()
         self.workspace_repo = DemoWorkspaceRepo()
         self.content_repo = DemoContentRepo()
+        self.script_repo = DemoScriptRepo()
+        self.knowledge_repo = DemoKnowledgeRepo()
+        self.suggestion_repo = DemoSuggestionRepo()
         self.user_directory = DemoUserDirectory()
         self.clause_card_repo = DemoClauseCardRepo()
         self.escalation_repo = DemoEscalationRepo()

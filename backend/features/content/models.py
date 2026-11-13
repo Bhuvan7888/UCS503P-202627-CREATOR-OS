@@ -59,6 +59,20 @@ class ContentItemUpdate(_ContentFields):
     stage: ContentStage | None = None
 
 
+class ContentScript(BaseModel):
+    """The script of one content item. An item without a saved script reads as an empty body."""
+
+    content_item_id: UUID
+    workspace_id: UUID
+    body: str = ""
+    updated_by: UUID | None = None
+    updated_at: datetime | None = None
+
+
+class ScriptSave(BaseModel):
+    body: str = Field(max_length=50_000)
+
+
 class Kpi(BaseModel):
     value: int
     # change in items created in the last 30 days vs the 30 days before; None when there's no baseline

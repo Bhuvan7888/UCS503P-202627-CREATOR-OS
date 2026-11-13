@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from google import genai
 from google.genai import types
@@ -56,3 +57,19 @@ class GeminiAdapter(LLMPort):
         )
 
         return response.parsed or []
+
+    async def write(self, prompt: str) -> str:
+        response = await self.client.aio.models.generate_content(model=self.model, contents=prompt)
+        return response.text or ""
+
+    async def write_structured(self, prompt: str, schema: Any) -> Any:
+        response = await self.client.aio.models.generate_content(
+            model=self.model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json", response_schema=schema
+            ),
+        )
+        if response.parsed is None:
+            raise ValueError("The AI returned no structured result")
+        return response.parsed

@@ -5,9 +5,10 @@ from features.content.models import (
     ContentItem,
     ContentItemCreate,
     ContentItemUpdate,
+    ContentScript,
     ContentStats,
 )
-from features.content.repository import ContentRepo
+from features.content.repository import ContentRepo, ScriptRepo
 from features.content.rules import MAX_ITEMS_PER_WORKSPACE_VIEW, content_stats
 from features.workspaces import WorkspaceRepo
 from shared.errors import NotFoundError, ValidationError
@@ -17,9 +18,12 @@ _REQUIRED_FIELDS = {"title", "type", "pillar", "hook", "target_platforms", "stag
 
 
 class ContentService:
-    def __init__(self, content_repo: ContentRepo, workspace_repo: WorkspaceRepo):
+    def __init__(
+        self, content_repo: ContentRepo, workspace_repo: WorkspaceRepo, script_repo: ScriptRepo
+    ):
         self.content_repo = content_repo
         self.workspace_repo = workspace_repo
+        self.script_repo = script_repo
 
     async def list(self, workspace_id: UUID) -> list[ContentItem]:
         return await self.content_repo.list_for_workspace(
@@ -27,7 +31,9 @@ class ContentService:
         )
 
     async def stats(self, workspace_id: UUID) -> ContentStats:
-        return content_stats(await self.list(workspace_id), datetime.now(UTC))
+        items = await self.list(workspace_id)
+        scripted = await self.script_repo.scripted_item_ids(workspace_id)
+        return content_stats(items, datetime.now(UTC), scripted)
 
     async def create(
         self, workspace_id: UUID, user_id: UUID, request: ContentItemCreate
@@ -46,12 +52,17 @@ class ContentService:
             )
         )
 
-    async def update(
-        self, workspace_id: UUID, item_id: UUID, request: ContentItemUpdate
-    ) -> ContentItem:
+    async def get(self, workspace_id: UUID, item_id: UUID) -> ContentItem:
+        """An item of this workspace; items of other workspaces are reported as not found."""
         item = await self.content_repo.get(item_id)
         if item is None or item.workspace_id != workspace_id:
             raise NotFoundError("Content item not found")
+        return item
+
+    async def update(
+        self, workspace_id: UUID, item_id: UUID, request: ContentItemUpdate
+    ) -> ContentItem:
+        item = await self.get(workspace_id, item_id)
         changes = request.model_dump(exclude_unset=True)
         cleared = sorted(k for k in _REQUIRED_FIELDS if k in changes and changes[k] is None)
         if cleared:
@@ -62,6 +73,30 @@ class ContentService:
             await self._check_assignee(workspace_id, changes["assignee_user_id"])
         changes["updated_at"] = datetime.now(UTC)
         return await self.content_repo.update(item_id, changes)
+
+    async def get_script(self, workspace_id: UUID, item_id: UUID) -> ContentScript:
+        await self.get(workspace_id, item_id)
+        script = await self.script_repo.get(item_id)
+        return script or ContentScript(content_item_id=item_id, workspace_id=workspace_id)
+
+    async def save_script(
+        self, workspace_id: UUID, item_id: UUID, user_id: UUID, body: str
+    ) -> ContentScript:
+        """Auto-save. The first non-empty script moves an idea to the Scripted column."""
+        item = await self.get(workspace_id, item_id)
+        now = datetime.now(UTC)
+        saved = await self.script_repo.upsert(
+            ContentScript(
+                content_item_id=item_id,
+                workspace_id=workspace_id,
+                body=body,
+                updated_by=user_id,
+                updated_at=now,
+            )
+        )
+        if body.strip() and item.stage == "idea":
+            await self.content_repo.update(item_id, {"stage": "scripted", "updated_at": now})
+        return saved
 
     async def _check_assignee(self, workspace_id: UUID, user_id: UUID | None) -> None:
         if (

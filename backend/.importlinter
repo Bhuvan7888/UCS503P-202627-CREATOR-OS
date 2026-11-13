@@ -29,6 +29,7 @@ containers =
     features.brands
     features.contract_intelligence
     features.content
+    features.ai_assist
     features.contracts
     features.creators
     features.deals

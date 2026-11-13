@@ -657,6 +657,110 @@ export interface paths {
         patch: operations["update_content_workspaces__workspace__content__item_id__patch"];
         trace?: never;
     };
+    "/workspaces/{workspace}/content/{item_id}/script": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Script */
+        get: operations["get_script_workspaces__workspace__content__item_id__script_get"];
+        /** Save Script */
+        put: operations["save_script_workspaces__workspace__content__item_id__script_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/ai-knowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Knowledge */
+        get: operations["get_knowledge_workspaces__workspace__ai_knowledge_get"];
+        /** Save Knowledge */
+        put: operations["save_knowledge_workspaces__workspace__ai_knowledge_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/ai/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate */
+        post: operations["generate_workspaces__workspace__ai_generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/ai/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Suggestions */
+        get: operations["suggestions_workspaces__workspace__ai_suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/ai/suggestions/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh Suggestions */
+        post: operations["refresh_suggestions_workspaces__workspace__ai_suggestions_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/ai/suggestions/{suggestion_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss Suggestion */
+        post: operations["dismiss_suggestion_workspaces__workspace__ai_suggestions__suggestion_id__dismiss_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -702,6 +806,59 @@ export interface components {
             note: string;
             /** Deal Id */
             deal_id?: string | null;
+        };
+        /** AiKnowledge */
+        AiKnowledge: {
+            /**
+             * Brand
+             * @default
+             */
+            brand: string;
+            /**
+             * Audience
+             * @default
+             */
+            audience: string;
+            /**
+             * Strategy
+             * @default
+             */
+            strategy: string;
+            /**
+             * Custom Output Format
+             * @default
+             */
+            custom_output_format: string;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+            /** Updated At */
+            updated_at?: string | null;
+        };
+        /** AiKnowledgeSave */
+        AiKnowledgeSave: {
+            /**
+             * Brand
+             * @default
+             */
+            brand: string;
+            /**
+             * Audience
+             * @default
+             */
+            audience: string;
+            /**
+             * Strategy
+             * @default
+             */
+            strategy: string;
+            /**
+             * Custom Output Format
+             * @default
+             */
+            custom_output_format: string;
         };
         /** AuthSession */
         AuthSession: {
@@ -833,6 +990,35 @@ export interface components {
             /** Raw Text */
             raw_text: string;
         };
+        /**
+         * ContentDraft
+         * @description What the user has typed so far (wizard, item editor or script page).
+         */
+        ContentDraft: {
+            /**
+             * Type
+             * @default long_form_video
+             * @enum {string}
+             */
+            type: "long_form_video" | "post" | "reel" | "story" | "short_form_video";
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Pillar
+             * @default
+             */
+            pillar: string;
+            /**
+             * Hook
+             * @default
+             */
+            hook: string;
+        };
         /** ContentItem */
         ContentItem: {
             /**
@@ -936,6 +1122,31 @@ export interface components {
             assignee_user_id?: string | null;
             /** Stage */
             stage?: ("idea" | "scripted" | "in_production" | "scheduled" | "published") | null;
+        };
+        /**
+         * ContentScript
+         * @description The script of one content item. An item without a saved script reads as an empty body.
+         */
+        ContentScript: {
+            /**
+             * Content Item Id
+             * Format: uuid
+             */
+            content_item_id: string;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+            /**
+             * Body
+             * @default
+             */
+            body: string;
+            /** Updated By */
+            updated_by?: string | null;
+            /** Updated At */
+            updated_at?: string | null;
         };
         /** ContentStats */
         ContentStats: {
@@ -1253,6 +1464,20 @@ export interface components {
             /** Resolution Note */
             resolution_note?: string | null;
         };
+        /** GenerateRequest */
+        GenerateRequest: {
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "title" | "description" | "hook" | "outline";
+            draft: components["schemas"]["ContentDraft"];
+        };
+        /** GenerateResult */
+        GenerateResult: {
+            /** Text */
+            text: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1482,6 +1707,49 @@ export interface components {
         ScanContractRequest: {
             /** Clauses */
             clauses: components["schemas"]["ClauseInput"][];
+        };
+        /** ScriptSave */
+        ScriptSave: {
+            /** Body */
+            body: string;
+        };
+        /** Suggestion */
+        Suggestion: {
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Pillar */
+            pillar: string;
+            /** Hook */
+            hook: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "long_form_video" | "post" | "reel" | "story" | "short_form_video";
+            /** Id */
+            id: string;
+            /**
+             * Dismissed
+             * @default false
+             */
+            dismissed: boolean;
+        };
+        /** SuggestionSet */
+        SuggestionSet: {
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+            /**
+             * Suggestions
+             * @default []
+             */
+            suggestions: components["schemas"]["Suggestion"][];
+            /** Generated At */
+            generated_at?: string | null;
         };
         /** TopBrand */
         TopBrand: {
@@ -3061,6 +3329,285 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContentItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_script_workspaces__workspace__content__item_id__script_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                item_id: string;
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentScript"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_script_workspaces__workspace__content__item_id__script_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                item_id: string;
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScriptSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentScript"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_knowledge_workspaces__workspace__ai_knowledge_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiKnowledge"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_knowledge_workspaces__workspace__ai_knowledge_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiKnowledgeSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiKnowledge"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_workspaces__workspace__ai_generate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GenerateResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    suggestions_workspaces__workspace__ai_suggestions_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionSet"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_suggestions_workspaces__workspace__ai_suggestions_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionSet"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dismiss_suggestion_workspaces__workspace__ai_suggestions__suggestion_id__dismiss_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                suggestion_id: string;
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionSet"];
                 };
             };
             /** @description Validation Error */

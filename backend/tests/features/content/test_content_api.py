@@ -77,3 +77,18 @@ def test_other_creators_cannot_reach_the_pipeline(demo: None) -> None:
         ).status_code
         == 404
     )
+
+
+def test_script_autosave_flow(demo: None) -> None:
+    me = _login("demo.creator2@creatoros.dev")
+    other = _login("demo.creator3@creatoros.dev")
+    ws = client.get("/workspaces", headers=me).json()[0]["slug"]
+    item = client.post(
+        f"/workspaces/{ws}/content", headers=me, json={"title": "s", "pillar": "p", "hook": "h"}
+    ).json()
+    url = f"/workspaces/{ws}/content/{item['id']}/script"
+    assert client.get(url, headers=me).json()["body"] == ""
+    assert client.put(url, headers=me, json={"body": "Intro"}).json()["body"] == "Intro"
+    assert client.get(url, headers=me).json()["body"] == "Intro"
+    assert client.put(url, headers=other, json={"body": "x"}).status_code == 403
+    assert client.put(url, headers=me, json={"body": "x" * 50_001}).status_code == 422

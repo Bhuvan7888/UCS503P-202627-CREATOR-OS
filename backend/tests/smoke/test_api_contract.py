@@ -64,6 +64,14 @@ API_CONTRACT: list[tuple[str, str, str]] = [
     ("POST", "/workspaces/{workspace}/content", "user"),
     ("GET", "/workspaces/{workspace}/content/stats", "user"),
     ("PATCH", "/workspaces/{workspace}/content/{item_id}", "user"),
+    ("GET", "/workspaces/{workspace}/content/{item_id}/script", "user"),
+    ("PUT", "/workspaces/{workspace}/content/{item_id}/script", "user"),
+    ("GET", "/workspaces/{workspace}/ai-knowledge", "user"),
+    ("PUT", "/workspaces/{workspace}/ai-knowledge", "user"),
+    ("POST", "/workspaces/{workspace}/ai/generate", "user"),
+    ("GET", "/workspaces/{workspace}/ai/suggestions", "user"),
+    ("POST", "/workspaces/{workspace}/ai/suggestions/refresh", "user"),
+    ("POST", "/workspaces/{workspace}/ai/suggestions/{suggestion_id}/dismiss", "user"),
 ]
 
 _PLACEHOLDER_ID = "00000000-0000-0000-0000-000000000001"
@@ -83,6 +91,6 @@ def test_route_table_is_unchanged():
 )
 def test_protected_route_rejects_anonymous_request(method: str, path: str):
     url = re.sub(r"\{[^}]+\}", _PLACEHOLDER_ID, path)
-    body: dict[str, object] | None = {} if method in ("POST", "PATCH") else None
+    body: dict[str, object] | None = {} if method in ("POST", "PATCH", "PUT") else None
     response = client.request(method, url, json=body)
     assert response.status_code == 401

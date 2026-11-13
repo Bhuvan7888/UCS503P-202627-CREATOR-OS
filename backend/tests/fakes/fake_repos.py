@@ -277,6 +277,23 @@ class FakeLLMPort:
 
         return [ClauseInput(clause_type="general", raw_text=contract_text)]
 
+    async def write(self, prompt: str) -> str:
+        if self.should_fail:
+            raise Exception("LLM connection failed.")
+        self.last_prompt = prompt
+        return f'"{self.explanation}"'
+
+    async def write_structured(self, prompt: str, schema):
+        if self.should_fail:
+            raise Exception("LLM connection failed.")
+        from features.ai_assist.models import SuggestionDraft
+
+        self.last_prompt = prompt
+        return [
+            SuggestionDraft(title=f"Idea {n}", description="d", pillar="Edu", hook="h", type="reel")
+            for n in range(8)
+        ]
+
 
 class FakeClauseCardRepo:
     def __init__(self):
