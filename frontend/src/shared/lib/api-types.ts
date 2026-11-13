@@ -813,6 +813,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workspaces/{workspace}/crm/deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Deals */
+        get: operations["list_deals_workspaces__workspace__crm_deals_get"];
+        put?: never;
+        /** Create Deal */
+        post: operations["create_deal_workspaces__workspace__crm_deals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/crm/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Deal Stats */
+        get: operations["deal_stats_workspaces__workspace__crm_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/crm/platform-deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platform Deals */
+        get: operations["platform_deals_workspaces__workspace__crm_platform_deals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/crm/deals/{deal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Deal */
+        delete: operations["delete_deal_workspaces__workspace__crm_deals__deal_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Deal */
+        patch: operations["update_deal_workspaces__workspace__crm_deals__deal_id__patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1106,6 +1176,8 @@ export interface components {
             due_date?: string | null;
             /** Assignee User Id */
             assignee_user_id?: string | null;
+            /** Crm Deal Id */
+            crm_deal_id?: string | null;
             /**
              * Stage
              * @default idea
@@ -1154,6 +1226,8 @@ export interface components {
             due_date?: string | null;
             /** Assignee User Id */
             assignee_user_id?: string | null;
+            /** Crm Deal Id */
+            crm_deal_id?: string | null;
         };
         /**
          * ContentItemUpdate
@@ -1180,6 +1254,8 @@ export interface components {
             stage?: ("idea" | "scripted" | "in_production" | "scheduled" | "published") | null;
             /** Scheduled At */
             scheduled_at?: string | null;
+            /** Crm Deal Id */
+            crm_deal_id?: string | null;
         };
         /**
          * ContentScript
@@ -1359,6 +1435,172 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** CrmDeal */
+        CrmDeal: {
+            /** Company Name */
+            company_name: string;
+            /** Contact Name */
+            contact_name?: string | null;
+            /** Contact Email */
+            contact_email?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /**
+             * Deal Size
+             * @default 0
+             */
+            deal_size: number;
+            /**
+             * Currency
+             * @default INR
+             * @enum {string}
+             */
+            currency: "INR" | "USD" | "EUR" | "GBP" | "AED" | "SGD" | "AUD" | "CAD" | "JPY";
+            /**
+             * Status
+             * @default prospect
+             * @enum {string}
+             */
+            status: "prospect" | "pending" | "negotiating" | "signed" | "active" | "completed" | "paid" | "cancelled";
+            /**
+             * Priority
+             * @default medium
+             * @enum {string}
+             */
+            priority: "low" | "medium" | "high";
+            /** Expected Close Date */
+            expected_close_date?: string | null;
+            /** Next Follow Up Date */
+            next_follow_up_date?: string | null;
+            /**
+             * Tags
+             * @default []
+             */
+            tags: string[];
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+            /** Created By */
+            created_by?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** CrmDealCreate */
+        CrmDealCreate: {
+            /** Company Name */
+            company_name: string;
+            /** Contact Name */
+            contact_name?: string | null;
+            /** Contact Email */
+            contact_email?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /**
+             * Deal Size
+             * @default 0
+             */
+            deal_size: number;
+            /**
+             * Currency
+             * @default INR
+             * @enum {string}
+             */
+            currency: "INR" | "USD" | "EUR" | "GBP" | "AED" | "SGD" | "AUD" | "CAD" | "JPY";
+            /**
+             * Status
+             * @default prospect
+             * @enum {string}
+             */
+            status: "prospect" | "pending" | "negotiating" | "signed" | "active" | "completed" | "paid" | "cancelled";
+            /**
+             * Priority
+             * @default medium
+             * @enum {string}
+             */
+            priority: "low" | "medium" | "high";
+            /** Expected Close Date */
+            expected_close_date?: string | null;
+            /** Next Follow Up Date */
+            next_follow_up_date?: string | null;
+            /**
+             * Tags
+             * @default []
+             */
+            tags: string[];
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * CrmDealUpdate
+         * @description Partial update: only fields that are sent change.
+         */
+        CrmDealUpdate: {
+            /** Company Name */
+            company_name?: string | null;
+            /** Contact Name */
+            contact_name?: string | null;
+            /** Contact Email */
+            contact_email?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Deal Size */
+            deal_size?: number | null;
+            /** Currency */
+            currency?: ("INR" | "USD" | "EUR" | "GBP" | "AED" | "SGD" | "AUD" | "CAD" | "JPY") | null;
+            /** Status */
+            status?: ("prospect" | "pending" | "negotiating" | "signed" | "active" | "completed" | "paid" | "cancelled") | null;
+            /** Priority */
+            priority?: ("low" | "medium" | "high") | null;
+            /** Expected Close Date */
+            expected_close_date?: string | null;
+            /** Next Follow Up Date */
+            next_follow_up_date?: string | null;
+            /** Tags */
+            tags?: string[] | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** CrmStats */
+        CrmStats: {
+            /** Total */
+            total: number;
+            /** Value By Currency */
+            value_by_currency: {
+                [key: string]: number;
+            };
+            /** Closed */
+            closed: number;
+            /** Conversion Pct */
+            conversion_pct: number;
+            /** By Status */
+            by_status: {
+                [key: string]: number;
+            };
+            /** Top Brands */
+            top_brands: [
+                string,
+                number
+            ][];
+            /** Follow Ups Due */
+            follow_ups_due: number;
         };
         /** Deal */
         Deal: {
@@ -1741,6 +1983,30 @@ export interface components {
              * @enum {string}
              */
             status: "pending" | "paid" | "overdue";
+        };
+        /**
+         * PlatformDeal
+         * @description A brand deal made with this workspace's creator on Creator OS (read-only in the CRM).
+         */
+        PlatformDeal: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Brand Name */
+            brand_name: string;
+            /** Campaign Name */
+            campaign_name: string;
+            /** Status */
+            status: string;
+            /** Value Inr */
+            value_inr?: number | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** PublishRequest */
         PublishRequest: {
@@ -3870,6 +4136,212 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublishRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_deals_workspaces__workspace__crm_deals_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmDeal"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_deal_workspaces__workspace__crm_deals_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrmDealCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmDeal"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deal_stats_workspaces__workspace__crm_stats_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmStats"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    platform_deals_workspaces__workspace__crm_platform_deals_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformDeal"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_deal_workspaces__workspace__crm_deals__deal_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                deal_id: string;
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_deal_workspaces__workspace__crm_deals__deal_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                deal_id: string;
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrmDealUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmDeal"];
                 };
             };
             /** @description Validation Error */

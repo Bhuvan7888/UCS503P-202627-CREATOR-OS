@@ -8,6 +8,7 @@ from features.content import ContentService
 from features.content.models import ContentItemCreate
 from features.demo_mode.in_memory_repositories import (
     DemoContentRepo,
+    DemoCrmDealRepo,
     DemoPublishRequestRepo,
     DemoScriptRepo,
     DemoWorkspaceRepo,
@@ -21,7 +22,7 @@ async def _setup():
     ws_repo = DemoWorkspaceRepo()
     owner = uuid4()
     ws = await WorkspaceService(ws_repo, FakeCreatorRepo()).ensure_primary_workspace(owner, None)
-    content = ContentService(DemoContentRepo(), ws_repo, DemoScriptRepo())
+    content = ContentService(DemoContentRepo(), ws_repo, DemoScriptRepo(), DemoCrmDealRepo())
     item = await content.create(ws.id, owner, ContentItemCreate(title="t", pillar="p", hook="h"))
     return ApprovalService(DemoPublishRequestRepo(), content), content, ws, owner, item
 

@@ -9,6 +9,7 @@ from features.brands import Brand, BrandMember
 from features.ai_assist.models import AiKnowledge, SuggestionSet
 from features.approvals.models import PublishRequest
 from features.content.models import ContentItem, ContentScript
+from features.crm.models import CrmDeal
 from features.contract_intelligence import ClauseCardOut, EscalationOut
 from features.contracts import Contract
 from features.creators import Creator
@@ -612,3 +613,26 @@ class DemoPublishRequestRepo:
             return None
         self.data[id] = current.model_copy(update=changes)
         return self.data[id]
+
+
+class DemoCrmDealRepo:
+    def __init__(self):
+        self.data: dict[UUID, CrmDeal] = {}
+
+    async def create(self, deal: CrmDeal) -> CrmDeal:
+        self.data[deal.id] = deal
+        return deal
+
+    async def get(self, id: UUID) -> CrmDeal | None:
+        return self.data.get(id)
+
+    async def list_for_workspace(self, workspace_id: UUID, limit: int) -> list[CrmDeal]:
+        mine = [d for d in self.data.values() if d.workspace_id == workspace_id]
+        return sorted(mine, key=lambda d: d.updated_at, reverse=True)[:limit]
+
+    async def update(self, id: UUID, changes: dict[str, Any]) -> CrmDeal:
+        self.data[id] = self.data[id].model_copy(update=changes)
+        return self.data[id]
+
+    async def delete(self, id: UUID) -> None:
+        self.data.pop(id, None)

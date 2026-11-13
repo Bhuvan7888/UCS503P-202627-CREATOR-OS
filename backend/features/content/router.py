@@ -12,6 +12,7 @@ from features.content.models import (
 )
 from features.content.service import ContentService
 from features.content.supabase_repository import SupabaseContentRepo, SupabaseScriptRepo
+from features.crm.supabase_repository import SupabaseCrmDealRepo
 from features.workspaces.dependencies import WorkspaceContext, require_workspace_member
 from features.workspaces.supabase_repository import SupabaseWorkspaceRepo
 from shared.errors import NotFoundError, ValidationError
@@ -24,7 +25,10 @@ router = APIRouter(prefix="/workspaces/{workspace}/content", tags=["content"])
 def get_content_service() -> ContentService:
     client = get_supabase_client(service_role=True)
     return ContentService(
-        SupabaseContentRepo(client), SupabaseWorkspaceRepo(client), SupabaseScriptRepo(client)
+        SupabaseContentRepo(client),
+        SupabaseWorkspaceRepo(client),
+        SupabaseScriptRepo(client),
+        SupabaseCrmDealRepo(client),
     )
 
 

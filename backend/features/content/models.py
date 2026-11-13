@@ -21,6 +21,8 @@ class ContentItem(BaseModel):
     target_platforms: list[Platform] = []
     due_date: date | None = None
     assignee_user_id: UUID | None = None
+    # the Brand CRM deal this content is made for ("Deal Association")
+    crm_deal_id: UUID | None = None
     stage: ContentStage = "idea"
     # when it is planned to go live (Calendar) and when it was marked published
     scheduled_at: datetime | None = None
@@ -46,6 +48,7 @@ class ContentItemCreate(_ContentFields):
     target_platforms: list[Platform] = []
     due_date: date | None = None
     assignee_user_id: UUID | None = None
+    crm_deal_id: UUID | None = None
 
 
 class ContentItemUpdate(_ContentFields):
@@ -61,6 +64,7 @@ class ContentItemUpdate(_ContentFields):
     assignee_user_id: UUID | None = None
     stage: ContentStage | None = None
     scheduled_at: datetime | None = None
+    crm_deal_id: UUID | None = None
 
 
 class ContentScript(BaseModel):

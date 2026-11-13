@@ -11,6 +11,7 @@ from features.demo_mode.in_memory_repositories import (
     DemoScriptRepo,
     DemoSuggestionRepo,
     DemoContractRepo,
+    DemoCrmDealRepo,
     DemoCreatorRepo,
     DemoDealRepo,
     DemoDeliverableRepo,
@@ -41,6 +42,7 @@ class DemoStore:
         self.knowledge_repo = DemoKnowledgeRepo()
         self.suggestion_repo = DemoSuggestionRepo()
         self.publish_request_repo = DemoPublishRequestRepo()
+        self.crm_deal_repo = DemoCrmDealRepo()
         self.user_directory = DemoUserDirectory()
         self.clause_card_repo = DemoClauseCardRepo()
         self.escalation_repo = DemoEscalationRepo()

@@ -10,6 +10,7 @@ from features.content.models import (
 )
 from features.content.repository import ContentRepo, ScriptRepo
 from features.content.rules import MAX_ITEMS_PER_WORKSPACE_VIEW, apply_stage_rules, content_stats
+from features.crm import CrmDealRepo
 from features.workspaces import WorkspaceRepo
 from shared.errors import NotFoundError, ValidationError
 
@@ -19,11 +20,16 @@ _REQUIRED_FIELDS = {"title", "type", "pillar", "hook", "target_platforms", "stag
 
 class ContentService:
     def __init__(
-        self, content_repo: ContentRepo, workspace_repo: WorkspaceRepo, script_repo: ScriptRepo
+        self,
+        content_repo: ContentRepo,
+        workspace_repo: WorkspaceRepo,
+        script_repo: ScriptRepo,
+        crm_repo: CrmDealRepo,
     ):
         self.content_repo = content_repo
         self.workspace_repo = workspace_repo
         self.script_repo = script_repo
+        self.crm_repo = crm_repo
 
     async def list(self, workspace_id: UUID) -> list[ContentItem]:
         return await self.content_repo.list_for_workspace(
@@ -39,6 +45,7 @@ class ContentService:
         self, workspace_id: UUID, user_id: UUID, request: ContentItemCreate
     ) -> ContentItem:
         await self._check_assignee(workspace_id, request.assignee_user_id)
+        await self._check_deal(workspace_id, request.crm_deal_id)
         now = datetime.now(UTC)
         return await self.content_repo.create(
             ContentItem(
@@ -71,6 +78,7 @@ class ContentService:
             return item
         if changes.get("assignee_user_id") is not None:
             await self._check_assignee(workspace_id, changes["assignee_user_id"])
+        await self._check_deal(workspace_id, changes.get("crm_deal_id"))
         now = datetime.now(UTC)
         changes = apply_stage_rules(item, changes, now)
         changes["updated_at"] = now
@@ -102,6 +110,13 @@ class ContentService:
         if body.strip() and item.stage == "idea":
             await self.content_repo.update(item_id, {"stage": "scripted", "updated_at": now})
         return saved
+
+    async def _check_deal(self, workspace_id: UUID, deal_id: UUID | None) -> None:
+        if deal_id is None:
+            return
+        deal = await self.crm_repo.get(deal_id)
+        if deal is None or deal.workspace_id != workspace_id:
+            raise ValidationError("The deal is not in this workspace")
 
     async def _check_assignee(self, workspace_id: UUID, user_id: UUID | None) -> None:
         if (

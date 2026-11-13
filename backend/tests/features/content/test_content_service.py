@@ -6,6 +6,7 @@ from features.content import ContentService
 from features.content.models import ContentItemCreate, ContentItemUpdate
 from features.demo_mode.in_memory_repositories import (
     DemoContentRepo,
+    DemoCrmDealRepo,
     DemoScriptRepo,
     DemoWorkspaceRepo,
 )
@@ -20,7 +21,11 @@ async def _setup():
     ws_repo = DemoWorkspaceRepo()
     owner = uuid4()
     ws = await WorkspaceService(ws_repo, FakeCreatorRepo()).ensure_primary_workspace(owner, None)
-    return ContentService(DemoContentRepo(), ws_repo, DemoScriptRepo()), ws, owner
+    return (
+        ContentService(DemoContentRepo(), ws_repo, DemoScriptRepo(), DemoCrmDealRepo()),
+        ws,
+        owner,
+    )
 
 
 @pytest.mark.asyncio
