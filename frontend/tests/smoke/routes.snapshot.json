@@ -26,5 +26,7 @@
   "/dashboard/[workspace]/approvals",
   "/dashboard/[workspace]/crm",
   "/dashboard/[workspace]/contracts",
-  "/dashboard/[workspace]/contracts/[id]"
+  "/dashboard/[workspace]/contracts/[id]",
+  "/invite/[token]",
+  "/dashboard/[workspace]/settings/workspace"
 ]

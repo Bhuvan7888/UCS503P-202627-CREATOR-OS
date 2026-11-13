@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Settings } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import type { components } from "@/shared/lib/api-types";
-import { PageHeader, useWorkspace } from "@/features/workspaces";
+import { SettingsHeader, useWorkspace } from "@/features/workspaces";
 import styles from "./ai-assist.module.css";
 
 type Knowledge = components["schemas"]["AiKnowledgeSave"];
@@ -30,7 +29,7 @@ const FIELDS: { key: keyof Knowledge; label: string; hint: string }[] = [
 
 /** Settings › AI knowledge: what every AI feature in this workspace knows about the creator. */
 export default function AiKnowledgePage() {
-  const { workspace, base } = useWorkspace();
+  const { workspace } = useWorkspace();
   const [form, setForm] = useState<Knowledge | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const path = { workspace: workspace.slug };
@@ -58,16 +57,7 @@ export default function AiKnowledgePage() {
 
   return (
     <>
-      <PageHeader
-        base={base}
-        icon={Settings}
-        title="Settings"
-        crumb="Settings › AI knowledge"
-        subtitle="Manage how Creator OS works for this workspace"
-      />
-      <nav className={styles.tabs} aria-label="Settings sections">
-        <span className={styles.tabOn}>AI knowledge</span>
-      </nav>
+      <SettingsHeader tab="AI knowledge" />
       {form === null ? (
         <p className={styles.muted}>Loading…</p>
       ) : (

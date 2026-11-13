@@ -40,7 +40,7 @@ brand side stays as it is.
 | 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | done (verified on live DB + live Gemini) |
 | 4 | Calendar + Approvals (publish state machine without platform posting) | done (verified on live DB) |
 | 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | done (verified on live DB) |
-| 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | next |
+| 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | 6a done (team, permissions, audit) — owner: run migration 006, set `APP_URL`; 6b next (API keys, webhooks) |
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | pending |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
 
@@ -182,23 +182,51 @@ Phase 5 notes
   to fire brand-only API calls before the redirect).
 - Skipped from the spec table: bulk-select checkboxes and the column-visibility toggle.
 
-### Phase 6 plan — pick up here (Workspace & team)
+### Phase 6 (6a done 2026-11-17; 6b pick up here)
 Read spec §4.12 Settings (Workspace, Members, Roles, API keys, Webhooks, Audit log) and workflows 5.3–5.5 first.
 Backend
-1. Migration 006: `workspace_invites` (email, role, token hash, expires, accepted_at), `api_keys` (name, prefix,
+1. ✅ Migration 006: `workspace_invites` (email, role, token hash, expires, accepted_at), `api_keys` (name, prefix,
    hash, scopes, approval_required, last_used_at, revoked_at), `webhooks` (url, secret, events, active),
    `audit_log` (actor, action, target, allowed/denied, at) — RLS on.
-2. Members: invite by email (Resend), accept link → membership (invited users have no creator profile; they use
+2. ✅ Members: invite by email (Resend), accept link → membership (invited users have no creator profile; they use
    `get_current_user_id`), change role, remove; owner can't be removed; 2 seats per role (spec).
-3. Roles → permissions map in `workspaces/rules.py` (owner all; script_writer: content + scripts; video_editor:
+3. ✅ Roles → permissions map in `workspaces/rules.py` (owner all; script_writer: content + scripts; video_editor:
    content + calendar; brand_manager: CRM + approvals); enforce with a `require_permission(...)` dependency on every
    workspace route; hide sidebar items the role can't open.
 4. API keys (hashed, shown once) with scopes; agent requests create publish requests with `source='agent'`; no key can
    approve. Webhooks with HMAC-signed payloads for content.stage_changed, publish.* events; audit log writes.
 Frontend
-5. Settings tabs: Workspace (rename), Members, Roles, API keys, Webhooks, Audit log; invite accept page.
+5. ✅ Settings tabs: Workspace (rename), Members, Roles, API keys, Webhooks, Audit log; invite accept page.
 Verify: permission matrix tests per role and endpoint, invite flow e2e, live DB after migration 006.
+Phase 6a notes
+- **Owner actions pending:** (1) run `supabase/migrations/20261117000000_team_and_audit.sql` before deploying;
+  (2) set `APP_URL` (root `.env` and the deployed backend) to the public frontend address, e.g.
+  `https://ucs-503-p-202627-creator-os.vercel.app` — invitation emails link there; (3) for invitation emails to reach
+  anyone but you, verify a sending domain in Resend and change the sender in `shared/email/resend_adapter.py`
+  (today `onboarding@resend.dev` only delivers to the Resend account owner). Until then copy the link from Members.
+- Permission defaults (5/6/8 of 11) are my reading of the spec's role descriptions; the owner can change them.
+- Contracts (creator workspace) are owner-only: they come from the owner's own creator profile.
+- Invited people sign in or sign up as a creator (email or Google); they also get their own primary workspace.
+
+Phase 6b plan — pick up here (API keys + webhooks)
+1. Migration 007: `api_keys` (workspace, name, prefix, sha256 hash, scopes text[], created_by, created_at, last_used_at,
+   revoked_at), `webhook_endpoints` (workspace, https url, events text[] (empty = all), secret, active),
+   `webhook_deliveries` (endpoint, event, payload, attempts, next_attempt_at, status) — RLS on.
+2. Key auth: `Authorization: Bearer cos_<prefix>_<secret>` resolves to a key (not a user) → a `WorkspaceContext` with
+   scope-derived permissions; scopes content:read/write, publish:write, channels:read, analytics:read,
+   webhooks:write, owner. Keys can never approve, issue keys, invite members or delete the workspace. Audit every key
+   call under the key's name. Agent publish requests → `publish_requests.source='agent'`, `agent_name`.
+3. Webhooks: events publish.pending_approval / approved / rejected, content.stage_changed (publish.succeeded/failed and
+   batch.completed need platform posting — not applicable); HMAC-SHA256 signature header over the raw body;
+   retries with backoff for ~15 h (a background loop in the API process; note the multi-instance caveat).
+4. Settings tabs: API keys (create → secret shown once, revoke) and Webhooks (add, send test, delete).
+Verify: scope matrix tests, signature test, retry schedule test, e2e for both tabs, live DB after migration 007.
 ### Phase log
+- **2026-11-17 — Phase 6a (team, permissions, audit)**: migration 006; invites (hashed tokens, seats, email-matched
+  accept), 11 permissions enforced on every workspace route (refusals audited), owner-only role management, audit log
+  ("Opened the workspace" throttled to 30 min); Settings › Workspace (General, Members, Roles, Audit log), invite page,
+  permission-aware sidebar + "no access" panel; email port moved to `shared/email`, never emails in demo mode. Checks:
+  187 backend tests, contracts kept, mypy 113, tsc/eslint/prettier, build, smoke 30/30, e2e 9/9 (fresh backend, twice).
 - **2026-11-16 — clause review for brands and creators; Phase 5 verified live**: shared `ClauseReview` component;
   brands now see flagged clauses (previously the clean contract only); creator workspace gets Contracts (list of
   contracts from their Creator OS deals) + review. Live: CRM CRUD, per-currency totals, deal link (cross-workspace

@@ -106,9 +106,8 @@ Rule-based red-flag clause scanning, LLM clause explanations (with canned fallba
   - `service.py`, `clause_explanation_service.py`
   - `red_flag_rules.py` (including `DEFAULT_FLAG_EXPLANATIONS`), `escalation_rules.py`
   - `models.py`
-  - `email_port.py` + `resend_email_adapter.py`
   - `repository.py`, `supabase_repository.py`
-- **Shared code used:** `shared/llm/*`
+- **Shared code used:** `shared/llm/*`, `shared/email/*` (escalation emails)
 - **Depends on:** `auth`, `contracts`
 
 ## `deliverables`
@@ -135,9 +134,20 @@ owned workspaces (fair use, the app is free). URLs accept the slug (`ws-1a2b3c4d
   - `/dashboard` → `WorkspaceRedirectPage.tsx` (opens the primary workspace; brands go to `/brand`)
   - `/dashboard/[workspace]/*` layout → `WorkspaceShell.tsx`: sidebar (workspace switcher with "new workspace", nav groups, user menu with Sign out), top bar (sidebar toggle saved in localStorage, ⌘K)
 - **Frontend internals:** `components/CommandPalette.tsx` (quick actions + content search), `components/PageHeader.tsx` (breadcrumb, icon tile, title, actions), `constants/nav.ts` (only built pages are listed), `hooks/useWorkspace.ts` (active workspace context); `index.ts` exports `PageHeader`, `useWorkspace`
-- **API:** `GET /workspaces`, `POST /workspaces`, `GET /workspaces/{workspace}`, `GET /workspaces/{workspace}/members`
-- **Backend:** `router.py`, `service.py` (`WorkspaceService`), `rules.py` (slug, cap), `dependencies.py` (`require_workspace_member` → `WorkspaceContext`), `models.py`, `repository.py` (`WorkspaceRepo`, `UserDirectory`), `supabase_repository.py`
-- **Database:** `supabase/migrations/20261113000000_creator_workspaces.sql`
+- **Team (Phase 6a):** 11 permissions (`rules.PERMISSIONS`); the owner has all; Script Writer / Video Editor / Brand Manager
+  default to 5 / 6 / 8 and the owner can change them per workspace. `require_permission(...)` guards every workspace
+  route and audits refusals; the shell hides pages a role can't open and shows a "no access" panel. Invites: 2 seats per
+  role, hashed one-time tokens valid 7 days, email must match on accept; email is best effort (Resend) and the link is
+  always shown to copy. Changing roles, removing members and editing permissions are owner-only.
+- **More pages:** `/dashboard/[workspace]/settings/workspace` → `WorkspaceSettingsPage.tsx` (General, Members, Roles,
+  Audit log); `/invite/[token]` → `InvitePage.tsx` (a pending invite survives sign-in via `PENDING_INVITE_KEY`);
+  `components/SettingsHeader.tsx` (Settings tab bar, also used by AI knowledge)
+- **API:** `GET /workspaces`, `POST /workspaces`, `GET/PATCH /workspaces/{workspace}` (GET records "Opened the workspace"),
+  `GET /workspaces/{workspace}/members`, `PATCH/DELETE …/members/{user_id}`, `GET/POST …/invites`,
+  `DELETE …/invites/{invite_id}`, `GET …/roles`, `PUT …/roles/{role}`, `GET …/audit-log`, `GET /invites/{token}`,
+  `POST /invites/{token}/accept`
+- **Backend:** `router.py`, `service.py` (`WorkspaceService`, `TeamService`), `rules.py` (slug, cap, permissions, seats, invite tokens), `dependencies.py` (`require_workspace_member` → `WorkspaceContext`, `require_permission`), `models.py`, `repository.py` (`WorkspaceRepo`, `UserDirectory`), `supabase_repository.py`
+- **Database:** `supabase/migrations/20261113000000_creator_workspaces.sql`, `20261117000000_team_and_audit.sql` (`workspace_invites`, `workspace_role_permissions`, `audit_log`)
 - **Depends on:** `auth` (`get_current_user_id`), `creators`
 
 ## `content`

@@ -18,37 +18,59 @@ export interface NavItem {
   icon: LucideIcon;
   /** Also active on deeper paths (e.g. /settings/ai-knowledge). */
   prefix?: boolean;
+  /** Shown when the caller's role has any of these permissions (the API enforces the same rules). */
+  anyOf?: string[];
+  /** Only the workspace owner (pages backed by the owner's own creator profile). */
+  ownerOnly?: boolean;
 }
 
-/** Sidebar groups. Only pages that exist are listed; later phases add team, notifications, etc. */
+/** Sidebar groups. Only pages that exist are listed; later phases add notifications, etc. */
 export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
-  { label: "Overview", items: [{ label: "Home", path: "", icon: House }] },
+  {
+    label: "Overview",
+    items: [{ label: "Home", path: "", icon: House, anyOf: ["view_dashboard"] }],
+  },
   {
     label: "Plan",
     items: [
-      { label: "Content", path: "/kanban", icon: KanbanSquare },
-      { label: "Calendar", path: "/schedule", icon: CalendarDays },
-      { label: "Approvals", path: "/approvals", icon: Inbox },
+      { label: "Content", path: "/kanban", icon: KanbanSquare, anyOf: ["view_kanban"] },
+      { label: "Calendar", path: "/schedule", icon: CalendarDays, anyOf: ["view_schedule"] },
+      { label: "Approvals", path: "/approvals", icon: Inbox, anyOf: ["view_schedule"] },
     ],
   },
   {
     label: "Create",
     items: [
-      { label: "Scripts", path: "/scripts", icon: PenLine },
-      { label: "AI Assistant", path: "/ai-suggestions", icon: Sparkles },
+      { label: "Scripts", path: "/scripts", icon: PenLine, anyOf: ["view_scripts"] },
+      { label: "AI Assistant", path: "/ai-suggestions", icon: Sparkles, anyOf: ["create_content"] },
     ],
   },
   {
     label: "Monetize",
     items: [
-      { label: "Brand CRM", path: "/crm", icon: Handshake },
-      { label: "Contracts", path: "/contracts", icon: ShieldCheck, prefix: true },
+      { label: "Brand CRM", path: "/crm", icon: Handshake, anyOf: ["view_brand_deals"] },
+      { label: "Contracts", path: "/contracts", icon: ShieldCheck, prefix: true, ownerOnly: true },
     ],
   },
   {
     label: "Workspace",
-    items: [{ label: "Settings", path: "/settings/ai-knowledge", icon: Settings, prefix: true }],
+    items: [
+      {
+        label: "Settings",
+        path: "/settings/workspace",
+        icon: Settings,
+        prefix: true,
+        anyOf: ["view_settings", "manage_workspace", "invite_members"],
+      },
+    ],
   },
 ];
 
 export const SIDEBAR_COLLAPSED_KEY = "creatoros_sidebar_collapsed";
+/** An invitation token remembered across sign-in (InvitePage → /dashboard → back to the invite). */
+export const PENDING_INVITE_KEY = "creatoros_pending_invite";
+
+export function canSee(item: NavItem, role: string, permissions: string[]): boolean {
+  if (item.ownerOnly) return role === "owner";
+  return !item.anyOf || item.anyOf.some((p) => permissions.includes(p));
+}

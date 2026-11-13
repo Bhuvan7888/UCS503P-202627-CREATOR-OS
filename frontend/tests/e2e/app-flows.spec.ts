@@ -224,7 +224,7 @@ test("creator: workspace home, add-content wizard, pipeline board and navigation
   const card = page.locator("article", { hasText: title });
   const column = (name: string) => page.getByRole("region", { name, exact: true });
   await expect(column("Idea").locator("article", { hasText: title })).toBeVisible();
-  await card.dragTo(column("Scripted"));
+  await card.dragTo(column("Scripted").locator("header")); // the header is always on screen
   await expect(column("Scripted").locator("article", { hasText: title })).toBeVisible();
   await card.getByRole("combobox").selectOption("published");
   await expect(column("Published").locator("article", { hasText: title })).toBeVisible();
@@ -510,6 +510,57 @@ test("creator: contracts with the red-flag clause review in the workspace", asyn
   await page.getByRole("link", { name: /Back to contracts/ }).click();
   await page.waitForURL(`${WEB}${base}/contracts`);
   expect(problems).toEqual([]);
+});
+
+test("team: invite a script writer, permissions shape their workspace, owner sees the audit log", async ({
+  browser,
+}) => {
+  const ownerPage = await (await browser.newContext()).newPage();
+  const ownerProblems = watchForProblems(ownerPage);
+  await loginWithDemo(ownerPage, "creator", "2. Rohan Mehta (Mamaearth)");
+  const base = new URL(ownerPage.url()).pathname;
+
+  // Owner invites the script writer (demo mode never emails: the link is shown to copy)
+  await ownerPage.getByRole("link", { name: "Settings", exact: true }).click();
+  await ownerPage.waitForURL(`${WEB}${base}/settings/workspace`);
+  await ownerPage.getByRole("tab", { name: "Members" }).click();
+  await ownerPage.getByPlaceholder("colleague@company.com").fill("demo.creator5@creatoros.dev");
+  await ownerPage.getByRole("combobox").first().selectOption("script_writer");
+  await ownerPage.getByRole("button", { name: "Send invite" }).click();
+  const link = await ownerPage.locator("code", { hasText: "/invite/" }).innerText();
+
+  // The invitee signs in, opens the link and joins
+  const writerPage = await (await browser.newContext()).newPage();
+  const writerProblems = watchForProblems(writerPage);
+  await writerPage.goto(link);
+  await writerPage.getByRole("link", { name: "Sign in" }).click();
+  await writerPage.getByRole("button", { name: "5. Ishita Rao (boAt)" }).click();
+  await writerPage.getByRole("button", { name: "Sign in", exact: true }).click();
+  await writerPage.waitForURL(/\/invite\//); // the pending invite brings them back
+  await expect(writerPage.getByRole("heading", { name: /Join / })).toBeVisible();
+  await writerPage.getByRole("button", { name: "Accept invitation" }).click();
+  await writerPage.waitForURL(`${WEB}${base}`);
+
+  // The sidebar only shows what a script writer may open; the API refuses the rest
+  const sidebar = writerPage.getByRole("complementary", { name: "Sidebar" });
+  await expect(sidebar.getByRole("link", { name: "Scripts" })).toBeVisible();
+  for (const hidden of ["Brand CRM", "AI Assistant", "Contracts", "Settings"])
+    await expect(sidebar.getByRole("link", { name: hidden, exact: true })).toHaveCount(0);
+  await writerPage.goto(`${WEB}${base}/crm`);
+  await expect(writerPage.getByText("You don't have access to this page")).toBeVisible();
+
+  // Owner: seats and audit log reflect it; then removes the member
+  await ownerPage.getByRole("tab", { name: "Roles" }).click();
+  await expect(ownerPage.getByText("1 of 2 used").first()).toBeVisible();
+  await ownerPage.getByRole("tab", { name: "Audit log" }).click();
+  await expect(ownerPage.getByRole("cell", { name: /Joined the workspace/ }).first()).toBeVisible();
+  await ownerPage.getByRole("tab", { name: "Members" }).click();
+  ownerPage.once("dialog", (d) => d.accept());
+  await ownerPage.getByRole("button", { name: /Remove Ishita/ }).click();
+  await expect(ownerPage.getByText(/was removed/)).toBeVisible();
+
+  expect(ownerProblems).toEqual([]);
+  expect(writerProblems).toEqual([]);
 });
 
 test("unknown URLs show the 404 page", async ({ page }) => {

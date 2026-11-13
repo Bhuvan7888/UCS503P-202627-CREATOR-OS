@@ -136,22 +136,7 @@
   margin: 2px 0 8px;
 }
 
-/* Settings */
-.tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.tabOn {
-  padding: 8px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  border-bottom: 2px solid var(--color-ink);
-  margin-bottom: -1px;
-}
-
+/* Settings › AI knowledge */
 .knowledge {
   display: flex;
   flex-direction: column;

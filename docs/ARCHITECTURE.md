@@ -25,6 +25,7 @@ backend/
 │   └── *_adapter.py        other external adapters (storage, email) (optional)
 ├── shared/                 cross-cutting code used by 2+ features; never imports features/
 │   ├── config.py  errors.py  http_errors.py  pagination.py
+│   ├── email/              email port + Resend adapter (escalations, invitations)
 │   ├── supabase_client.py  supabase_query.py
 │   └── llm/                LLM port + Gemini adapter
 ├── scripts/                dev scripts: `uv run python -m scripts.<name>`
@@ -128,6 +129,10 @@ A file belongs in `shared/` **only** when two or more features use it. Otherwise
   (`features/deals/dependencies.py`) or `load_accessible_contract(contract_id, actor)` (`features/contracts/dependencies.py`).
   Child records (deliverables, payments, escalations) are loaded first and checked through their parent —
   never trust a `deal_id` / `contract_id` sent by the client. The rule itself is `deals.can_access_deal`.
+- Workspace routes that read or change data **must** use `require_permission("<permission>", ...)` (any-of) from
+  `features/workspaces/dependencies.py`; refusals are written to the audit log. Add the matching `anyOf` to the page's
+  nav entry in `features/workspaces/constants/nav.ts` so the sidebar and the "no access" panel agree with the API.
+  Owner-only actions (roles, removing members, role permissions) are checked in `TeamService`.
 - Anything inside a workspace **must** depend on `require_workspace_member` (`features/workspaces/dependencies.py`), which
   resolves the slug or id and returns 404 (unknown) / 403 (not a member). Look child records up **within** that
   workspace (`ContentService.update` returns 404 for an item of another workspace). Workspace routes use

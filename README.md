@@ -13,7 +13,7 @@ Creator OS has two sides, free for everyone:
 | Feature | What it does | Main URLs |
 |---|---|---|
 | `auth` | Brand and creator sign-up and login (creators: email/password or Google), sessions, demo accounts | `/brand/login`, `/creator/login`, `/brand/signup`, `/creator/signup`, `/auth/callback` |
-| `workspaces` | Creator workspace shell: switcher, sidebar, ⌘K palette | `/dashboard`, `/dashboard/[workspace]` |
+| `workspaces` | Creator workspace shell (switcher, sidebar, ⌘K), team: invites, roles and permissions, audit log | `/dashboard`, `/dashboard/[workspace]`, `/dashboard/[workspace]/settings/workspace`, `/invite/[token]` |
 | `content` | Home KPIs, Content Pipeline kanban, Add Content wizard, item editor, Scripts with auto-save, Calendar | `/dashboard/[workspace]`, `/dashboard/[workspace]/kanban`, `/dashboard/[workspace]/scripts` |
 | `contract-intelligence` (creator side) | Contracts from brand deals with the red-flag clause review | `/dashboard/[workspace]/contracts` |
 | `crm` | Brand CRM: own deals, KPIs, New Deal wizard, Creator OS brand deals | `/dashboard/[workspace]/crm` |

@@ -7,7 +7,7 @@ import { Check, ChevronsUpDown, LogOut, PanelLeft, Plus, Search } from "lucide-r
 import client from "@/shared/lib/api-client";
 import { clearSession, loadSession, type AuthSession } from "@/shared/lib/session";
 import { CommandPalette } from "./components/CommandPalette";
-import { NAV_GROUPS, SIDEBAR_COLLAPSED_KEY } from "./constants/nav";
+import { NAV_GROUPS, SIDEBAR_COLLAPSED_KEY, canSee } from "./constants/nav";
 import { WorkspaceContext, type MyWorkspace } from "./hooks/useWorkspace";
 import styles from "./workspace-shell.module.css";
 
@@ -53,6 +53,13 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
     /* eslint-enable react-hooks/set-state-in-effect */
     load();
   }, [load, router]);
+
+  const openedId = state.kind === "ready" ? state.workspace.id : null;
+  useEffect(() => {
+    // records "Opened the workspace" in the audit log (the API throttles repeats)
+    if (openedId)
+      client.GET("/workspaces/{workspace}", { params: { path: { workspace: openedId } } });
+  }, [openedId]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -110,6 +117,16 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
   const { workspace, all } = state;
   const base = `/dashboard/${workspace.slug}`;
   const name = session.display_name ?? session.brand_name ?? "Account";
+  // a page the caller's role can't open: say so instead of rendering it (the API refuses it anyway)
+  const current = NAV_GROUPS.flatMap((g) => g.items).find((i) => {
+    const href = `${base}${i.path}`;
+    return (
+      pathname === href ||
+      (i.path !== "" && pathname.startsWith(`${href.split("/").slice(0, 4).join("/")}/`))
+    );
+  });
+  const blocked =
+    current !== undefined && !canSee(current, workspace.role, workspace.permissions ?? []);
 
   return (
     <WorkspaceContext.Provider value={{ workspace, base }}>
@@ -169,26 +186,31 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
           </div>
 
           <nav className={styles.nav}>
-            {NAV_GROUPS.map((group) => (
-              <div key={group.label} className={styles.group}>
-                <p className={styles.groupLabel}>{group.label}</p>
-                {group.items.map((item) => {
-                  const href = `${base}${item.path}`;
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.label}
-                      href={href}
-                      className={`${styles.navItem} ${pathname === href || (item.prefix && pathname.startsWith(href.split("/").slice(0, 4).join("/"))) ? styles.on : ""}`}
-                      title={item.label}
-                    >
-                      <Icon size={16} />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
+            {NAV_GROUPS.map((group) => {
+              const items = group.items.filter((i) =>
+                canSee(i, workspace.role, workspace.permissions ?? []),
+              );
+              return items.length === 0 ? null : (
+                <div key={group.label} className={styles.group}>
+                  <p className={styles.groupLabel}>{group.label}</p>
+                  {items.map((item) => {
+                    const href = `${base}${item.path}`;
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.label}
+                        href={href}
+                        className={`${styles.navItem} ${pathname === href || (item.prefix && pathname.startsWith(href.split("/").slice(0, 4).join("/"))) ? styles.on : ""}`}
+                        title={item.label}
+                      >
+                        <Icon size={16} />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
           </nav>
 
           <div className={styles.popAnchor}>
@@ -244,7 +266,20 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
             </button>
           </div>
           <main className={styles.panel} onClick={() => menu && setMenu(null)}>
-            {children}
+            {blocked ? (
+              <div className={styles.noAccess} role="status">
+                <h2>You don&apos;t have access to this page</h2>
+                <p>
+                  Your role in {workspace.name} doesn&apos;t include it. Ask the workspace owner if
+                  you need it.
+                </p>
+                <Link href={base} className="btn btn-outline">
+                  Back to Home
+                </Link>
+              </div>
+            ) : (
+              children
+            )}
           </main>
         </div>
       </div>
