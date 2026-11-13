@@ -5,13 +5,11 @@ import { PackageOpen } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
-import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
 import { DELIVERABLE_STATUS_LABEL } from "./constants/deliverable-status";
 import {
   dealStageVariant,
-  getAvailableStatuses,
   getBrandAvailableStatuses,
   deliverableStatusVariant,
 } from "./utils/deliverable-status.utils";
@@ -31,7 +29,6 @@ export default function DeliverablesPage() {
   const [error, setError] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [isBrand, setIsBrand] = useState(false);
 
   function reload() {
     client.GET("/deliverables").then(({ data, error: apiError }) => {
@@ -44,19 +41,14 @@ export default function DeliverablesPage() {
   }
 
   useEffect(() => {
-    const brand = loadSession()?.role === "brand";
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see AppShell.tsx
-    setIsBrand(brand);
     reload();
     client
       .GET("/deals", { params: { query: { limit: 100 } } })
       .then(({ data }) => setDeals(data ?? []));
     client.GET("/contracts").then(({ data }) => setContracts(data ?? []));
-    if (brand) {
-      client
-        .GET("/creators", { params: { query: { limit: 100 } } })
-        .then(({ data }) => setCreators(data ?? []));
-    }
+    client
+      .GET("/creators", { params: { query: { limit: 100 } } })
+      .then(({ data }) => setCreators(data ?? []));
   }, []);
 
   async function createDeliverable(e: React.FormEvent<HTMLFormElement>) {
@@ -109,15 +101,13 @@ export default function DeliverablesPage() {
 
   const content = (
     <>
-      {isBrand && (
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
-          <button className="btn" onClick={() => setShowForm((v) => !v)}>
-            {showForm ? "Cancel" : "+ New deliverable"}
-          </button>
-        </div>
-      )}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
+        <button className="btn" onClick={() => setShowForm((v) => !v)}>
+          {showForm ? "Cancel" : "+ New deliverable"}
+        </button>
+      </div>
 
-      {isBrand && showForm && (
+      {showForm && (
         <form
           onSubmit={createDeliverable}
           className="mtile"
@@ -228,8 +218,6 @@ export default function DeliverablesPage() {
           </thead>
           <tbody>
             {filteredItems.map((d) => {
-              const availableStatuses = getAvailableStatuses(d);
-              const isCompleted = d.status === "approved" || d.status === "rejected";
               return (
                 <tr key={d.id}>
                   <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
@@ -266,61 +254,31 @@ export default function DeliverablesPage() {
                       textAlign: "right",
                     }}
                   >
-                    {isBrand ? (
-                      <select
-                        className="field"
-                        style={{
-                          display: "inline-block",
-                          margin: 0,
-                          width: "auto",
-                          minWidth: "210px",
-                          fontSize: "12.5px",
-                          padding: "6px 10px",
-                          cursor: "pointer",
-                          background: "var(--color-surface-sunken)",
-                          borderColor: "var(--color-border)",
-                          color: "var(--color-ink)",
-                          borderRadius: "var(--radius-sm)",
-                          fontWeight: 500,
-                        }}
-                        value={d.status}
-                        onChange={(e) => handleStatusChange(d, e.target.value)}
-                      >
-                        {getBrandAvailableStatuses(d).map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    ) : isCompleted ? (
-                      <span style={{ fontSize: "12px", color: "var(--color-ink-faint)" }}>—</span>
-                    ) : (
-                      <select
-                        className="field"
-                        style={{
-                          display: "inline-block",
-                          margin: 0,
-                          width: "auto",
-                          minWidth: "210px",
-                          fontSize: "12.5px",
-                          padding: "6px 10px",
-                          cursor: "pointer",
-                          background: "var(--color-surface-sunken)",
-                          borderColor: "var(--color-border)",
-                          color: "var(--color-ink)",
-                          borderRadius: "var(--radius-sm)",
-                          fontWeight: 500,
-                        }}
-                        value={d.status}
-                        onChange={(e) => handleStatusChange(d, e.target.value)}
-                      >
-                        {availableStatuses.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    )}
+                    <select
+                      className="field"
+                      style={{
+                        display: "inline-block",
+                        margin: 0,
+                        width: "auto",
+                        minWidth: "210px",
+                        fontSize: "12.5px",
+                        padding: "6px 10px",
+                        cursor: "pointer",
+                        background: "var(--color-surface-sunken)",
+                        borderColor: "var(--color-border)",
+                        color: "var(--color-ink)",
+                        borderRadius: "var(--radius-sm)",
+                        fontWeight: 500,
+                      }}
+                      value={d.status}
+                      onChange={(e) => handleStatusChange(d, e.target.value)}
+                    >
+                      {getBrandAvailableStatuses(d).map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                 </tr>
               );
@@ -330,8 +288,6 @@ export default function DeliverablesPage() {
       )}
     </>
   );
-
-  if (!isBrand) return content;
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: "16px" }}>

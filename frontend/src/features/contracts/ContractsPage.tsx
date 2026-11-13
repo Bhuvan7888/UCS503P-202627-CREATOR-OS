@@ -6,7 +6,6 @@ import { FileText } from "lucide-react";
 import client, { postWithSession, API_BASE_URL } from "@/shared/lib/api-client";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
-import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { contractStatusVariant } from "@/shared/lib/status-variants";
 
@@ -24,7 +23,6 @@ export default function ContractsPage() {
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const [acceptError, setAcceptError] = useState("");
-  const [isBrand, setIsBrand] = useState(false);
 
   function reload() {
     client.GET("/contracts").then(({ data, error: apiError }) => {
@@ -37,18 +35,13 @@ export default function ContractsPage() {
   }
 
   useEffect(() => {
-    const brand = loadSession()?.role === "brand";
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see AppShell.tsx
-    setIsBrand(brand);
     reload();
     client
       .GET("/deals", { params: { query: { limit: 100 } } })
       .then(({ data }) => setDeals(data ?? []));
-    if (brand) {
-      client
-        .GET("/creators", { params: { query: { limit: 100 } } })
-        .then(({ data }) => setCreators(data ?? []));
-    }
+    client
+      .GET("/creators", { params: { query: { limit: 100 } } })
+      .then(({ data }) => setCreators(data ?? []));
   }, []);
 
   async function handleContractStatusChange(c: Contract, newStatus: string) {
@@ -177,15 +170,13 @@ export default function ContractsPage() {
           </button>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
-          {isBrand && (
-            <button className="btn" onClick={() => setShowForm((v) => !v)}>
-              {showForm ? "Cancel" : "+ Upload contract"}
-            </button>
-          )}
+          <button className="btn" onClick={() => setShowForm((v) => !v)}>
+            {showForm ? "Cancel" : "+ Upload contract"}
+          </button>
         </div>
       </div>
 
-      {showForm && isBrand && (
+      {showForm && (
         <form
           onSubmit={uploadContract}
           className="mtile"
@@ -259,7 +250,7 @@ export default function ContractsPage() {
 
       {items.length === 0 ? (
         <EmptyState icon={FileText} message="No contracts yet. Upload one once terms are agreed." />
-      ) : isBrand ? (
+      ) : (
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
           <thead>
             <tr style={{ color: "var(--color-ink-faint)", textAlign: "left" }}>
@@ -367,115 +358,6 @@ export default function ContractsPage() {
                 </td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
-          <thead>
-            <tr style={{ color: "var(--color-ink-faint)", textAlign: "left" }}>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Contract
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Protection Scan
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Status
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Uploaded
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                  textAlign: "right",
-                }}
-              ></th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((c) => {
-              const deal = deals.find((d) => d.id === c.deal_id);
-              const title = deal?.campaign_name
-                ? `${deal.campaign_name} Agreement`
-                : c.file_path
-                  ? c.file_path.split("/").pop()
-                  : "Creator Collaboration Agreement";
-              return (
-                <tr key={c.id}>
-                  <td
-                    style={{
-                      padding: "8px 4px",
-                      borderBottom: "1px solid var(--color-border)",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {title}
-                  </td>
-                  <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                    <StatusPill
-                      status={c.raw_text ? "Scanned" : "Pending"}
-                      variant={c.raw_text ? "success" : "neutral"}
-                    />
-                  </td>
-                  <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                    <StatusPill
-                      status={c.status.replace(/_/g, " ")}
-                      variant={contractStatusVariant(c.status)}
-                    />
-                  </td>
-                  <td
-                    style={{
-                      padding: "8px 4px",
-                      borderBottom: "1px solid var(--color-border)",
-                      color: "var(--color-ink-soft)",
-                    }}
-                  >
-                    {new Date(c.created_at).toLocaleDateString()}
-                  </td>
-                  <td
-                    style={{
-                      padding: "8px 4px",
-                      borderBottom: "1px solid var(--color-border)",
-                      textAlign: "right",
-                    }}
-                  >
-                    <Link
-                      href={`/contracts/${c.id}/clauses`}
-                      style={{ color: "var(--color-accent)", fontWeight: 500 }}
-                    >
-                      Review clauses & flags →
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
           </tbody>
         </table>
       )}

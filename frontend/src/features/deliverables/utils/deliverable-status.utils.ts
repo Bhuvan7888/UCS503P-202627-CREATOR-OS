@@ -21,21 +21,6 @@ export function dealStageVariant(status: string): StatusVariant {
   }
 }
 
-export function getAvailableStatuses(d: Deliverable): { value: string; label: string }[] {
-  const options = [
-    { value: "pending", label: "Not started" },
-    { value: "in_production", label: "In progress" },
-    { value: "editing", label: "Video editing phase" },
-    { value: "submitted", label: "Delivered — awaiting approval" },
-  ];
-
-  if (d.status === "revision_requested" || d.previous_status === "revision_requested") {
-    options.push({ value: "revision_requested", label: "Revision requested" });
-  }
-
-  return options;
-}
-
 export function getBrandAvailableStatuses(d: Deliverable): { value: string; label: string }[] {
   const options = [
     { value: "in_production", label: "In progress" },

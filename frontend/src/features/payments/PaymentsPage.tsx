@@ -5,7 +5,6 @@ import { Receipt } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
-import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { paymentStatusVariant } from "@/shared/lib/status-variants";
 
@@ -21,7 +20,6 @@ export default function PaymentsPage() {
   const [error, setError] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [isBrand, setIsBrand] = useState(false);
   const [formError, setFormError] = useState("");
 
   function reload() {
@@ -37,8 +35,6 @@ export default function PaymentsPage() {
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see AppShell.tsx
-    setIsBrand(loadSession()?.role === "brand");
     reload();
     client.GET("/contracts").then(({ data }) => setContracts(data ?? []));
     client.GET("/deliverables").then(({ data }) => setDeliverables(data ?? []));
@@ -107,15 +103,13 @@ export default function PaymentsPage() {
 
   return (
     <>
-      {isBrand && (
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
-          <button className="btn" onClick={() => setShowForm((v) => !v)}>
-            {showForm ? "Cancel" : "+ New invoice"}
-          </button>
-        </div>
-      )}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
+        <button className="btn" onClick={() => setShowForm((v) => !v)}>
+          {showForm ? "Cancel" : "+ New invoice"}
+        </button>
+      </div>
 
-      {isBrand && showForm && (
+      {showForm && (
         <form
           onSubmit={createInvoice}
           className="mtile"
@@ -253,13 +247,7 @@ export default function PaymentsPage() {
                   {deliverableTitle(p.deliverable_id) ?? "—"}
                 </td>
                 <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                  ₹{Number(isBrand ? p.amount_inr : p.net_amount_inr).toLocaleString()}
-                  {!isBrand && Number(p.platform_fee_inr) > 0 && (
-                    <span style={{ color: "var(--color-ink-faint)" }}>
-                      {" "}
-                      (after ₹{Number(p.platform_fee_inr).toLocaleString()} platform fee)
-                    </span>
-                  )}
+                  ₹{Number(p.amount_inr).toLocaleString()}
                 </td>
                 <td
                   style={{
@@ -277,66 +265,53 @@ export default function PaymentsPage() {
                     textAlign: "right",
                   }}
                 >
-                  {isBrand ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "8px",
-                        justifyContent: "flex-end",
-                        alignItems: "center",
-                      }}
-                    >
-                      <StatusPill
-                        status={
-                          p.status === "paid"
-                            ? "Paid"
-                            : p.status === "overdue"
-                              ? "Overdue"
-                              : "Pending"
-                        }
-                        variant={paymentStatusVariant(p.status)}
-                      />
-                      <select
-                        className="field"
-                        style={{
-                          display: "inline-block",
-                          margin: 0,
-                          width: "auto",
-                          minWidth: "120px",
-                          fontSize: "12.5px",
-                          padding: "6px 10px",
-                          cursor: "pointer",
-                          background: "var(--color-surface-sunken)",
-                          borderColor: "var(--color-border)",
-                          color: "var(--color-ink)",
-                          borderRadius: "var(--radius-sm)",
-                          fontWeight: 500,
-                        }}
-                        value={p.status}
-                        onChange={(e) =>
-                          handlePaymentStatusChange(
-                            p,
-                            e.target.value as "pending" | "paid" | "overdue",
-                          )
-                        }
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="paid">Paid</option>
-                        <option value="overdue">Overdue</option>
-                      </select>
-                    </div>
-                  ) : (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                    }}
+                  >
                     <StatusPill
                       status={
                         p.status === "paid"
                           ? "Paid"
                           : p.status === "overdue"
                             ? "Overdue"
-                            : "Not paid yet"
+                            : "Pending"
                       }
                       variant={paymentStatusVariant(p.status)}
                     />
-                  )}
+                    <select
+                      className="field"
+                      style={{
+                        display: "inline-block",
+                        margin: 0,
+                        width: "auto",
+                        minWidth: "120px",
+                        fontSize: "12.5px",
+                        padding: "6px 10px",
+                        cursor: "pointer",
+                        background: "var(--color-surface-sunken)",
+                        borderColor: "var(--color-border)",
+                        color: "var(--color-ink)",
+                        borderRadius: "var(--radius-sm)",
+                        fontWeight: 500,
+                      }}
+                      value={p.status}
+                      onChange={(e) =>
+                        handlePaymentStatusChange(
+                          p,
+                          e.target.value as "pending" | "paid" | "overdue",
+                        )
+                      }
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="paid">Paid</option>
+                      <option value="overdue">Overdue</option>
+                    </select>
+                  </div>
                 </td>
               </tr>
             ))}

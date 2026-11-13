@@ -29,7 +29,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // initializer, which would reintroduce that mismatch).
     const session = loadSession();
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAccountLabel(session?.brand_name ?? session?.display_name ?? "Brand");
+    setAccountLabel(session?.brand_name ?? "Brand");
     if (session?.role === "creator") {
       // creators work in their workspace (/dashboard); these pages are the brand app
       router.replace("/dashboard");
@@ -41,7 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     router.push("/");
   }
 
-  const brandNav = [
+  const nav = [
     { name: "Deals", href: "/brand", icon: LayoutGrid },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
     { name: "Chat", href: "/chat", icon: MessageCircle },
@@ -50,8 +50,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     { name: "Payments", href: "/payments", icon: CreditCard },
     { name: "Activity", href: "/activity", icon: ActivityIcon },
   ];
-
-  const nav = brandNav;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--color-canvas)" }}>

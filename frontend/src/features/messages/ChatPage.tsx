@@ -4,20 +4,17 @@ import React, { useEffect, useRef, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
-import { loadSession } from "@/shared/lib/session";
 import type { components } from "@/shared/lib/api-types";
 import { MESSAGES_POLL_INTERVAL_MS } from "./constants/messages-polling";
 
 type Message = components["schemas"]["Message"];
 type Creator = components["schemas"]["Creator"];
-type Brand = components["schemas"]["Brand"];
 
 // ponytail: real-time via polling every 4s while a thread is open, not a
 // Supabase Realtime subscription — no new client-side infra/RLS policy
 // needed. Upgrade to Realtime if 4s latency ever matters.
 export default function ChatPage() {
-  const [isBrand, setIsBrand] = useState<boolean | null>(null);
-  const [contacts, setContacts] = useState<{ id: string; label: string }[]>([]);
+  const [contacts, setContacts] = useState<{ id: string; label: string }[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
@@ -36,22 +33,10 @@ export default function ChatPage() {
   }
 
   useEffect(() => {
-    const session = loadSession();
-    const brand = session?.role === "brand";
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see AppShell.tsx
-    setIsBrand(brand);
-
-    if (brand) {
-      client.GET("/creators", { params: { query: { limit: 200 } } }).then(({ data }) => {
-        setContacts((data ?? []).map((c: Creator) => ({ id: c.id, label: c.display_name })));
-        fetchUnread();
-      });
-    } else {
-      client.GET("/creators/me/brands").then(({ data }) => {
-        setContacts((data ?? []).map((b: Brand) => ({ id: b.id, label: b.name })));
-        fetchUnread();
-      });
-    }
+    client.GET("/creators", { params: { query: { limit: 200 } } }).then(({ data }) => {
+      setContacts((data ?? []).map((c: Creator) => ({ id: c.id, label: c.display_name })));
+      fetchUnread();
+    });
   }, []);
 
   useEffect(() => {
@@ -96,24 +81,19 @@ export default function ChatPage() {
     fetchUnread();
   }
 
-  if (isBrand === null) {
+  if (contacts === null) {
     return <div style={{ fontSize: "13px", color: "var(--color-ink-faint)" }}>Loading…</div>;
   }
   if (contacts.length === 0) {
     return (
       <EmptyState
         icon={MessageCircle}
-        message={
-          isBrand
-            ? "No creators yet. Onboard one from the Deals page to start chatting."
-            : "You're not linked to any brands yet."
-        }
+        message="No creators yet. Onboard one from the Deals page to start chatting."
       />
     );
   }
 
-  const isMine = (m: Message) =>
-    isBrand ? m.sender_type === "brand" : m.sender_type === "creator";
+  const isMine = (m: Message) => m.sender_type === "brand";
 
   return (
     <div
@@ -126,7 +106,7 @@ export default function ChatPage() {
     >
       <div className="mtile" style={{ overflowY: "auto", padding: "8px" }}>
         <div className="lbl" style={{ margin: "4px 6px 8px" }}>
-          {isBrand ? "Creators" : "Brands"}
+          Creators
         </div>
         {contacts.map((c) => {
           const hasPending = (unreadByContact[c.id] || 0) > 0;
@@ -171,7 +151,7 @@ export default function ChatPage() {
       <div className="mtile" style={{ display: "flex", flexDirection: "column", padding: "12px" }}>
         {!selectedId ? (
           <div style={{ margin: "auto", fontSize: "12.5px", color: "var(--color-ink-faint)" }}>
-            Pick {isBrand ? "a creator" : "a brand"} to start chatting.
+            Pick a creator to start chatting.
           </div>
         ) : (
           <>
