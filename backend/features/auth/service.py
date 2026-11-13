@@ -10,6 +10,7 @@ from features.auth.models import (
     BrandSignupRequest,
     CreatorLoginRequest,
     CreatorSignupRequest,
+    OAuthCompleteRequest,
 )
 from features.brands import Brand, BrandMember, BrandMemberRepo, BrandRepo
 from features.creators import Creator, CreatorRepo
@@ -139,6 +140,48 @@ class AuthService:
             brand_id=None,
             creator_id=created.id,
             display_name=created.display_name,
+        )
+
+    async def _new_oauth_creator(self, user_id: UUID) -> Creator:
+        try:
+            res = await asyncio.to_thread(self.admin_client.auth.admin.get_user_by_id, str(user_id))
+        except Exception as e:
+            raise ValidationError(f"Could not read the account: {e}") from e
+        meta = res.user.user_metadata or {}
+        name = (
+            meta.get("full_name") or meta.get("name") or (res.user.email or "Creator").split("@")[0]
+        )
+        # ponytail: two simultaneous first sign-ins could both insert; the callback runs once per sign-in,
+        # add a unique index on creators.user_id if that ever shows up.
+        return await self.creator_repo.create(
+            Creator(
+                id=uuid4(),
+                user_id=user_id,
+                display_name=str(name)[:80],
+                instagram_handle="",
+                niche="General",
+                follower_tier="Not set",
+                created_at=datetime.now(UTC),
+            )
+        )
+
+    async def creator_oauth(
+        self, user_id: UUID, access_token: str, request: OAuthCompleteRequest
+    ) -> AuthSession:
+        """Finish a Google sign-in: reuse the creator profile, or create one on first sign-in."""
+        if await self.brand_member_repo.get_by_user_id(user_id):
+            raise ValidationError("This Google account belongs to a brand. Use brand login.")
+        creator = await self.creator_repo.get_by_user_id(user_id) or await self._new_oauth_creator(
+            user_id
+        )
+        return AuthSession(
+            access_token=access_token,
+            refresh_token=request.refresh_token,
+            user_id=user_id,
+            role="creator",
+            brand_id=creator.brand_id,
+            creator_id=creator.id,
+            display_name=creator.display_name,
         )
 
     async def creator_login(self, request: CreatorLoginRequest) -> AuthSession:

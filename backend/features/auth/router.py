@@ -1,11 +1,15 @@
-from fastapi import APIRouter, Depends
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, Header
+
+from features.auth.dependencies import get_current_user_id
 from features.auth.models import (
     AuthSession,
     BrandLoginRequest,
     BrandSignupRequest,
     CreatorLoginRequest,
     CreatorSignupRequest,
+    OAuthCompleteRequest,
 )
 from features.auth.service import AuthService
 from features.brands.supabase_repository import (
@@ -73,3 +77,14 @@ async def creator_login(
 
     with map_errors({ValidationError: 400}):
         return await service.creator_login(request)
+
+
+@router.post("/creator/oauth", response_model=AuthSession)
+async def creator_oauth(
+    request: OAuthCompleteRequest,
+    user_id: UUID = Depends(get_current_user_id),
+    authorization: str = Header(),
+    service: AuthService = Depends(get_auth_service),
+):
+    with map_errors({ValidationError: 400}):
+        return await service.creator_oauth(user_id, authorization.split(" ", 1)[1], request)

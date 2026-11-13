@@ -68,7 +68,7 @@ Backend
 2. ✅ Feature `content`: model/rules/port/Supabase + demo repos/service; router under `/workspaces/{workspace}/content`
    (GET list, POST create, PATCH update incl. stage move, GET stats for Home KPIs) — every route uses
    `require_workspace_member`. `GET /workspaces/{workspace}/members` for the wizard's "Assign To".
-3. Google sign-in completion: `POST /auth/creator/oauth` creates the creator profile for a new Supabase (Google) user.
+3. ✅ Google sign-in completion: `POST /auth/creator/oauth` creates the creator profile for a new Supabase (Google) user.
 4. Remove backend code used only by the dropped creator views (negotiation, benchmarks, growth snapshots,
    `/creators/me*`, deal stats/weekly value, personal contracts, creator contract status, upload-sample), after grepping
    the brand frontend for any use. Keep `deals.list_for_creator` (Brand CRM, Phase 5).
@@ -85,6 +85,7 @@ Frontend
 Verify: backend tests, API contract, e2e for every new page/flow, real-DB check after migration 002.
 
 ### Phase log
+- **2026-11-13 — Google sign-in completion (Phase 2, item 3)**: `POST /auth/creator/oauth` (Bearer = Supabase access token from the Google redirect, body = refresh token) returns the usual `AuthSession`; first call creates the creator profile from the Google name, later calls reuse it; brand accounts are refused. Live check: 2 temporary users → 1 profile each, repeat call idempotent, primary workspace created, anonymous 401, cleanup ok. 171 backend tests.
 - **2026-11-13 — content backend (Phase 2, items 1–2)**: migration 002 `content_items` written (`supabase/migrations/20261113010000_content_items.sql`, **owner must run it**); feature `features/content` (models, rules incl. 30-day KPI deltas, port, Supabase + demo repos, service, router `/workspaces/{workspace}/content` GET/POST/PATCH + `/stats`); `GET /workspaces/{workspace}/members` (names via `UserDirectory`). Assignee must be a member; items from another workspace → 404; non-members → 403. 169 backend tests; no new ruff/mypy errors (older baseline errors in seed/demo code remain — CI runs pytest only).
 - **2026-11-13 — single .env**: root `.env` (backend + `NEXT_PUBLIC_*`); backend loads it by absolute path
   (`shared/config.py`), Next loads it in `next.config.ts`; CI sets dummy demo-mode env. Commit `11bbdea`.

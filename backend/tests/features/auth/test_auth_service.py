@@ -9,6 +9,7 @@ from features.auth import (
     BrandSignupRequest,
     CreatorSignupRequest,
 )
+from features.auth.models import OAuthCompleteRequest
 from tests.fakes.fake_repos import FakeBrandMemberRepo, FakeBrandRepo, FakeCreatorRepo
 
 
@@ -27,6 +28,12 @@ class StubAdminAuth:
             user_id = str(uuid4())
             self.outer.users_by_email[payload["email"]] = user_id
             return SimpleNamespace(user=SimpleNamespace(id=user_id))
+
+        def get_user_by_id(self, user_id):
+            meta = {"full_name": "Asha Rao"}
+            return SimpleNamespace(
+                user=SimpleNamespace(id=user_id, email="asha@x.dev", user_metadata=meta)
+            )
 
         def delete_user(self, user_id):
             self.outer.deleted_user_ids.add(str(user_id))
@@ -158,3 +165,14 @@ async def test_brand_signup_rolls_back_auth_user_on_failure():
 
     assert len(client.auth.deleted_user_ids) == 1
     assert "a@a.com" not in client.auth.users_by_email
+
+
+@pytest.mark.asyncio
+async def test_google_sign_in_creates_the_creator_profile_once():
+    creator_repo = FakeCreatorRepo()
+    service = AuthService(StubClient(), FakeBrandRepo(), FakeBrandMemberRepo(), creator_repo)
+    user_id = uuid4()
+    first = await service.creator_oauth(user_id, "acc", OAuthCompleteRequest(refresh_token="ref"))
+    again = await service.creator_oauth(user_id, "acc2", OAuthCompleteRequest(refresh_token="ref2"))
+    assert (first.role, first.display_name, first.access_token) == ("creator", "Asha Rao", "acc")
+    assert again.creator_id == first.creator_id and again.refresh_token == "ref2"

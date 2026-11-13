@@ -32,6 +32,12 @@ class CreatorLoginRequest(BaseModel):
     password: str
 
 
+class OAuthCompleteRequest(BaseModel):
+    """Sent after a Google (Supabase OAuth) sign-in; the access token travels in the Authorization header."""
+
+    refresh_token: str
+
+
 class LinkBrandRequest(BaseModel):
     invite_code: str
 
