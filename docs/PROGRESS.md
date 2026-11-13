@@ -36,8 +36,8 @@ brand side stays as it is.
 | # | Phase | Status |
 |---|---|---|
 | 1 | Foundations: single .env ✅, security fixes ✅, workspace backend ✅ (verified on live DB), Google provider configured ✅ | done (Google button built in Phase 2) |
-| 2 | New creator shell + content core: shell, Home, 5-step Add Content wizard, Content Pipeline kanban, Google sign-in, old creator views removed | in progress |
-| 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | pending |
+| 2 | New creator shell + content core: shell, Home, 5-step Add Content wizard, Content Pipeline kanban, Google sign-in, old creator views removed | done — owner: run migration 002 + add Supabase redirect URLs, then live check |
+| 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | next |
 | 4 | Calendar + Approvals (publish state machine without platform posting) | pending |
 | 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | pending |
 | 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | pending |
@@ -59,7 +59,7 @@ brand side stays as it is.
 4. Then Phase 2 (shell + Home + wizard + pipeline) — the old creator views are removed in Phase 2, in the same change that
    replaces them, so creator login always lands on a working page.
 
-### Phase 2 plan — pick up here
+### Phase 2 (done, 2026-11-13)
 Backend
 1. ✅ Migration 002 `content_items` (workspace-scoped; RLS on): title, description, type (long_form_video | post | reel |
    story | short_form_video), pillar, hook, target_platforms text[] (youtube | instagram | x | linkedin | facebook —
@@ -69,22 +69,69 @@ Backend
    (GET list, POST create, PATCH update incl. stage move, GET stats for Home KPIs) — every route uses
    `require_workspace_member`. `GET /workspaces/{workspace}/members` for the wizard's "Assign To".
 3. ✅ Google sign-in completion: `POST /auth/creator/oauth` creates the creator profile for a new Supabase (Google) user.
-4. Remove backend code used only by the dropped creator views (negotiation, benchmarks, growth snapshots,
+4. ✅ Remove backend code used only by the dropped creator views (negotiation, benchmarks, growth snapshots,
    `/creators/me*`, deal stats/weekly value, personal contracts, creator contract status, upload-sample), after grepping
    the brand frontend for any use. Keep `deals.list_for_creator` (Brand CRM, Phase 5).
 Frontend
-5. Remove old creator pages (`/creator`, `/creator/board`, `/creator/negotiate/[dealId]`) and their features;
+5. ✅ Remove old creator pages (`/creator`, `/creator/board`, `/creator/negotiate/[dealId]`) and their features;
    creator login → `/dashboard/<slug>`.
-6. Workspace shell at `src/app/dashboard/[workspace]/` (today's colours): sidebar groups (only built pages listed),
+6. ✅ Workspace shell at `src/app/dashboard/[workspace]/` (today's colours): sidebar groups (only built pages listed),
    workspace switcher, user menu (Sign out), top bar (sidebar toggle, ⌘K palette with quick actions), page header
    component; custom 404.
-7. Home (KPIs, Recent Content, content-by-platform card instead of followers — no connections, quick actions),
+7. ✅ Home (KPIs, Recent Content, content-by-platform card instead of followers — no connections, quick actions),
    onboarding banner; Content Pipeline (empty state + 3 step cards, Filters panel, kanban with drag-and-drop between
    stages); 5-step Add Content wizard (deal association arrives in Phase 5, AI generate buttons in Phase 3).
-8. Google button on creator login/signup + `/auth/callback`.
+8. ✅ Google button on creator login/signup + `/auth/callback`.
 Verify: backend tests, API contract, e2e for every new page/flow, real-DB check after migration 002.
 
+Phase 2 notes
+- **Owner actions pending:** (1) run `supabase/migrations/20261113010000_content_items.sql` in the SQL editor (the two
+  `drop column` lines of migration 001 too, if not done); (2) Supabase → Authentication → URL Configuration → Redirect
+  URLs: add `http://localhost:3000/auth/callback` and `https://ucs-503-p-202627-creator-os.vercel.app/auth/callback`;
+  (3) Vercel env must have `NEXT_PUBLIC_SUPABASE_URL` (the Google button needs it). Then: live check of content CRUD +
+  a real Google sign-in.
+- Google sign-in uses the Supabase authorize redirect + URL-fragment tokens — no Supabase JS SDK added.
+- Creator branches left in shared brand pages (chat creator list, deliverable/payment creator views) are unreachable
+  now that creators are redirected to `/dashboard`; Phase 5 (Brand CRM) decides whether creators get deal pages back —
+  delete or reuse them then.
+- Unused DB tables after the cleanup: `negotiation_sessions`, `negotiation_offers`, `negotiation_conversations`,
+  `growth_snapshots` (and benchmark data read from deals). Not dropped — ask the owner before writing a drop migration.
+- Known gaps by design: no theme toggle (light only), no bell / Notifications (Phase 7), no Publish button (no posting),
+  Deal Association in the wizard arrives with Brand CRM (Phase 5), AI Generate buttons in Phase 3.
+
+### Phase 3 plan — pick up here (Scripts + AI)
+Backend
+1. Migration 003: `content_scripts` (content_item_id PK → content_items on delete cascade, body text ≤ 50k, updated_by,
+   timestamps), `workspace_ai_knowledge` (workspace_id PK: brand, audience, strategy, custom_output_format, ≤ 4k each),
+   `ai_suggestions` (workspace_id, suggestions jsonb, generated_at, dismissed ids) — RLS on, no policies.
+2. `features/scripts`: `GET/PUT /workspaces/{ws}/content/{item}/script` (auto-save; first non-empty save moves an
+   `idea` item to `scripted`; `content.rules.is_scripted` becomes "has a script"), `POST …/script/outline` (Gemini).
+3. `features/ai_assist`: `GET/PUT /workspaces/{ws}/ai-knowledge`; `POST /workspaces/{ws}/ai/generate`
+   (field = title | description | hook, from the draft + knowledge); `GET /workspaces/{ws}/ai/suggestions` (24 h cache),
+   `POST …/suggestions/refresh`, `POST …/suggestions/{id}/dismiss`, create-from-suggestion via the content API.
+   Add LLM port methods in `shared/llm`; 503 "temporarily unavailable" without a Gemini key (as contract-intelligence);
+   per-workspace rate limit on AI calls (100-user target).
+Frontend
+4. Sidebar "Create" group: Scripts (`/scripts`: two panes — item list + editor with debounced auto-save and Generate
+   outline) and AI Assistant (`/ai-suggestions`: 3 info cards, suggestions card, tips card).
+5. Settings shell with the AI knowledge tab only (`/settings/ai-knowledge`); other tabs arrive in Phases 6–7.
+6. Wizard + board: Generate Title / Description / Hook buttons; clicking a card opens an item editor (edit fields,
+   inline generate, link to its script).
+Verify: unit tests for rules, API tests with a fake LLM, cross-workspace 403/404 tests, e2e for Scripts/AI pages.
+
 ### Phase log
+- **2026-11-13 — Phase 2 frontend**: workspace shell (`features/workspaces`: sidebar with switcher/new workspace/user menu,
+  collapsible, ⌘K palette, `PageHeader`), Home and Content Pipeline (`features/content`: KPIs, content by platform,
+  recent content, onboarding banner, kanban with drag-and-drop + "Move to" menu, filters, 5-step wizard), `/dashboard`
+  redirect, Google button + `/auth/callback`, custom 404, native `<dialog>` modal (`shared/components/ui/Dialog`).
+  Removed old creator pages (`/creator`, `/creator/board`, `/creator/negotiate/[dealId]`), creator-only contract
+  actions, `GrowthTracker`; brand `AppShell` now brand-only. API types regenerated. Checks: tsc, eslint (2 older
+  warnings), prettier, build, route smoke 20/20, e2e 4/4 (new creator flow: wizard, KPIs, ⌘K, drag-and-drop,
+  filters, id→slug, no-access state, sign-out, 404). Screens checked at 1280 px and 390 px.
+- **2026-11-13 — dead creator-only backend removed**: negotiation + benchmarks features, growth snapshots,
+  `PATCH /creators/me`, deal stats/weekly value, personal contract uploads, creator contract status, negotiation LLM
+  prompts, `shared/money.py`. Kept `/creators/me/brands` and `/creators/me/link-brand`. 133 backend tests; mypy
+  131 → 113 errors (older baseline, CI runs pytest only). Commit `0031e92`.
 - **2026-11-13 — Google sign-in completion (Phase 2, item 3)**: `POST /auth/creator/oauth` (Bearer = Supabase access token from the Google redirect, body = refresh token) returns the usual `AuthSession`; first call creates the creator profile from the Google name, later calls reuse it; brand accounts are refused. Live check: 2 temporary users → 1 profile each, repeat call idempotent, primary workspace created, anonymous 401, cleanup ok. 171 backend tests.
 - **2026-11-13 — content backend (Phase 2, items 1–2)**: migration 002 `content_items` written (`supabase/migrations/20261113010000_content_items.sql`, **owner must run it**); feature `features/content` (models, rules incl. 30-day KPI deltas, port, Supabase + demo repos, service, router `/workspaces/{workspace}/content` GET/POST/PATCH + `/stats`); `GET /workspaces/{workspace}/members` (names via `UserDirectory`). Assignee must be a member; items from another workspace → 404; non-members → 403. 169 backend tests; no new ruff/mypy errors (older baseline errors in seed/demo code remain — CI runs pytest only).
 - **2026-11-13 — single .env**: root `.env` (backend + `NEXT_PUBLIC_*`); backend loads it by absolute path

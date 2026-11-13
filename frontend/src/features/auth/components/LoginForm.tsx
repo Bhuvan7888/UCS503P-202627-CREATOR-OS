@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import client from "@/shared/lib/api-client";
 import { saveSession } from "@/shared/lib/session";
 import { AuthPageFrame } from "./AuthPageFrame";
+import { GoogleButton } from "./GoogleButton";
 import { NETWORK_ERROR_MESSAGE } from "../constants/auth-messages";
 import {
   DEMO_BRAND_ACCOUNTS,
@@ -77,7 +78,7 @@ export function LoginForm({ role }: { role: Role }) {
         setError(copy.wrongCredentials);
       } else {
         saveSession(data);
-        router.push(`/${role}`);
+        router.push(role === "brand" ? "/brand" : "/dashboard");
       }
     } catch {
       setError(NETWORK_ERROR_MESSAGE);
@@ -94,6 +95,8 @@ export function LoginForm({ role }: { role: Role }) {
         {`${copy.signupPrompt} `}
         <Link href={`/${role}/signup`}>{copy.signupLinkText}</Link>
       </p>
+
+      {role === "creator" && <GoogleButton />}
 
       <div className={styles.demoSection}>
         <span className={styles.demoLabel}>Try a demo account</span>

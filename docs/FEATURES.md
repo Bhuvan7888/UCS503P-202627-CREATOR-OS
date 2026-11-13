@@ -8,14 +8,13 @@ Every feature has the same name everywhere. The backend uses `snake_case` becaus
 | `auth` | `backend/features/auth/` | `frontend/src/features/auth/` | `backend/tests/features/auth/` |
 | `brands` | `backend/features/brands/` | — | via `auth`, `creators` |
 | `creators` | `backend/features/creators/` | `frontend/src/features/creators/` | `backend/tests/features/creators/` |
-| `creator-dashboard` | — (uses deals, creators, contracts, benchmarks APIs) | `frontend/src/features/creator-dashboard/` | route smoke |
+| `workspaces` | `backend/features/workspaces/` | `frontend/src/features/workspaces/` (creator shell) | `backend/tests/features/workspaces/`, e2e |
+| `content` | `backend/features/content/` | `frontend/src/features/content/` | `backend/tests/features/content/`, e2e |
 | `deals` | `backend/features/deals/` | `frontend/src/features/deals/` | `backend/tests/features/deals/` |
 | `contracts` | `backend/features/contracts/` | `frontend/src/features/contracts/` | `backend/tests/features/contracts/` |
 | `contract-intelligence` | `backend/features/contract_intelligence/` | `frontend/src/features/contract-intelligence/` | `backend/tests/features/contract_intelligence/` |
 | `deliverables` | `backend/features/deliverables/` | `frontend/src/features/deliverables/` | `backend/tests/features/deliverables/` |
 | `payments` | `backend/features/payments/` | `frontend/src/features/payments/` | `backend/tests/features/payments/` |
-| `negotiation` | `backend/features/negotiation/` | `frontend/src/features/negotiation/` | `backend/tests/features/negotiation/` |
-| `benchmarks` | `backend/features/benchmarks/` | — (read by `creator-dashboard`) | `backend/tests/features/benchmarks/` |
 | `analytics` | `backend/features/analytics/` | `frontend/src/features/analytics/` | `backend/tests/features/analytics/` |
 | `messages` | `backend/features/messages/` | `frontend/src/features/messages/` | demo-mode smoke |
 | `activity-log` | `backend/features/activity_log/` | `frontend/src/features/activity-log/` | demo-mode smoke |
@@ -34,18 +33,19 @@ The public marketing page, with role-based login and sign-up links.
 Brand and creator sign-up and login, the stored session, and the request identity (`ActorContext`) that every protected endpoint uses.
 - **Pages:**
   - `/brand/login` → `BrandLoginPage.tsx`
-  - `/creator/login` → `CreatorLoginPage.tsx`
+  - `/creator/login` → `CreatorLoginPage.tsx` (email/password or Google)
   - `/brand/signup` → `BrandSignupPage.tsx`
-  - `/creator/signup` → `CreatorSignupPage.tsx`
+  - `/creator/signup` → `CreatorSignupPage.tsx` (email/password or Google)
+  - `/auth/callback` → `OAuthCallbackPage.tsx`: Supabase sends Google sign-ins here with the session in the URL fragment
 - **Frontend internals:**
   - `components/LoginForm.tsx`: one login form for both roles
-  - `components/AuthPageFrame.tsx`
+  - `components/AuthPageFrame.tsx`, `components/GoogleButton.tsx` (redirects to Supabase `/auth/v1/authorize?provider=google`; no Supabase SDK in the browser)
   - `constants/demo-accounts.ts`, `constants/auth-messages.ts`
   - `auth.module.css`
-- **API:** `POST /auth/brand/signup`, `POST /auth/brand/login`, `POST /auth/creator/signup`, `POST /auth/creator/login`
+- **API:** `POST /auth/brand/signup`, `POST /auth/brand/login`, `POST /auth/creator/signup`, `POST /auth/creator/login`, `POST /auth/creator/oauth` (Bearer = Supabase access token; creates the creator profile on first Google sign-in)
 - **Backend:**
   - `router.py`, `service.py` (`AuthService`), `models.py` (`AuthSession`, request models)
-  - `dependencies.py`: `ActorContext`, `get_current_actor`, `get_current_brand`, plus a 30-second identity cache
+  - `dependencies.py`: `ActorContext`, `get_current_actor`, `get_current_brand`, `get_current_user_id` (identity without a brand/creator profile, used by workspace routes), plus a 30-second identity cache
 - **Shared code used:** frontend `shared/lib/session.ts` (localStorage session) and `shared/lib/api-client.ts` (adds the bearer token); backend `shared/errors`, `shared/http_errors`, `shared/supabase_client`
 - **Depends on:** `brands`, `creators`, `demo-mode`
 
@@ -55,43 +55,32 @@ Brand accounts and brand membership. Data only; it has no endpoints of its own.
 - **Used by:** `auth` (signup and identity), `creators` (linking a creator to a brand)
 
 ## `creators`
-The brand's creator roster, the creator profile view, a creator's own profile, brand linking via invite code, and growth snapshots.
+The brand's creator roster, the creator profile view, and brand linking via invite code.
 - **Pages:** `/creators/[id]` → `CreatorProfilePage.tsx` (also includes the brand ↔ creator chat panel)
-- **Frontend internals:** `components/GrowthTracker.tsx`, exported via `index.ts` for `creator-dashboard`
 - **API:**
   - `POST /creators`, `GET /creators`, `GET /creators/{id}`
-  - `PATCH /creators/me`
   - `GET /creators/me/brands`, `POST /creators/me/link-brand`
-  - `POST /creators/me/growth-snapshots`, `GET /creators/me/growth-snapshots`
-- **Backend:** `router.py`, `service.py` (`CreatorService`), `models.py` (`Creator`, `GrowthSnapshot`), `repository.py`, `supabase_repository.py`
+- **Backend:** `router.py`, `service.py` (`CreatorService`), `models.py` (`Creator`), `repository.py`, `supabase_repository.py`
 - **Depends on:** `auth`, `brands`, `activity-log`; frontend uses `messages` (poll interval)
 
-## `creator-dashboard`
-The creator's home screen: stats, a deals table, linked brands, contracts, rate benchmarks and the growth tracker. It's a composition page with no backend of its own.
-- **Pages:** `/creator` → `CreatorDashboardPage.tsx`
-- **Frontend internals:** `components/DealsTable.tsx`
-- **API it calls:** `/deals`, `/deals/stats`, `/creators/{id}`, `/creators/me/*`, `/contracts`, `/contracts/{id}/creator-status`, `/benchmarks`
-- **Depends on:** `creators` (`GrowthTracker`)
-
 ## `deals`
-The brand's deal pipeline and creator onboarding, the per-deal workspace, the creator's Kanban board, and deal stats and weekly value.
+The brand's deal pipeline and creator onboarding, and the per-deal workspace.
 - **Pages:**
   - `/brand` → `BrandDealsPage.tsx`
   - `/deals/[id]` → `DealDetailPage.tsx`
-  - `/creator/board` → `CreatorDealBoardPage.tsx`
-- **API:** `POST /deals`, `GET /deals`, `GET /deals/stats`, `GET /deals/weekly-value`, `POST /deals/{id}/view`, `PATCH /deals/{id}/status`
+- **API:** `POST /deals`, `GET /deals`, `POST /deals/{id}/view`, `PATCH /deals/{id}/status`
 - **Backend:** `router.py`, `service.py` (`DealService`), `models.py` (`Deal`), `repository.py`, `supabase_repository.py`
 - **Shared code used:** `shared/constants/deal-stages.ts`, `shared/lib/status-variants.ts`, `shared/lib/format-currency.ts`
-- **Depends on:** `auth`, `creators`, `activity-log`, `negotiation` (backend); frontend uses `deliverables` (status labels)
+- **Depends on:** `auth`, `creators`, `activity-log`; frontend uses `deliverables` (status labels)
 
 ## `contracts`
-Contract upload (by the brand per deal, or a creator's personal contract), the status lifecycle, the sample contract PDF and the one-click sample.
+Contract upload by the brand per deal, the status lifecycle and the sample contract PDF.
 - **Pages:** `/contracts` → `ContractsPage.tsx`
 - **API:**
   - `GET /contracts`, `GET /contracts/{id}`
-  - `POST /deals/{deal_id}/contracts`, `POST /creators/me/contracts`
-  - `PATCH /contracts/{id}/status`, `PATCH /contracts/{id}/creator-status`
-  - `GET /contracts/sample-contract-pdf`, `POST /contracts/upload-sample`
+  - `POST /deals/{deal_id}/contracts`
+  - `PATCH /contracts/{id}/status`
+  - `GET /contracts/sample-contract-pdf`
 - **Backend:**
   - `router.py`, `service.py` (`ContractService`), `models.py`
   - `rules.py`: status transitions
@@ -134,26 +123,28 @@ Invoices, platform fee and net amount, mark as paid, and status changes.
 - **Backend:** `router.py`, `service.py` (`PaymentService`), `rules.py` (invoice numbers, status validation), `models.py`, `repository.py`, `supabase_repository.py`
 - **Depends on:** `auth`, `activity-log`
 
-## `negotiation`
-The per-deal negotiation workspace: fair-rate range, growth forecast, a pre-send checklist, counter-offers, AI conversation analysis and drafted scripts.
-- **Pages:** `/creator/negotiate/[dealId]` → `NegotiationPage.tsx`
-- **Frontend internals:** `components/ForecastChart.tsx`, `components/NegotiationChat.tsx`, `components/RateCalculatorForm.tsx`
-- **API:**
-  - `POST /negotiation/sessions`, `GET /negotiation/sessions`
-  - `GET /negotiation/sessions/{id}/rate-range`, `GET /negotiation/sessions/{id}/forecast`
-  - `PATCH /negotiation/sessions/{id}/checklist`
-  - `POST /negotiation/sessions/{id}/counter-offer`, `GET /negotiation/sessions/{id}/offers`
-  - `POST /negotiation/sessions/{id}/conversations`, `GET /negotiation/sessions/{id}/conversations`
-  - `POST /negotiation/sessions/{id}/script`
-- **Backend:** `router.py`, `service.py`, `rules.py` (rate range, checklist), `growth_forecast.py`, `models.py`, `repository.py`, `supabase_repository.py`
-- **Shared code used:** `shared/llm/*`, `shared/money`
-- **Depends on:** `auth`, `deals`, `creators`, `activity-log`
+## `workspaces`
+The creator's workspace and its shell. Every creator gets a primary "My Workspace" on first visit (race-safe); up to 3
+owned workspaces (fair use, the app is free). URLs accept the slug (`ws-1a2b3c4d`) or the id and show the slug.
+- **Pages:**
+  - `/dashboard` → `WorkspaceRedirectPage.tsx` (opens the primary workspace; brands go to `/brand`)
+  - `/dashboard/[workspace]/*` layout → `WorkspaceShell.tsx`: sidebar (workspace switcher with "new workspace", nav groups, user menu with Sign out), top bar (sidebar toggle saved in localStorage, ⌘K)
+- **Frontend internals:** `components/CommandPalette.tsx` (quick actions + content search), `components/PageHeader.tsx` (breadcrumb, icon tile, title, actions), `constants/nav.ts` (only built pages are listed), `hooks/useWorkspace.ts` (active workspace context); `index.ts` exports `PageHeader`, `useWorkspace`
+- **API:** `GET /workspaces`, `POST /workspaces`, `GET /workspaces/{workspace}`, `GET /workspaces/{workspace}/members`
+- **Backend:** `router.py`, `service.py` (`WorkspaceService`), `rules.py` (slug, cap), `dependencies.py` (`require_workspace_member` → `WorkspaceContext`), `models.py`, `repository.py` (`WorkspaceRepo`, `UserDirectory`), `supabase_repository.py`
+- **Database:** `supabase/migrations/20261113000000_creator_workspaces.sql`
+- **Depends on:** `auth` (`get_current_user_id`), `creators`
 
-## `benchmarks`
-Market rate percentiles by niche and follower tier.
-- **API:** `GET /benchmarks?niche=&follower_tier=`
-- **Backend:** `router.py`, `service.py`, `rules.py` (`compute_percentiles`), `models.py`, `repository.py`, `supabase_repository.py`
-- **Used by:** `creator-dashboard`
+## `content`
+Content items from idea to published: Home (KPIs, content by platform, recent content, quick actions, onboarding banner),
+the Content Pipeline kanban (drag-and-drop or a "Move to" menu, filters) and the 5-step Add New Content Idea wizard.
+Target platforms are planning tags only — Creator OS does not post anywhere.
+- **Pages:** `/dashboard/[workspace]` → `HomePage.tsx`; `/dashboard/[workspace]/kanban` → `ContentPipelinePage.tsx` (`?new=1` opens the wizard)
+- **Frontend internals:** `components/AddContentWizard.tsx`, `components/KanbanBoard.tsx`, `hooks/useContent.ts`, `constants/content.ts` (types, stages, platforms), `content.module.css`
+- **API:** `GET /workspaces/{workspace}/content`, `POST /workspaces/{workspace}/content`, `PATCH /workspaces/{workspace}/content/{item_id}`, `GET /workspaces/{workspace}/content/stats`
+- **Backend:** `router.py`, `service.py` (`ContentService`: assignee must be a member, other workspaces' items are 404), `rules.py` (KPIs with 30-day deltas), `models.py`, `repository.py`, `supabase_repository.py`
+- **Database:** `supabase/migrations/20261113010000_content_items.sql`
+- **Depends on:** `workspaces`
 
 ## `analytics`
 Brand-level revenue by month, the pipeline by stage, top campaigns, creator performance, overdue invoices and a roster breakdown.
@@ -197,14 +188,14 @@ Runs the whole backend on a seeded in-memory dataset when Supabase is unreachabl
 |---|---|
 | `backend/shared/config.py` (`settings`) | every Supabase/LLM/email adapter |
 | `backend/shared/errors.py` | services (domain errors) |
-| `backend/shared/http_errors.py` (`map_errors`) | auth, contracts, creators, deals, deliverables, negotiation, payments routers |
+| `backend/shared/http_errors.py` (`map_errors`) | auth, contracts, creators, deals, deliverables, payments, workspaces, content routers |
 | `backend/shared/supabase_client.py`, `supabase_query.py` | every router (client) and every `supabase_repository.py` |
 | `backend/shared/pagination.py` | 7 list endpoints |
-| `backend/shared/llm/` (port + Gemini adapter) | negotiation, contract-intelligence, contracts |
-| `backend/shared/money.py` | negotiation, Gemini adapter |
+| `backend/shared/llm/` (port + Gemini adapter) | contract-intelligence, contracts |
 | `frontend/src/shared/lib/api-client.ts` (+ generated `api-types.ts`) | every page |
 | `frontend/src/shared/lib/session.ts` | auth, app shell, most pages |
-| `frontend/src/shared/lib/format-currency.ts`, `status-variants.ts` | deals, creators, creator-dashboard, negotiation, analytics, contracts, contract-intelligence, payments |
-| `frontend/src/shared/constants/deal-stages.ts` | deals, deliverables, creators, creator-dashboard, negotiation, analytics |
-| `frontend/src/shared/components/ui/` (`StatusPill`, `EmptyState`, `GradientPanel`) | most pages |
-| `frontend/src/app/_shell/AppShell.tsx` | the `(brand)` and `(creator)` layouts |
+| `frontend/src/shared/lib/format-currency.ts`, `status-variants.ts` | deals, creators, analytics, contracts, contract-intelligence, payments |
+| `frontend/src/shared/constants/deal-stages.ts` | deals, deliverables, creators, analytics |
+| `frontend/src/shared/components/ui/` (`StatusPill`, `EmptyState`, `GradientPanel`) | most brand pages |
+| `frontend/src/shared/components/ui/Dialog.tsx` (native `<dialog>` modal) | content (Add Content wizard), workspaces (⌘K palette) |
+| `frontend/src/app/_shell/AppShell.tsx` | the `(brand)` layout (brand app only; creators are sent to `/dashboard`) |

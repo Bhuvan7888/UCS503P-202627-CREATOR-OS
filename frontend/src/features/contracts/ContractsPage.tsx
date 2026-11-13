@@ -21,7 +21,6 @@ export default function ContractsPage() {
   const [newDeal, setNewDeal] = useState(false);
   const [error, setError] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [showPersonalForm, setShowPersonalForm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const [acceptError, setAcceptError] = useState("");
@@ -51,25 +50,6 @@ export default function ContractsPage() {
         .then(({ data }) => setCreators(data ?? []));
     }
   }, []);
-
-  async function uploadPersonalContract(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formEl = e.currentTarget;
-    setFormError("");
-    const fileInput = formEl.elements.namedItem("file") as HTMLInputElement;
-    const file = fileInput.files?.[0];
-    if (!file) return;
-    setBusy(true);
-    const res = await postWithSession(`/creators/me/contracts`, file);
-    setBusy(false);
-    if (!res.ok) {
-      setFormError("Couldn't upload contract.");
-      return;
-    }
-    formEl.reset();
-    setShowPersonalForm(false);
-    reload();
-  }
 
   async function handleContractStatusChange(c: Contract, newStatus: string) {
     if (newStatus === c.status) return;
@@ -158,23 +138,6 @@ export default function ContractsPage() {
     reload();
   }
 
-  async function handleLoadSample() {
-    setBusy(true);
-    setFormError("");
-    try {
-      const res = await postWithSession(`/contracts/upload-sample`);
-      if (!res.ok) {
-        setFormError("Couldn't scan sample contract.");
-        return;
-      }
-      reload();
-    } catch {
-      setFormError("Failed to trigger sample contract scan.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   function handleDownloadSample() {
     window.open(`${API_BASE_URL}/contracts/sample-contract-pdf`, "_blank");
   }
@@ -212,29 +175,8 @@ export default function ContractsPage() {
           >
             Download sample PDF
           </button>
-          {!isBrand && (
-            <button
-              type="button"
-              className="btn"
-              style={{
-                background: "var(--color-surface-sunken)",
-                color: "var(--color-accent)",
-                border: "1px solid var(--color-border)",
-                fontSize: "12px",
-              }}
-              disabled={busy}
-              onClick={handleLoadSample}
-            >
-              {busy ? "Scanning sample…" : "⚡ Test sample contract (flag scan)"}
-            </button>
-          )}
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
-          {!isBrand && (
-            <button className="btn" onClick={() => setShowPersonalForm((v) => !v)}>
-              {showPersonalForm ? "Cancel" : "+ Upload for review"}
-            </button>
-          )}
           {isBrand && (
             <button className="btn" onClick={() => setShowForm((v) => !v)}>
               {showForm ? "Cancel" : "+ Upload contract"}
@@ -242,22 +184,6 @@ export default function ContractsPage() {
           )}
         </div>
       </div>
-
-      {showPersonalForm && (
-        <form
-          onSubmit={uploadPersonalContract}
-          className="mtile"
-          style={{ marginBottom: "14px", display: "flex", gap: "8px", alignItems: "end" }}
-        >
-          <label className="text-label" style={{ flex: 1 }}>
-            Contract file (PDF) — not linked to any brand
-            <input name="file" type="file" accept="application/pdf" required className="field" />
-          </label>
-          <button className="btn" disabled={busy} type="submit">
-            {busy ? "Uploading…" : "Upload"}
-          </button>
-        </form>
-      )}
 
       {showForm && isBrand && (
         <form

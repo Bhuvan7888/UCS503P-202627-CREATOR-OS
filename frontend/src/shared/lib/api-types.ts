@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/creator/oauth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creator Oauth */
+        post: operations["creator_oauth_auth_creator_oauth_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/creators": {
         parameters: {
             query?: never;
@@ -88,23 +105,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/creators/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update My Profile */
-        patch: operations["update_my_profile_creators_me_patch"];
         trace?: never;
     };
     "/creators/me/brands": {
@@ -135,24 +135,6 @@ export interface paths {
         put?: never;
         /** Link Brand */
         post: operations["link_brand_creators_me_link_brand_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/creators/me/growth-snapshots": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Growth Snapshots */
-        get: operations["list_growth_snapshots_creators_me_growth_snapshots_get"];
-        put?: never;
-        /** Add Growth Snapshot */
-        post: operations["add_growth_snapshot_creators_me_growth_snapshots_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -194,23 +176,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/deals/stats": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Creator Deal Stats */
-        get: operations["creator_deal_stats_deals_stats_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/deals/{id}/view": {
         parameters: {
             query?: never;
@@ -222,23 +187,6 @@ export interface paths {
         put?: never;
         /** Mark Deal Viewed */
         post: operations["mark_deal_viewed_deals__id__view_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/deals/weekly-value": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Weekly Completed Value */
-        get: operations["weekly_completed_value_deals_weekly_value_get"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -262,6 +210,23 @@ export interface paths {
         patch: operations["update_deal_status_deals__id__status_patch"];
         trace?: never;
     };
+    "/contracts/sample-contract-pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Sample Contract Pdf */
+        get: operations["download_sample_contract_pdf_contracts_sample_contract_pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/deals/{deal_id}/contracts": {
         parameters: {
             query?: never;
@@ -273,23 +238,6 @@ export interface paths {
         put?: never;
         /** Upload Contract */
         post: operations["upload_contract_deals__deal_id__contracts_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/creators/me/contracts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Upload Personal Contract */
-        post: operations["upload_personal_contract_creators_me_contracts_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -328,23 +276,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/contracts/{id}/creator-status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update Contract Creator Status */
-        patch: operations["update_contract_creator_status_contracts__id__creator_status_patch"];
         trace?: never;
     };
     "/contracts/{id}/status": {
@@ -427,144 +358,6 @@ export interface paths {
         put?: never;
         /** Create Manual Activity Log */
         post: operations["create_manual_activity_log_activity_log_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/negotiation/sessions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Sessions */
-        get: operations["list_sessions_negotiation_sessions_get"];
-        put?: never;
-        /** Create Session */
-        post: operations["create_session_negotiation_sessions_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/negotiation/sessions/{id}/rate-range": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Rate Range */
-        get: operations["get_rate_range_negotiation_sessions__id__rate_range_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/negotiation/sessions/{id}/forecast": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Forecast */
-        get: operations["get_forecast_negotiation_sessions__id__forecast_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/negotiation/sessions/{id}/checklist": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update Checklist */
-        patch: operations["update_checklist_negotiation_sessions__id__checklist_patch"];
-        trace?: never;
-    };
-    "/negotiation/sessions/{id}/counter-offer": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create Counter Offer */
-        post: operations["create_counter_offer_negotiation_sessions__id__counter_offer_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/negotiation/sessions/{id}/conversations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Conversations */
-        get: operations["list_conversations_negotiation_sessions__id__conversations_get"];
-        put?: never;
-        /** Analyze Conversation */
-        post: operations["analyze_conversation_negotiation_sessions__id__conversations_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/negotiation/sessions/{id}/offers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Offers */
-        get: operations["list_offers_negotiation_sessions__id__offers_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/negotiation/sessions/{id}/script": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Generate Script */
-        post: operations["generate_script_negotiation_sessions__id__script_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -691,23 +484,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/benchmarks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Benchmarks */
-        get: operations["get_benchmarks_benchmarks_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/analytics/brand": {
         parameters: {
             query?: never;
@@ -719,6 +495,40 @@ export interface paths {
         get: operations["get_brand_analytics_analytics_brand_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/messages/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Unread Summary */
+        get: operations["get_unread_summary_messages_unread_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/messages/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Read */
+        post: operations["mark_read_messages_read_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -743,38 +553,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/messages/unread": {
+    "/workspaces": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            unread_count: number;
-                            has_unread: boolean;
-                            by_contact: {
-                                [key: string]: number;
-                            };
-                        };
-                    };
-                };
-            };
+        /** List My Workspaces */
+        get: operations["list_my_workspaces_workspaces_get"];
+        put?: never;
+        /** Create Workspace */
+        post: operations["create_workspace_workspaces_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
+        /** Get Workspace */
+        get: operations["get_workspace_workspaces__workspace__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Members */
+        get: operations["list_members_workspaces__workspace__members_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Content */
+        get: operations["list_content_workspaces__workspace__content_get"];
+        put?: never;
+        /** Create Content */
+        post: operations["create_content_workspaces__workspace__content_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/content/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Content Stats */
+        get: operations["content_stats_workspaces__workspace__content_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/content/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Content */
+        patch: operations["update_content_workspaces__workspace__content__item_id__patch"];
+        trace?: never;
     };
 }
 export type webhooks = Record<string, never>;
@@ -847,29 +728,8 @@ export interface components {
             /** Display Name */
             display_name?: string | null;
         };
-        /** BenchmarkOut */
-        BenchmarkOut: {
-            /**
-             * Insufficient Data
-             * @default false
-             */
-            insufficient_data: boolean;
-            /** P25 Rate */
-            p25_rate?: number | null;
-            /** P50 Rate */
-            p50_rate?: number | null;
-            /** P75 Rate */
-            p75_rate?: number | null;
-            /** Sample Size */
-            sample_size?: number | null;
-        };
         /** Body_upload_contract_deals__deal_id__contracts_post */
         Body_upload_contract_deals__deal_id__contracts_post: {
-            /** File */
-            file: string;
-        };
-        /** Body_upload_personal_contract_creators_me_contracts_post */
-        Body_upload_personal_contract_creators_me_contracts_post: {
             /** File */
             file: string;
         };
@@ -935,29 +795,6 @@ export interface components {
             /** Password */
             password: string;
         };
-        /** ChecklistState */
-        ChecklistState: {
-            /**
-             * Usage Rights Duration Set
-             * @default false
-             */
-            usage_rights_duration_set: boolean;
-            /**
-             * Exclusivity Scope Set
-             * @default false
-             */
-            exclusivity_scope_set: boolean;
-            /**
-             * Revision Limit Set
-             * @default false
-             */
-            revision_limit_set: boolean;
-            /**
-             * Payment Timeline Set
-             * @default false
-             */
-            payment_timeline_set: boolean;
-        };
         /** ClauseCardOut */
         ClauseCardOut: {
             /**
@@ -995,6 +832,121 @@ export interface components {
             clause_type: string;
             /** Raw Text */
             raw_text: string;
+        };
+        /** ContentItem */
+        ContentItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Type
+             * @default long_form_video
+             * @enum {string}
+             */
+            type: "long_form_video" | "post" | "reel" | "story" | "short_form_video";
+            /** Pillar */
+            pillar: string;
+            /** Hook */
+            hook: string;
+            /**
+             * Target Platforms
+             * @default []
+             */
+            target_platforms: ("youtube" | "instagram" | "x" | "linkedin" | "facebook")[];
+            /** Due Date */
+            due_date?: string | null;
+            /** Assignee User Id */
+            assignee_user_id?: string | null;
+            /**
+             * Stage
+             * @default idea
+             * @enum {string}
+             */
+            stage: "idea" | "scripted" | "in_production" | "scheduled" | "published";
+            /** Created By */
+            created_by?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** ContentItemCreate */
+        ContentItemCreate: {
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Type
+             * @default long_form_video
+             * @enum {string}
+             */
+            type: "long_form_video" | "post" | "reel" | "story" | "short_form_video";
+            /** Pillar */
+            pillar: string;
+            /** Hook */
+            hook: string;
+            /**
+             * Target Platforms
+             * @default []
+             */
+            target_platforms: ("youtube" | "instagram" | "x" | "linkedin" | "facebook")[];
+            /** Due Date */
+            due_date?: string | null;
+            /** Assignee User Id */
+            assignee_user_id?: string | null;
+        };
+        /**
+         * ContentItemUpdate
+         * @description Partial update: only fields that are sent change (moving a card sends just `stage`).
+         */
+        ContentItemUpdate: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Type */
+            type?: ("long_form_video" | "post" | "reel" | "story" | "short_form_video") | null;
+            /** Pillar */
+            pillar?: string | null;
+            /** Hook */
+            hook?: string | null;
+            /** Target Platforms */
+            target_platforms?: ("youtube" | "instagram" | "x" | "linkedin" | "facebook")[] | null;
+            /** Due Date */
+            due_date?: string | null;
+            /** Assignee User Id */
+            assignee_user_id?: string | null;
+            /** Stage */
+            stage?: ("idea" | "scripted" | "in_production" | "scheduled" | "published") | null;
+        };
+        /** ContentStats */
+        ContentStats: {
+            total: components["schemas"]["Kpi"];
+            scripted: components["schemas"]["Kpi"];
+            published: components["schemas"]["Kpi"];
+            ideas: components["schemas"]["Kpi"];
+            /** By Platform */
+            by_platform: {
+                [key: string]: number;
+            };
         };
         /** Contract */
         Contract: {
@@ -1039,14 +991,6 @@ export interface components {
              */
             updated_at: string;
         };
-        /** ContractCreatorStatusUpdateRequest */
-        ContractCreatorStatusUpdateRequest: {
-            /**
-             * Creator Status
-             * @enum {string}
-             */
-            creator_status: "unread" | "read" | "ongoing" | "completed";
-        };
         /** ContractStatusUpdateRequest */
         ContractStatusUpdateRequest: {
             /**
@@ -1054,13 +998,6 @@ export interface components {
              * @enum {string}
              */
             status: "draft" | "uploaded" | "signed" | "pending_review" | "void";
-        };
-        /** CounterOfferRequest */
-        CounterOfferRequest: {
-            /** Amount */
-            amount: number;
-            /** Message */
-            message?: string | null;
         };
         /** Creator */
         Creator: {
@@ -1134,15 +1071,6 @@ export interface components {
             deal_count: number;
             /** Total Value */
             total_value: number;
-        };
-        /** CreatorProfileUpdateRequest */
-        CreatorProfileUpdateRequest: {
-            /** Followers Count */
-            followers_count: number;
-            /** Engagement Rate */
-            engagement_rate: number;
-            /** Avg Views Per Week */
-            avg_views_per_week?: number | null;
         };
         /** CreatorSignupRequest */
         CreatorSignupRequest: {
@@ -1325,65 +1253,39 @@ export interface components {
             /** Resolution Note */
             resolution_note?: string | null;
         };
-        /** ForecastPoint */
-        ForecastPoint: {
-            /** Week */
-            week: number;
-            /** Low */
-            low: number;
-            /** Mid */
-            mid: number;
-            /** High */
-            high: number;
-        };
-        /** GrowthSnapshot */
-        GrowthSnapshot: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Creator Id
-             * Format: uuid
-             */
-            creator_id: string;
-            /**
-             * Recorded At
-             * Format: date
-             */
-            recorded_at: string;
-            /** Followers Count */
-            followers_count: number;
-            /** Engagement Rate */
-            engagement_rate?: number | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-        };
-        /** GrowthSnapshotCreateRequest */
-        GrowthSnapshotCreateRequest: {
-            /**
-             * Recorded At
-             * Format: date
-             */
-            recorded_at: string;
-            /** Followers Count */
-            followers_count: number;
-            /** Engagement Rate */
-            engagement_rate?: number | null;
-        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** Kpi */
+        Kpi: {
+            /** Value */
+            value: number;
+            /** Delta Pct */
+            delta_pct: number | null;
+        };
         /** LinkBrandRequest */
         LinkBrandRequest: {
             /** Invite Code */
             invite_code: string;
+        };
+        /** MemberOut */
+        MemberOut: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "owner" | "script_writer" | "video_editor" | "brand_manager";
+            /** Name */
+            name: string;
+            /** Email */
+            email?: string | null;
         };
         /** Message */
         Message: {
@@ -1414,120 +1316,55 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Read At */
+            read_at?: string | null;
         };
         /** MessageCreateRequest */
         MessageCreateRequest: {
             /** Body */
             body: string;
         };
-        /** NegotiationConversation */
-        NegotiationConversation: {
+        /**
+         * MyWorkspace
+         * @description A workspace as seen by one of its members: includes the caller's role.
+         */
+        MyWorkspace: {
             /**
              * Id
              * Format: uuid
              */
             id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
             /**
-             * Session Id
+             * Owner User Id
              * Format: uuid
              */
-            session_id: string;
-            /** Brand Name */
-            brand_name: string;
-            /** Conversation Text */
-            conversation_text: string;
-            /** Ai Suggestion */
-            ai_suggestion?: string | null;
+            owner_user_id: string;
+            /** Creator Id */
+            creator_id?: string | null;
+            /**
+             * Is Primary
+             * @default false
+             */
+            is_primary: boolean;
             /**
              * Created At
              * Format: date-time
              */
             created_at: string;
-        };
-        /** NegotiationConversationCreateRequest */
-        NegotiationConversationCreateRequest: {
-            /** Brand Name */
-            brand_name: string;
-            /** Conversation Text */
-            conversation_text: string;
-        };
-        /** NegotiationOffer */
-        NegotiationOffer: {
             /**
-             * Id
-             * Format: uuid
+             * Updated At
+             * Format: date-time
              */
-            id: string;
+            updated_at: string;
             /**
-             * Session Id
-             * Format: uuid
-             */
-            session_id: string;
-            /** Amount */
-            amount: number;
-            /** Message */
-            message?: string | null;
-            /**
-             * Sender
+             * Role
              * @enum {string}
              */
-            sender: "creator" | "brand";
-            /**
-             * Sent At
-             * Format: date-time
-             */
-            sent_at: string;
-        };
-        /** NegotiationSession */
-        NegotiationSession: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Deal Id
-             * Format: uuid
-             */
-            deal_id: string;
-            /** Status */
-            status: string;
-            /** Views Per Week */
-            views_per_week: number;
-            /** Niche Cpm */
-            niche_cpm: number;
-            /** Follower Tier Multiplier */
-            follower_tier_multiplier: number;
-            /** Engagement Rate Adjustment */
-            engagement_rate_adjustment: number;
-            /** Base Rate */
-            base_rate: number;
-            /** Range Low */
-            range_low: number;
-            /** Range High */
-            range_high: number;
-            checklist: components["schemas"]["ChecklistState"];
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-        };
-        /** NegotiationSessionCreate */
-        NegotiationSessionCreate: {
-            /**
-             * Deal Id
-             * Format: uuid
-             */
-            deal_id: string;
-            /** Views Per Week */
-            views_per_week: number;
-            /** Niche Cpm */
-            niche_cpm: number;
-            /** Follower Tier Multiplier */
-            follower_tier_multiplier: number;
-            /** Engagement Rate Adjustment */
-            engagement_rate_adjustment: number;
+            role: "owner" | "script_writer" | "video_editor" | "brand_manager";
         };
         /** NicheBreakdown */
         NicheBreakdown: {
@@ -1539,6 +1376,14 @@ export interface components {
             creator_count: number;
             /** Avg Engagement Rate */
             avg_engagement_rate?: number | null;
+        };
+        /**
+         * OAuthCompleteRequest
+         * @description Sent after a Google (Supabase OAuth) sign-in; the access token travels in the Authorization header.
+         */
+        OAuthCompleteRequest: {
+            /** Refresh Token */
+            refresh_token: string;
         };
         /** Payment */
         Payment: {
@@ -1614,15 +1459,6 @@ export interface components {
              */
             status: "pending" | "paid" | "overdue";
         };
-        /** RateRangeOut */
-        RateRangeOut: {
-            /** Base Rate */
-            base_rate: number;
-            /** Range Low */
-            range_low: number;
-            /** Range High */
-            range_high: number;
-        };
         /** ResolveEscalationRequest */
         ResolveEscalationRequest: {
             /**
@@ -1647,21 +1483,6 @@ export interface components {
             /** Clauses */
             clauses: components["schemas"]["ClauseInput"][];
         };
-        /** ScriptGenerateRequest */
-        ScriptGenerateRequest: {
-            /**
-             * Session Id
-             * Format: uuid
-             */
-            session_id: string;
-            /** Kind */
-            kind: string;
-            /**
-             * Use Llm
-             * @default true
-             */
-            use_llm: boolean;
-        };
         /** TopBrand */
         TopBrand: {
             /** Campaign Name */
@@ -1670,6 +1491,17 @@ export interface components {
             deal_count: number;
             /** Total Value */
             total_value: number;
+        };
+        /** UnreadSummaryResponse */
+        UnreadSummaryResponse: {
+            /** Unread Count */
+            unread_count: number;
+            /** Has Unread */
+            has_unread: boolean;
+            /** By Contact */
+            by_contact: {
+                [key: string]: number;
+            };
         };
         /** ValidationError */
         ValidationError: {
@@ -1684,15 +1516,10 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
-        /** WeeklyValuePoint */
-        WeeklyValuePoint: {
-            /**
-             * Week Start
-             * Format: date
-             */
-            week_start: string;
-            /** Value */
-            value: number;
+        /** WorkspaceCreateRequest */
+        WorkspaceCreateRequest: {
+            /** Name */
+            name: string;
         };
     };
     responses: never;
@@ -1835,6 +1662,41 @@ export interface operations {
             };
         };
     };
+    creator_oauth_auth_creator_oauth_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OAuthCompleteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthSession"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_creators_creators_get: {
         parameters: {
             query?: {
@@ -1881,41 +1743,6 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CreatorOnboardRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Creator"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_my_profile_creators_me_patch: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatorProfileUpdateRequest"];
             };
         };
         responses: {
@@ -2005,76 +1832,12 @@ export interface operations {
             };
         };
     };
-    list_growth_snapshots_creators_me_growth_snapshots_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GrowthSnapshot"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    add_growth_snapshot_creators_me_growth_snapshots_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GrowthSnapshotCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GrowthSnapshot"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     get_creator_creators__id__get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                authorization?: string | null;
+            };
             path: {
                 id: string;
             };
@@ -2171,37 +1934,6 @@ export interface operations {
             };
         };
     };
-    creator_deal_stats_deals_stats_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     mark_deal_viewed_deals__id__view_post: {
         parameters: {
             query?: never;
@@ -2222,39 +1954,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Deal"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    weekly_completed_value_deals_weekly_value_get: {
-        parameters: {
-            query?: {
-                weeks?: number;
-            };
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WeeklyValuePoint"][];
                 };
             };
             /** @description Validation Error */
@@ -2305,6 +2004,26 @@ export interface operations {
             };
         };
     };
+    download_sample_contract_pdf_contracts_sample_contract_pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     upload_contract_deals__deal_id__contracts_post: {
         parameters: {
             query?: never;
@@ -2319,41 +2038,6 @@ export interface operations {
         requestBody: {
             content: {
                 "multipart/form-data": components["schemas"]["Body_upload_contract_deals__deal_id__contracts_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Contract"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    upload_personal_contract_creators_me_contracts_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["Body_upload_personal_contract_creators_me_contracts_post"];
             };
         };
         responses: {
@@ -2431,43 +2115,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Contract"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_contract_creator_status_contracts__id__creator_status_patch: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ContractCreatorStatusUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Contract"];
                 };
             };
             /** @description Validation Error */
@@ -2698,348 +2345,6 @@ export interface operations {
             };
         };
     };
-    list_sessions_negotiation_sessions_get: {
-        parameters: {
-            query?: {
-                limit?: number;
-                offset?: number;
-            };
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NegotiationSession"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_session_negotiation_sessions_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["NegotiationSessionCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NegotiationSession"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_rate_range_negotiation_sessions__id__rate_range_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RateRangeOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_forecast_negotiation_sessions__id__forecast_get: {
-        parameters: {
-            query?: {
-                weekly_growth_rate?: number | null;
-                weeks?: number;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ForecastPoint"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_checklist_negotiation_sessions__id__checklist_patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChecklistState"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NegotiationSession"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_counter_offer_negotiation_sessions__id__counter_offer_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CounterOfferRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NegotiationOffer"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_conversations_negotiation_sessions__id__conversations_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NegotiationConversation"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    analyze_conversation_negotiation_sessions__id__conversations_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["NegotiationConversationCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NegotiationConversation"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_offers_negotiation_sessions__id__offers_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NegotiationOffer"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    generate_script_negotiation_sessions__id__script_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ScriptGenerateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": string;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     list_payments_payments_get: {
         parameters: {
             query?: {
@@ -3190,7 +2495,9 @@ export interface operations {
     get_clauses_contracts__contract_id__clauses_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                authorization?: string | null;
+            };
             path: {
                 contract_id: string;
             };
@@ -3221,7 +2528,9 @@ export interface operations {
     scan_contract_contracts__contract_id__scan_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                authorization?: string | null;
+            };
             path: {
                 contract_id: string;
             };
@@ -3256,7 +2565,9 @@ export interface operations {
     escalate_clause_contracts__contract_id__escalate_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                authorization?: string | null;
+            };
             path: {
                 contract_id: string;
             };
@@ -3325,38 +2636,6 @@ export interface operations {
             };
         };
     };
-    get_benchmarks_benchmarks_get: {
-        parameters: {
-            query: {
-                niche: string;
-                follower_tier: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BenchmarkOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     get_brand_analytics_analytics_brand_get: {
         parameters: {
             query?: never;
@@ -3375,6 +2654,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BrandAnalytics"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_unread_summary_messages_unread_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadSummaryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_read_messages_read_post: {
+        parameters: {
+            query: {
+                with_id: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -3445,6 +2788,279 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_my_workspaces_workspaces_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyWorkspace"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_workspace_workspaces_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkspaceCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyWorkspace"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_workspace_workspaces__workspace__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyWorkspace"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_members_workspaces__workspace__members_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_content_workspaces__workspace__content_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentItem"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_content_workspaces__workspace__content_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentItemCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    content_stats_workspaces__workspace__content_stats_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentStats"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_content_workspaces__workspace__content__item_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                item_id: string;
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentItemUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentItem"];
                 };
             };
             /** @description Validation Error */

@@ -1,0 +1,23 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import client from "@/shared/lib/api-client";
+import { loadSession } from "@/shared/lib/session";
+
+/** /dashboard → the user's primary workspace (created on first visit for a creator). */
+export default function WorkspaceRedirectPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const session = loadSession();
+    if (!session) return router.replace("/creator/login");
+    if (session.role === "brand") return router.replace("/brand");
+    client.GET("/workspaces").then(({ data }) => {
+      const target = data?.find((w) => w.is_primary) ?? data?.[0];
+      router.replace(target ? `/dashboard/${target.slug}` : "/creator/login");
+    });
+  }, [router]);
+
+  return <p style={{ padding: 32, color: "var(--color-ink-soft)" }}>Opening your workspace…</p>;
+}

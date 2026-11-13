@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Request
 
 from features.auth.dependencies import get_current_user_id
 from features.auth.models import (
@@ -81,10 +81,12 @@ async def creator_login(
 
 @router.post("/creator/oauth", response_model=AuthSession)
 async def creator_oauth(
-    request: OAuthCompleteRequest,
+    body: OAuthCompleteRequest,
+    http: Request,
     user_id: UUID = Depends(get_current_user_id),
-    authorization: str = Header(),
     service: AuthService = Depends(get_auth_service),
 ):
+    # get_current_user_id has already validated the "Bearer <token>" header
+    access_token = http.headers["authorization"].split(" ", 1)[1]
     with map_errors({ValidationError: 400}):
-        return await service.creator_oauth(user_id, authorization.split(" ", 1)[1], request)
+        return await service.creator_oauth(user_id, access_token, body)

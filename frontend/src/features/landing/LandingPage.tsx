@@ -106,10 +106,10 @@ export default function LandingPage() {
 
             <div className={styles.roleCard}>
               <span className={styles.roleTag}>Creator</span>
-              <div className={styles.roleTitle}>Negotiate with data</div>
+              <div className={styles.roleTitle}>Plan your content</div>
               <p className={styles.roleDesc}>
-                Fair-rate ranges, a growth forecast, a pre-send checklist, and drafted scripts —
-                negotiation lives inside your dashboard.
+                Capture ideas, move them from script to published on one board, and work with your
+                team in a free workspace.
               </p>
               <div className={styles.roleActions}>
                 <Link href="/creator/login" className={styles.secondary}>
@@ -130,8 +130,7 @@ export default function LandingPage() {
             <div className={styles.phaseNum}>01</div>
             <div className={styles.phaseTitle}>Foundation</div>
             <p className={styles.phaseDesc}>
-              Onboarding, negotiation, contracts, deliverables, and payments — the deal lifecycle
-              end to end.
+              Onboarding, contracts, deliverables, and payments — the deal lifecycle end to end.
             </p>
           </div>
           <div>

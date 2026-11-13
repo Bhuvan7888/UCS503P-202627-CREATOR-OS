@@ -9,7 +9,6 @@ import { useUnreadMessages } from "@/features/messages";
 import {
   LayoutGrid,
   BarChart3,
-  Handshake,
   MessageCircle,
   FileText,
   Package,
@@ -17,21 +16,11 @@ import {
   Activity as ActivityIcon,
 } from "lucide-react";
 
-interface AppShellProps {
-  children: React.ReactNode;
-  role: "brand" | "creator";
-}
-
-export function AppShell({ children, role }: AppShellProps) {
+/** Shell of the brand app. Creators use the workspace shell (/dashboard) instead. */
+export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const fallbackLabel = role === "brand" ? "Brand" : "Creator";
-  const [accountLabel, setAccountLabel] = useState(fallbackLabel);
-  // A handful of routes (contracts/deliverables/payments) are only defined
-  // once, under the brand route group, so a creator visiting them still gets
-  // wrapped by a layout that hardcodes role="brand". The session's own role
-  // is always accurate (it comes from the JWT), so it wins once loaded.
-  const [effectiveRole, setEffectiveRole] = useState(role);
+  const [accountLabel, setAccountLabel] = useState("Brand");
   const hasUnread = useUnreadMessages(pathname);
 
   useEffect(() => {
@@ -40,11 +29,12 @@ export function AppShell({ children, role }: AppShellProps) {
     // initializer, which would reintroduce that mismatch).
     const session = loadSession();
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAccountLabel(session?.brand_name ?? session?.display_name ?? fallbackLabel);
-    if (session?.role) {
-      setEffectiveRole(session.role);
+    setAccountLabel(session?.brand_name ?? session?.display_name ?? "Brand");
+    if (session?.role === "creator") {
+      // creators work in their workspace (/dashboard); these pages are the brand app
+      router.replace("/dashboard");
     }
-  }, [fallbackLabel]);
+  }, [router]);
 
   function logout() {
     clearSession();
@@ -61,22 +51,12 @@ export function AppShell({ children, role }: AppShellProps) {
     { name: "Activity", href: "/activity", icon: ActivityIcon },
   ];
 
-  const creatorNav = [
-    { name: "Dashboard", href: "/creator", icon: Handshake },
-    { name: "My Board", href: "/creator/board", icon: LayoutGrid },
-    { name: "Chats", href: "/chat", icon: MessageCircle },
-    { name: "Contracts", href: "/contracts", icon: FileText },
-    { name: "Deliverables", href: "/deliverables", icon: Package },
-    { name: "Payments", href: "/payments", icon: CreditCard },
-  ];
-
-  const nav = effectiveRole === "brand" ? brandNav : creatorNav;
-  const dashboardHref = effectiveRole === "brand" ? "/brand" : "/creator";
+  const nav = brandNav;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--color-canvas)" }}>
       <div className="sidebar" style={{ display: "flex", flexDirection: "column" }}>
-        <Link href={dashboardHref} className="logo">
+        <Link href="/brand" className="logo">
           <span className="mark" />
           <span className="label">Creator OS</span>
         </Link>
@@ -127,10 +107,7 @@ export function AppShell({ children, role }: AppShellProps) {
           }}
         >
           <div style={{ marginBottom: "8px" }}>
-            <StatusPill
-              status={effectiveRole === "brand" ? "BRAND" : "CREATOR"}
-              variant={effectiveRole === "brand" ? "accent" : "success"}
-            />
+            <StatusPill status="BRAND" variant="accent" />
           </div>
           <div
             style={{

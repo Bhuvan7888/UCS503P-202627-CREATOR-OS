@@ -15,7 +15,8 @@
   "/deals/[id]",
   "/deliverables",
   "/payments",
-  "/creator",
-  "/creator/board",
-  "/creator/negotiate/[dealId]"
+  "/auth/callback",
+  "/dashboard",
+  "/dashboard/[workspace]",
+  "/dashboard/[workspace]/kanban"
 ]

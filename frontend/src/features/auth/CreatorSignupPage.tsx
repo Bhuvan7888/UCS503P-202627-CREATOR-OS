@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import client from "@/shared/lib/api-client";
 import { saveSession } from "@/shared/lib/session";
 import { AuthPageFrame } from "./components/AuthPageFrame";
+import { GoogleButton } from "./components/GoogleButton";
 import { NETWORK_ERROR_MESSAGE } from "./constants/auth-messages";
 import styles from "./auth.module.css";
 
@@ -47,7 +48,7 @@ export default function CreatorSignupPage() {
         setError(msg);
       } else {
         saveSession(data);
-        router.push("/creator");
+        router.push("/dashboard");
       }
     } catch {
       setError(NETWORK_ERROR_MESSAGE);
@@ -63,9 +64,8 @@ export default function CreatorSignupPage() {
       <p className={styles.subline}>
         Already have an account? <Link href="/creator/login">Sign in</Link>
       </p>
-      <p className={styles.subline}>
-        You&apos;ll be able to link to any brand with an invite code once you&apos;re signed in.
-      </p>
+
+      <GoogleButton />
 
       {error && <div className={styles.error}>{error}</div>}
 

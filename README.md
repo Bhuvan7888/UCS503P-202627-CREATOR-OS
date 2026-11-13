@@ -1,27 +1,29 @@
 # Creator OS
 
-Creator OS is a deal-management platform for brands and the creators they work with. It covers the full lifecycle of a sponsorship in one place: onboarding and data-backed rate negotiation, contracts with automatic red-flag clause scanning, deliverables, invoices and payments, chat, analytics, and an activity log.
+Creator OS has two sides, free for everyone:
 
-- **Backend:** FastAPI (Python 3.13, `uv`) on Supabase (Postgres, Auth, Storage), Google Gemini for AI features, Resend for email
+- **Creators** get a workspace to plan content from idea to published: Home with KPIs, a Content Pipeline kanban and a 5-step Add Content wizard (more pages arrive phase by phase — see [docs/PROGRESS.md](docs/PROGRESS.md)).
+- **Brands** manage sponsorship deals: creator onboarding, contracts with automatic red-flag clause scanning, deliverables, invoices and payments, chat, analytics, and an activity log.
+
+- **Backend:** FastAPI (Python 3.13, `uv`) on Supabase (Postgres, Auth incl. Google sign-in, Storage), Google Gemini for AI features, Resend for email
 - **Frontend:** Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS v4, and a typed API client generated from the backend's OpenAPI schema
 
 ## Features
 
 | Feature | What it does | Main URLs |
 |---|---|---|
-| `auth` | Brand and creator sign-up and login, sessions, demo accounts | `/brand/login`, `/creator/login`, `/brand/signup`, `/creator/signup` |
-| `deals` | Brand deal pipeline, deal workspace, creator Kanban board | `/brand`, `/deals/[id]`, `/creator/board` |
-| `creators` | Creator roster and profiles, brand linking, growth snapshots | `/creators/[id]` |
-| `creator-dashboard` | Creator home: stats, deals, brands, contracts, benchmarks | `/creator` |
-| `negotiation` | Fair-rate range, growth forecast, checklist, counter-offers, AI chat and scripts | `/creator/negotiate/[dealId]` |
-| `contracts` | Contract upload, status lifecycle, sample contract | `/contracts` |
+| `auth` | Brand and creator sign-up and login (creators: email/password or Google), sessions, demo accounts | `/brand/login`, `/creator/login`, `/brand/signup`, `/creator/signup`, `/auth/callback` |
+| `workspaces` | Creator workspace shell: switcher, sidebar, ⌘K palette | `/dashboard`, `/dashboard/[workspace]` |
+| `content` | Home KPIs, Content Pipeline kanban, Add Content wizard | `/dashboard/[workspace]`, `/dashboard/[workspace]/kanban` |
+| `deals` | Brand deal pipeline and deal workspace | `/brand`, `/deals/[id]` |
+| `creators` | Creator roster and profiles, brand linking | `/creators/[id]` |
+| `contracts` | Contract upload, status lifecycle, sample contract PDF | `/contracts` |
 | `contract-intelligence` | Red-flag clause scanning, AI explanations, escalations | `/contracts/[id]/clauses` |
 | `deliverables` | Deliverables and their production workflow | `/deliverables` |
 | `payments` | Invoices, platform fees, payment status | `/payments` |
 | `messages` | Brand ↔ creator chat with an unread indicator | `/chat` |
 | `analytics` | Revenue, pipeline, top campaigns, creator performance | `/analytics` |
 | `activity-log` | Audit trail of actions | `/activity` |
-| `benchmarks` | Market rate percentiles (API only) | `GET /benchmarks` |
 | `demo-mode` | Seeded in-memory dataset when Supabase is unavailable | demo logins |
 | `landing` | Public landing page | `/` |
 
@@ -86,6 +88,7 @@ cd frontend && npm run generate:api   # writes src/shared/lib/api-types.ts
 
 CI (`.github/workflows/ci.yml`) runs the backend tests, the frontend type check and the frontend lint on every PR.
 
-## Known issues
+## Security notes
 
-See `AUDIT.md` §1.5. The demo-account login and token bypass is active in every environment, and several endpoints have no authentication. Both are scheduled for a dedicated security fix.
+- Demo accounts work only in offline demo mode and never when `ENVIRONMENT=production`; every endpoint except sign-up/login and the sample PDF needs a session, and deal/contract data is checked per tenant (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#access-control-read-before-adding-an-endpoint)).
+- Database tables have row-level security on with no policies: only the backend (service-role key) can read or write them.

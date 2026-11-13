@@ -24,7 +24,7 @@ backend/
 │   ├── supabase_repository.py   Supabase implementation of the ports
 │   └── *_adapter.py        other external adapters (storage, email) (optional)
 ├── shared/                 cross-cutting code used by 2+ features; never imports features/
-│   ├── config.py  errors.py  http_errors.py  pagination.py  money.py
+│   ├── config.py  errors.py  http_errors.py  pagination.py
 │   ├── supabase_client.py  supabase_query.py
 │   └── llm/                LLM port + Gemini adapter
 ├── scripts/                dev scripts: `uv run python -m scripts.<name>`
@@ -37,7 +37,7 @@ backend/
 
 frontend/
 ├── src/
-│   ├── app/                routing only: layouts + one-line page stubs, plus _shell/AppShell.tsx
+│   ├── app/                routing only: layouts + one-line page stubs, plus _shell/AppShell.tsx (brand app)
 │   ├── features/<feature>/ one folder per feature (kebab-case)
 │   │   ├── <Name>Page.tsx  page components (default export)
 │   │   ├── components/  hooks/  constants/  utils/  services/
@@ -52,11 +52,23 @@ frontend/
     └── e2e/                Playwright flows for both roles against a demo-mode backend
 ```
 
-The routes are unchanged. `src/app/(brand)/deals/[id]/page.tsx` contains only:
+Route files only re-export. `src/app/(brand)/deals/[id]/page.tsx` contains only:
 
 ```tsx
 export { default } from "@/features/deals/DealDetailPage";
 ```
+
+### Two app shells
+
+| Who | Routes | Shell |
+|---|---|---|
+| Brands | `src/app/(brand)/…` (`/brand`, `/deals/[id]`, `/contracts`, …) | `src/app/_shell/AppShell.tsx`; a creator session is redirected to `/dashboard` |
+| Creators (and, from Phase 6, invited team members) | `src/app/dashboard/[workspace]/…` | `features/workspaces/WorkspaceShell.tsx`: sidebar, ⌘K, workspace context (`useWorkspace()`), page header (`PageHeader`) |
+
+Creator pages live in their feature (e.g. `features/content/HomePage.tsx`), read the active workspace with
+`useWorkspace()` from `@/features/workspaces`, and call `/workspaces/{workspace}/…` endpoints with `workspace.slug`.
+The sidebar lists only pages that exist (`features/workspaces/constants/nav.ts`). The UI is light only and uses the
+colour tokens in `src/styles/globals.css` — no new palettes. Modals use `shared/components/ui/Dialog.tsx` (native `<dialog>`).
 
 ## Layers inside a backend feature
 
@@ -94,7 +106,8 @@ A file belongs in `shared/` **only** when two or more features use it. Otherwise
 | Concern | Where it lives |
 |---|---|
 | Config / env vars | one root `.env` (see `/.env.example`): backend `shared/config.py` loads it by absolute path; `frontend/next.config.ts` loads it for Next (`NEXT_PUBLIC_*` only reach the browser) |
-| Authentication | backend `features/auth/dependencies.py` (`get_current_actor`, `get_current_brand`); frontend `shared/lib/session.ts` + bearer middleware in `api-client.ts` |
+| Authentication | backend `features/auth/dependencies.py` (`get_current_actor`, `get_current_brand`, `get_current_user_id`); frontend `shared/lib/session.ts` + bearer middleware in `api-client.ts` |
+| Google sign-in | `GoogleButton` → Supabase `/auth/v1/authorize?provider=google&redirect_to=<origin>/auth/callback` → `OAuthCallbackPage` reads the tokens from the URL fragment → `POST /auth/creator/oauth` → same `AuthSession` as password login. Supabase **Redirect URLs** must list `<origin>/auth/callback` for every frontend origin |
 | Errors → HTTP | services raise `shared/errors.py` exceptions. Routers translate them with `with map_errors({ExceptionType: status}, by_message={...})`, so each route says exactly what it maps |
 | Database access | `supabase_repository.py` per feature, using `run_query()` / `first_or_none()` from `shared/supabase_query.py` |
 | Demo mode | every Supabase repository inherits `DemoFallbackMixin`; see `features/demo_mode/` |
@@ -113,8 +126,12 @@ A file belongs in `shared/` **only** when two or more features use it. Otherwise
   (or `get_current_brand`). `backend/tests/smoke/test_api_contract.py` lists the public routes; adding one there is a deliberate decision.
 - Anything scoped to a deal or contract **must** go through `load_accessible_deal(deal_id, actor)`
   (`features/deals/dependencies.py`) or `load_accessible_contract(contract_id, actor)` (`features/contracts/dependencies.py`).
-  Child records (deliverables, payments, negotiation sessions, escalations) are loaded first and checked through their parent —
+  Child records (deliverables, payments, escalations) are loaded first and checked through their parent —
   never trust a `deal_id` / `contract_id` sent by the client. The rule itself is `deals.can_access_deal`.
+- Anything inside a workspace **must** depend on `require_workspace_member` (`features/workspaces/dependencies.py`), which
+  resolves the slug or id and returns 404 (unknown) / 403 (not a member). Look child records up **within** that
+  workspace (`ContentService.update` returns 404 for an item of another workspace). Workspace routes use
+  `get_current_user_id`, not `get_current_actor`, because invited members have no brand/creator profile.
 - Demo accounts work only when `features.demo_mode.demo_access_enabled()` is true (offline demo dataset, not production).
 - Tests: `tests/features/auth/test_access_control_api.py` (cross-tenant 403s). Add a case for every new scoped endpoint;
   API tests point the access checks at fakes with `tests/fakes/access.py::use_fake_access_repos`.
@@ -150,7 +167,9 @@ Example: `content-calendar`.
    ```tsx
    export { default } from "@/features/content-calendar/ContentCalendarPage";
    ```
-9. Add the URL to `frontend/tests/smoke/routes.snapshot.json` and a nav entry in `src/app/_shell/AppShell.tsx`.
+9. Add the URL to `frontend/tests/smoke/routes.snapshot.json` and a nav entry: creator pages go under
+   `src/app/dashboard/[workspace]/` with an entry in `features/workspaces/constants/nav.ts`; brand pages under
+   `src/app/(brand)/` with an entry in `src/app/_shell/AppShell.tsx`. Add an e2e step in `frontend/tests/e2e/app-flows.spec.ts`.
 10. Add the feature to [FEATURES.md](FEATURES.md).
 
 ## Verification commands

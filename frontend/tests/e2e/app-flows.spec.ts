@@ -38,7 +38,8 @@ async function loginWithDemo(page: Page, role: "brand" | "creator", demoLabel: s
   await page.goto(`${WEB}/${role}/login`);
   await page.getByRole("button", { name: demoLabel }).click();
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await page.waitForURL(`${WEB}/${role}`);
+  // creators land in their primary workspace, addressed by its short slug
+  await page.waitForURL(role === "brand" ? `${WEB}/brand` : /\/dashboard\/ws-[0-9a-f]{8}$/);
 }
 
 async function expectSettled(page: Page) {
@@ -168,82 +169,99 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   expect(problems).toEqual([]);
 });
 
-test("creator: every page loads and every main action works", async ({ page }) => {
-  // The negotiation AI needs a real Gemini key. Without one the backend answers 503 ("temporarily
-  // unavailable") quickly, and the page must stay usable.
-  const problems = watchForProblems(page, [
-    /^503 POST \/negotiation\/sessions\/[^/]+\/conversations$/,
-  ]);
+test("creator: workspace home, add-content wizard, pipeline board and navigation", async ({
+  page,
+}) => {
+  const problems = watchForProblems(page);
   await loginWithDemo(page, "creator", "1. Ananya Sharma (Mamaearth, Nykaa)");
+  const base = new URL(page.url()).pathname;
+  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
   await expectSettled(page);
+  const totalCard = page.getByRole("region", { name: "Total Content" });
+  const totalBefore = Number(await totalCard.locator("strong").innerText());
 
-  // Dashboard: log a growth snapshot and add a deal with a linked brand
-  await page.locator('input[name="recorded_at"]').fill("2026-11-01");
-  await page.locator('input[name="followers_count"]').fill("70000");
-  await page.getByRole("button", { name: "Log", exact: true }).click();
-  await page.getByRole("button", { name: "+ Add a deal" }).click();
-  await page.locator('select[name="brand_id"]').selectOption({ index: 1 });
-  await page.locator('input[name="campaign_name"]').fill(`Creator Deal ${RUN}`);
-  await page.locator('input[name="contact_email"]').fill("brand@example.com");
-  await page.getByRole("button", { name: "Add deal" }).click();
-  await expect(page.getByText(`Creator Deal ${RUN}`).first()).toBeVisible();
+  // Add content through the 5-step wizard (Next is blocked until required fields are filled)
+  const title = `Morning routine ${RUN}`;
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  const wizard = page.getByRole("dialog", { name: "Add New Content Idea" });
+  await wizard.getByRole("button", { name: /Reel/ }).click();
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await expect(wizard.getByRole("button", { name: "Next" })).toBeDisabled();
+  await wizard.getByPlaceholder("Enter content title...").fill(title);
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await expect(wizard.getByRole("button", { name: "Next" })).toBeDisabled();
+  await wizard.getByPlaceholder("e.g., Education, Entertainment...").fill("Lifestyle");
+  await wizard.getByPlaceholder("Engaging opening line...").fill("I tried 5am for 30 days");
+  await wizard.getByRole("button", { name: "Instagram" }).click();
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.locator('input[type="date"]').fill("2026-12-01");
+  await wizard.locator("select").selectOption({ index: 1 });
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await expect(wizard.getByText("Review Content Details")).toBeVisible();
+  await expect(wizard.getByText("Instagram")).toBeVisible();
+  await wizard.getByRole("button", { name: "Save Content" }).click();
+  await expect(wizard).toBeHidden();
 
-  // Negotiation workspace for the new deal: set up the rate calculator (creates a session),
-  // then use the workspace
-  await page.getByText(`Creator Deal ${RUN}`).first().click();
-  await page.waitForURL(/\/creator\/negotiate\//);
-  await expectSettled(page);
-  await page.getByRole("button", { name: "Calculate my rate" }).click();
-  await expect(page.getByText("Suggested range", { exact: false })).toBeVisible();
-  // Forecast: a loading state while it's fetched, never "unavailable" for a working session
-  await expect(page.getByText("Loading forecast…")).toHaveCount(0);
-  await expect(page.getByText("Forecast unavailable.")).toHaveCount(0);
-  await page.locator("textarea").fill("They offered ₹15,000 for one reel.");
-  const aiResponse = page.waitForResponse(
-    (r) => r.url().endsWith("/conversations") && r.request().method() === "POST",
-  );
-  await page.getByRole("button", { name: "Send" }).click();
-  const ai = await aiResponse;
-  expect([200, 503]).toContain(ai.status());
-  if (ai.status() === 503) {
-    expect((await ai.json()).detail).toMatch(/temporarily unavailable/);
-    await expect(
-      page.getByRole("alert").filter({ hasText: /temporarily unavailable/ }),
-    ).toBeVisible();
-    await expect(page.locator("textarea")).toHaveValue("They offered ₹15,000 for one reel."); // text kept
-  }
-  await expect(page.getByRole("button", { name: "Send" })).toBeEnabled();
+  // Home reflects it: recent list and the Total Content KPI
+  await expect(page.getByText(title)).toBeVisible();
+  await expect(totalCard.locator("strong")).toHaveText(String(totalBefore + 1));
 
-  // Board
-  await visit(page, "/creator/board");
-  await expect(page.getByText(`Creator Deal ${RUN}`).first()).toBeVisible();
+  // ⌘K palette finds the item; its quick action opens the wizard on the pipeline
+  await page.keyboard.press("ControlOrMeta+k");
+  const palette = page.getByRole("dialog", { name: "Search" });
+  await palette.getByRole("textbox", { name: "Search" }).fill(RUN);
+  await expect(palette.getByRole("option", { name: new RegExp(title) })).toBeVisible();
+  await palette.getByRole("textbox", { name: "Search" }).fill("");
+  await palette.getByRole("button", { name: /Create New Content/ }).click();
+  await page.waitForURL(`${WEB}${base}/kanban`);
+  await expect(page.getByRole("dialog", { name: "Add New Content Idea" })).toBeVisible();
+  await page.getByRole("button", { name: "Cancel" }).click();
 
-  // Contracts: one-click sample scan, then open the flagged-clause review
-  await visit(page, "/contracts");
-  const before = await page.locator("a[href$='/clauses']").count();
-  await page.getByRole("button", { name: /Test sample contract/ }).click();
-  await expect(page.locator("a[href$='/clauses']")).toHaveCount(before + 1, { timeout: 15_000 });
-  await page.locator("a[href$='/clauses']").first().click();
-  await page.waitForURL(/\/clauses$/);
-  await expectSettled(page);
-  await page.getByRole("button", { name: /Clean Contract View/ }).click();
-  await page.getByRole("button", { name: /Flagged Clauses Review/ }).click();
+  // Pipeline: drag the card from Idea to Scripted, then use the keyboard-friendly "Move to" menu
+  const card = page.locator("article", { hasText: title });
+  const column = (name: string) => page.getByRole("region", { name, exact: true });
+  await expect(column("Idea").locator("article", { hasText: title })).toBeVisible();
+  await card.dragTo(column("Scripted"));
+  await expect(column("Scripted").locator("article", { hasText: title })).toBeVisible();
+  await card.getByRole("combobox").selectOption("published");
+  await expect(column("Published").locator("article", { hasText: title })).toBeVisible();
+  await page.reload();
+  await expect(column("Published").locator("article", { hasText: title })).toBeVisible(); // saved
 
-  // Deliverables: creator moves one forward
-  await visit(page, "/deliverables");
-  await page
-    .locator("select")
-    .filter({ has: page.locator('option[value="submitted"]') })
-    .first()
-    .selectOption("submitted");
+  // Filters: search narrows the board
+  await page.getByRole("button", { name: "Filters" }).click();
+  await page.getByRole("textbox", { name: "Search content" }).fill(`no-such-title-${RUN}`);
+  await expect(page.locator("article", { hasText: title })).toHaveCount(0);
+  await page.getByRole("button", { name: "Clear search" }).click();
+  await expect(card).toBeVisible();
 
-  // Payments and chat
-  await visit(page, "/payments");
-  await visit(page, "/chat");
-  await page.getByRole("button", { name: "Mamaearth" }).click();
-  await page.getByPlaceholder("Message…").fill(`Hi from creator ${RUN}`);
-  await page.getByRole("button", { name: "Send" }).click();
-  await expect(page.getByText(`Hi from creator ${RUN}`)).toBeVisible();
+  // Sidebar navigation, id → slug normalisation, a workspace we can't open
+  await page.getByRole("link", { name: "Home" }).first().click();
+  await page.waitForURL(`${WEB}${base}`);
+  const workspaceId = await page.evaluate(async (api) => {
+    const token = JSON.parse(localStorage.getItem("creatoros_session") ?? "{}").access_token;
+    const r = await fetch(`${api}/workspaces`, { headers: { Authorization: `Bearer ${token}` } });
+    return (await r.json())[0].id as string;
+  }, API);
+  await page.goto(`${WEB}/dashboard/${workspaceId}`);
+  await page.waitForURL(`${WEB}${base}`);
+  await page.goto(`${WEB}/dashboard/ws-00000000`);
+  await expect(page.getByText(/doesn't exist or you don't have access/)).toBeVisible();
+
+  // The brand app is not for creators
+  await page.goto(`${WEB}/chat`);
+  await page.waitForURL(/\/dashboard\/ws-/);
+
+  // Sign out from the user menu
+  await page.getByRole("button", { name: "Account menu" }).click();
+  await page.getByRole("menuitem", { name: "Sign out" }).click();
+  await page.waitForURL(`${WEB}/creator/login`);
 
   expect(problems).toEqual([]);
+});
+
+test("unknown URLs show the 404 page", async ({ page }) => {
+  await page.goto(`${WEB}/no-such-page-${RUN}`);
+  await expect(page.getByRole("heading", { name: "We can't find that page" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Go to dashboard" })).toBeVisible();
 });
