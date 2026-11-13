@@ -14,6 +14,7 @@ interface NegotiationChatProps {
   onConversationTextChange: (v: string) => void;
   conversations: NegotiationConversation[];
   busy: boolean;
+  error?: string;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
@@ -28,6 +29,7 @@ export function NegotiationChat({
   onConversationTextChange,
   conversations,
   busy,
+  error,
   onSubmit,
 }: NegotiationChatProps) {
   return (
@@ -106,6 +108,11 @@ export function NegotiationChat({
         <button className="btn" disabled={busy} type="submit">
           {busy ? "Thinking…" : "Send"}
         </button>
+        {error && (
+          <div role="alert" style={{ fontSize: "12px", color: "var(--color-danger)" }}>
+            {error}
+          </div>
+        )}
       </form>
     </div>
   );

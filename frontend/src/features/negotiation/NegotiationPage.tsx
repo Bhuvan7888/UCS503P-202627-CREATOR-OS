@@ -39,11 +39,12 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
   const [session, setSession] = useState<NegotiationSession | null | undefined>(undefined);
   const [offers, setOffers] = useState<NegotiationOffer[]>([]);
   const [conversations, setConversations] = useState<NegotiationConversation[]>([]);
-  const [forecast, setForecast] = useState<ForecastPoint[]>([]);
+  const [forecast, setForecast] = useState<ForecastPoint[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [conversationText, setConversationText] = useState("");
   const [brandNameInput, setBrandNameInput] = useState("");
   const [convoBusy, setConvoBusy] = useState(false);
+  const [convoError, setConvoError] = useState("");
 
   function reload() {
     const auth = loadSession();
@@ -117,6 +118,7 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
     const name = knownBrandName ?? (conversations[0]?.brand_name || brandNameInput);
     if (!session || !name.trim() || !conversationText.trim()) return;
     setConvoBusy(true);
+    setConvoError("");
     try {
       const { data, error: apiError } = await client.POST(
         "/negotiation/sessions/{id}/conversations",
@@ -125,9 +127,17 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
           body: { brand_name: name, conversation_text: conversationText },
         },
       );
-      if (apiError || !data) return;
+      if (apiError || !data) {
+        const detail = (apiError as { detail?: unknown } | undefined)?.detail;
+        setConvoError(
+          typeof detail === "string" ? detail : "Couldn't reach the AI assistant. Try again.",
+        );
+        return;
+      }
       setConversations((prev) => [data, ...prev]);
       setConversationText("");
+    } catch {
+      setConvoError("Couldn't reach the AI assistant. Try again.");
     } finally {
       setConvoBusy(false);
     }
@@ -148,7 +158,7 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
   // the creator to type who they're actually talking to.
   const knownBrandName = realBrandName;
   const latestBrandOffer = [...offers].reverse().find((o) => o.sender === "brand");
-  const week12 = forecast[forecast.length - 1];
+  const week12 = forecast?.[forecast.length - 1];
   const checklistDone = session
     ? CHECKLIST_LABELS.filter(([key]) => session.checklist[key]).length
     : 0;
@@ -274,7 +284,11 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
               Dashboard&apos;s &quot;Know your worth&quot; to log more data points). Dashed lines
               mark today&apos;s suggested range for comparison.
             </div>
-            {forecast.length > 0 ? (
+            {forecast === null ? (
+              <div style={{ fontSize: "12px", color: "var(--color-ink-faint)" }}>
+                Loading forecast…
+              </div>
+            ) : forecast.length > 0 ? (
               <ForecastChart
                 forecast={forecast}
                 referenceLow={session.range_low}
@@ -336,6 +350,7 @@ export default function NegotiationPage({ params }: { params: Promise<{ dealId: 
             onConversationTextChange={setConversationText}
             conversations={conversations}
             busy={convoBusy}
+            error={convoError}
             onSubmit={askNegotiationAi}
           />
         </>
