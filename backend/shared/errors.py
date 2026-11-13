@@ -22,3 +22,7 @@ class PermissionDeniedError(CreatorOSError):
 
 class ValidationError(CreatorOSError):
     """Raised when validation fails."""
+
+
+class DuplicateError(CreatorOSError):
+    """Raised when a write would violate a uniqueness rule (e.g. a concurrent duplicate insert)."""

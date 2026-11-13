@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 # LRU cap is the upgrade if this runs long-lived with many distinct users.
 _ACTOR_CACHE_TTL_SECONDS = 30.0
 _actor_cache: dict[str, tuple["ActorContext", float]] = {}
+_user_cache: dict[str, tuple[UUID, float]] = {}
 
 
 class ActorContext:
@@ -55,6 +56,29 @@ async def _validate_user(token: str) -> UUID:
     return UUID(res.user.id)
 
 
+async def _resolve_user_id(token: str) -> UUID:
+    """Token -> user id, cached per token like the actor (one Supabase round trip per TTL)."""
+    cached = _user_cache.get(token)
+    if cached and cached[1] > time.monotonic():
+        return cached[0]
+    user_id = await _validate_user(token)
+    _user_cache[token] = (user_id, time.monotonic() + _ACTOR_CACHE_TTL_SECONDS)
+    return user_id
+
+
+async def get_current_user_id(authorization: str | None = Header(default=None)) -> UUID:
+    """The signed-in user, whatever their profile. Workspace routes use this: invited team
+    members have no brand or creator profile, so they cannot go through get_current_actor."""
+    token = _extract_token(authorization)
+
+    from features.demo_mode import resolve_demo_actor
+
+    demo_actor = resolve_demo_actor(token)
+    if demo_actor:
+        return demo_actor.user_id
+    return await _resolve_user_id(token)
+
+
 async def get_current_actor(authorization: str | None = Header(default=None)) -> ActorContext:
     """Resolves the caller's session to either a brand or a creator identity."""
     token = _extract_token(authorization)
@@ -69,7 +93,7 @@ async def get_current_actor(authorization: str | None = Header(default=None)) ->
     if cached and cached[1] > time.monotonic():
         return cached[0]
 
-    user_id = await _validate_user(token)
+    user_id = await _resolve_user_id(token)
     client = get_supabase_client(service_role=True)
 
     # Independent lookups (a user is never both) — run concurrently instead

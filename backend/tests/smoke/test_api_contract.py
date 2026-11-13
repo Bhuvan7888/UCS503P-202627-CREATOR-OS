@@ -17,7 +17,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-# (method, path, auth) — auth is "brand" | "actor" | "public"
+# (method, path, auth) — auth is "brand" | "actor" (brand or creator) | "user" (any signed-in user) | "public"
 API_CONTRACT: list[tuple[str, str, str]] = [
     ("POST", "/auth/brand/signup", "public"),
     ("POST", "/auth/brand/login", "public"),
@@ -74,6 +74,9 @@ API_CONTRACT: list[tuple[str, str, str]] = [
     ("POST", "/messages/read", "actor"),
     ("GET", "/messages", "actor"),
     ("POST", "/messages", "actor"),
+    ("GET", "/workspaces", "user"),
+    ("POST", "/workspaces", "user"),
+    ("GET", "/workspaces/{workspace}", "user"),
 ]
 
 _PLACEHOLDER_ID = "00000000-0000-0000-0000-000000000001"

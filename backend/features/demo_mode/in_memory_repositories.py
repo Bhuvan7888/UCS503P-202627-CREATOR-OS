@@ -18,6 +18,8 @@ from features.negotiation import (
     NegotiationSession,
 )
 from features.payments import Payment
+from features.workspaces.models import Workspace, WorkspaceMember, WorkspaceRole
+from shared.errors import DuplicateError
 
 
 # --- In-Memory Repository Implementations ---
@@ -563,3 +565,50 @@ class DemoEscalationRepo:
         return [
             e for e in self.data.values() if self.contract_brand_map.get(e.contract_id) == brand_id
         ]
+
+
+class DemoWorkspaceRepo:
+    def __init__(self):
+        self.data: dict[UUID, Workspace] = {}
+        self.members: dict[tuple[UUID, UUID], WorkspaceMember] = {}
+
+    async def create(self, workspace: Workspace) -> Workspace:
+        # same rule as the database's unique indexes
+        if any(w.slug == workspace.slug for w in self.data.values()) or (
+            workspace.is_primary
+            and any(
+                w.is_primary and w.owner_user_id == workspace.owner_user_id
+                for w in self.data.values()
+            )
+        ):
+            raise DuplicateError("Workspace already exists")
+        self.data[workspace.id] = workspace
+        return workspace
+
+    async def get(self, id: UUID) -> Workspace | None:
+        return self.data.get(id)
+
+    async def get_by_slug(self, slug: str) -> Workspace | None:
+        return next((w for w in self.data.values() if w.slug == slug), None)
+
+    async def get_primary_for_owner(self, owner_user_id: UUID) -> Workspace | None:
+        return next(
+            (w for w in self.data.values() if w.is_primary and w.owner_user_id == owner_user_id),
+            None,
+        )
+
+    async def count_owned(self, owner_user_id: UUID) -> int:
+        return sum(1 for w in self.data.values() if w.owner_user_id == owner_user_id)
+
+    async def add_member(self, member: WorkspaceMember) -> WorkspaceMember:
+        self.members[(member.workspace_id, member.user_id)] = member
+        return member
+
+    async def get_member(self, workspace_id: UUID, user_id: UUID) -> WorkspaceMember | None:
+        return self.members.get((workspace_id, user_id))
+
+    async def list_for_user(self, user_id: UUID) -> list[tuple[Workspace, WorkspaceRole]]:
+        mine = sorted(
+            (m for m in self.members.values() if m.user_id == user_id), key=lambda m: m.created_at
+        )
+        return [(self.data[m.workspace_id], m.role) for m in mine if m.workspace_id in self.data]

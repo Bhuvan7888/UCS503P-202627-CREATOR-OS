@@ -16,6 +16,7 @@ from features.demo_mode.in_memory_repositories import (
     DemoNegotiationSessionRepo,
     DemoPaymentRepo,
     DemoRateBenchmarkRepo,
+    DemoWorkspaceRepo,
 )
 from features.demo_mode.seed import seed_demo_data
 
@@ -35,6 +36,7 @@ class DemoStore:
         self.negotiation_session_repo = DemoNegotiationSessionRepo()
         self.negotiation_conv_repo = DemoNegotiationConversationRepo()
         self.message_repo = DemoMessageRepo()
+        self.workspace_repo = DemoWorkspaceRepo()
         self.benchmark_repo = DemoRateBenchmarkRepo()
         self.clause_card_repo = DemoClauseCardRepo()
         self.escalation_repo = DemoEscalationRepo()

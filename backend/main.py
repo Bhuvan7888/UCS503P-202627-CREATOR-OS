@@ -14,6 +14,7 @@ from features.deliverables.router import router as deliverables_router
 from features.messages.router import router as messages_router
 from features.negotiation.router import router as negotiation_router
 from features.payments.router import router as payments_router
+from features.workspaces.router import router as workspaces_router
 
 app = FastAPI(title="Creator OS")
 
@@ -40,6 +41,7 @@ app.include_router(escalations_router)
 app.include_router(benchmarks_router)
 app.include_router(analytics_router)
 app.include_router(messages_router)
+app.include_router(workspaces_router)
 
 
 def main():

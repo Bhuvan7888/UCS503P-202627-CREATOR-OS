@@ -36,6 +36,7 @@ containers =
     features.messages
     features.negotiation
     features.payments
+    features.workspaces
 layers =
     (router)
     (service) : (clause_explanation_service)
