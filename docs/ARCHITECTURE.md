@@ -132,6 +132,8 @@ A file belongs in `shared/` **only** when two or more features use it. Otherwise
   resolves the slug or id and returns 404 (unknown) / 403 (not a member). Look child records up **within** that
   workspace (`ContentService.update` returns 404 for an item of another workspace). Workspace routes use
   `get_current_user_id`, not `get_current_actor`, because invited members have no brand/creator profile.
+- AI endpoints go through `AiAssistService`, which applies the per-workspace rate limit (429) and turns a missing or failing
+  provider into 503; never call the LLM directly from a router.
 - Demo accounts work only when `features.demo_mode.demo_access_enabled()` is true (offline demo dataset, not production).
 - Tests: `tests/features/auth/test_access_control_api.py` (cross-tenant 403s). Add a case for every new scoped endpoint;
   API tests point the access checks at fakes with `tests/fakes/access.py::use_fake_access_repos`.

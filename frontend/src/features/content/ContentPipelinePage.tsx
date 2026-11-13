@@ -5,6 +5,7 @@ import { Filter, KanbanSquare, Plus, X } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { PageHeader, useWorkspace } from "@/features/workspaces";
 import { AddContentWizard } from "./components/AddContentWizard";
+import { ContentItemDialog } from "./components/ContentItemDialog";
 import { KanbanBoard } from "./components/KanbanBoard";
 import { PLATFORMS, type ContentItem, type ContentStage, type Platform } from "./constants/content";
 import { useContent } from "./hooks/useContent";
@@ -27,15 +28,19 @@ export default function ContentPipelinePage() {
   const [range, setRange] = useState("all");
   const [channel, setChannel] = useState<Platform | "all">("all");
   const [moveError, setMoveError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
-    // ⌘K "Create New Content" links here with ?new=1
-    if (new URLSearchParams(window.location.search).get("new") === "1") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-off read of the URL after mount
-      setWizardOpen(true);
-      window.history.replaceState(null, "", window.location.pathname);
-    }
+    // ⌘K "Create New Content" links here with ?new=1; AI suggestions and Scripts link with ?item=<id>
+    const params = new URLSearchParams(window.location.search);
+    /* eslint-disable react-hooks/set-state-in-effect -- one-off read of the URL after mount */
+    if (params.get("new") === "1") setWizardOpen(true);
+    if (params.get("item")) setEditingId(params.get("item"));
+    /* eslint-enable react-hooks/set-state-in-effect */
+    if (params.size) window.history.replaceState(null, "", window.location.pathname);
   }, []);
+
+  const editing = items?.find((i) => i.id === editingId) ?? null;
 
   const visible = useMemo(() => {
     const days = DATE_RANGES.find((r) => r.value === range)?.days ?? Infinity;
@@ -192,11 +197,26 @@ export default function ContentPipelinePage() {
         </div>
       )}
 
-      {items !== null && items.length > 0 && <KanbanBoard items={visible} onMove={move} />}
+      {items !== null && items.length > 0 && (
+        <KanbanBoard items={visible} onMove={move} onOpen={(i) => setEditingId(i.id)} />
+      )}
+
+      {editing && (
+        <ContentItemDialog
+          item={editing}
+          workspace={workspace.slug}
+          base={base}
+          onClose={() => setEditingId(null)}
+          onSaved={(saved) =>
+            setItems((list) => list?.map((i) => (i.id === saved.id ? saved : i)) ?? null)
+          }
+        />
+      )}
 
       <AddContentWizard
         open={wizardOpen}
         workspace={workspace.slug}
+        base={base}
         onClose={() => setWizardOpen(false)}
         onSaved={(item) => setItems((list) => [item, ...(list ?? [])])}
       />

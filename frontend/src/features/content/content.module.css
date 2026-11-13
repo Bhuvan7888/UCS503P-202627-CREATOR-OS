@@ -675,3 +675,168 @@
     display: none;
   }
 }
+
+.fieldHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.help a {
+  color: var(--color-accent);
+}
+
+.row3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.cardTitle {
+  display: block;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.cardTitle:hover {
+  color: var(--color-accent);
+}
+
+/* Scripts */
+.scripts {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 560px;
+}
+
+.scriptList,
+.editor {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  padding: 12px;
+  min-width: 0;
+}
+
+.scriptList ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.scriptList li button {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.scriptList li button:hover {
+  background: var(--color-surface-sunken);
+}
+
+.scriptList li .scriptOn {
+  background: var(--color-accent-soft);
+}
+
+.scriptList strong {
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.scriptList small {
+  font-size: 12px;
+  color: var(--color-ink-faint);
+}
+
+.listEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 8px;
+  text-align: center;
+  color: var(--color-ink-soft);
+}
+
+.listEmpty p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+}
+
+.editorHead {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.editorHead h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.scriptText {
+  flex: 1;
+  min-height: 420px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.scriptText:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.saveState {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--color-ink-faint);
+}
+
+@media (max-width: 760px) {
+  .scripts {
+    grid-template-columns: 1fr;
+  }
+}

@@ -5,6 +5,8 @@ import { Check, Clapperboard, FileImage, Film, Lightbulb, Smartphone, Video } fr
 import client from "@/shared/lib/api-client";
 import type { components } from "@/shared/lib/api-types";
 import { Dialog } from "@/shared/components/ui/Dialog";
+import { GenerateButton } from "@/features/ai-assist";
+import Link from "next/link";
 import {
   CONTENT_TYPES,
   CONTENT_TYPE_LABEL,
@@ -42,12 +44,14 @@ const EMPTY: Draft = {
 interface Props {
   open: boolean;
   workspace: string;
+  /** Route prefix of the workspace, for the "generate content ideas" link. */
+  base: string;
   onClose: () => void;
   onSaved: (item: ContentItem) => void;
 }
 
 /** "Add New Content Idea": type → title → pillar/hook/platforms → due date/assignee → review. */
-export function AddContentWizard({ open, workspace, onClose, onSaved }: Props) {
+export function AddContentWizard({ open, workspace, base, onClose, onSaved }: Props) {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [members, setMembers] = useState<Member[]>([]);
@@ -102,6 +106,23 @@ export function AddContentWizard({ open, workspace, onClose, onSaved }: Props) {
     onSaved(data);
     close();
   }
+
+  const aiDraft = {
+    type: draft.type,
+    title: draft.title,
+    description: draft.description,
+    pillar: draft.pillar,
+    hook: draft.hook,
+  };
+  const ai = (field: "title" | "description" | "hook", label: string) => (
+    <GenerateButton
+      workspace={workspace}
+      field={field}
+      label={label}
+      draft={aiDraft}
+      onText={(text) => set(field, text)}
+    />
+  );
 
   const assignee = members.find((m) => m.user_id === draft.assignee_user_id);
 
@@ -193,9 +214,15 @@ export function AddContentWizard({ open, workspace, onClose, onSaved }: Props) {
 
       {step === 1 && (
         <div className={styles.fieldset}>
-          <label className={styles.label}>
-            Title <span className={styles.req}>*</span>
+          <div className={styles.label}>
+            <span className={styles.fieldHead}>
+              <label htmlFor="cw-title">
+                Title <span className={styles.req}>*</span>
+              </label>
+              {ai("title", "Generate Title")}
+            </span>
             <input
+              id="cw-title"
               className="field"
               autoFocus
               maxLength={200}
@@ -203,10 +230,14 @@ export function AddContentWizard({ open, workspace, onClose, onSaved }: Props) {
               value={draft.title}
               onChange={(e) => set("title", e.target.value)}
             />
-          </label>
-          <label className={styles.label}>
-            Description
+          </div>
+          <div className={styles.label}>
+            <span className={styles.fieldHead}>
+              <label htmlFor="cw-description">Description</label>
+              {ai("description", "Generate Description")}
+            </span>
             <textarea
+              id="cw-description"
               className="field"
               rows={4}
               maxLength={2000}
@@ -214,8 +245,11 @@ export function AddContentWizard({ open, workspace, onClose, onSaved }: Props) {
               value={draft.description ?? ""}
               onChange={(e) => set("description", e.target.value)}
             />
-          </label>
-          <p className={styles.help}>Keep it concise. You can refine it later.</p>
+          </div>
+          <p className={styles.help}>
+            Keep it concise. You can refine it later.{" "}
+            <Link href={`${base}/ai-suggestions`}>Need more ideas? Generate content ideas</Link>
+          </p>
         </div>
       )}
 
@@ -232,16 +266,22 @@ export function AddContentWizard({ open, workspace, onClose, onSaved }: Props) {
               onChange={(e) => set("pillar", e.target.value)}
             />
           </label>
-          <label className={styles.label}>
-            Hook <span className={styles.req}>*</span>
+          <div className={styles.label}>
+            <span className={styles.fieldHead}>
+              <label htmlFor="cw-hook">
+                Hook <span className={styles.req}>*</span>
+              </label>
+              {ai("hook", "Generate Hook")}
+            </span>
             <input
+              id="cw-hook"
               className="field"
               maxLength={500}
               placeholder="Engaging opening line..."
               value={draft.hook}
               onChange={(e) => set("hook", e.target.value)}
             />
-          </label>
+          </div>
           <fieldset className={styles.fieldset}>
             <legend className={styles.label}>Target Platforms</legend>
             <div className={styles.platforms}>

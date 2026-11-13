@@ -179,7 +179,7 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
                     <Link
                       key={item.label}
                       href={href}
-                      className={`${styles.navItem} ${pathname === href ? styles.on : ""}`}
+                      className={`${styles.navItem} ${pathname === href || (item.prefix && pathname.startsWith(`${base}/settings`)) ? styles.on : ""}`}
                       title={item.label}
                     >
                       <Icon size={16} />

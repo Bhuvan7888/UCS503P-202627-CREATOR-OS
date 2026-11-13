@@ -10,6 +10,7 @@ Every feature has the same name everywhere. The backend uses `snake_case` becaus
 | `creators` | `backend/features/creators/` | `frontend/src/features/creators/` | `backend/tests/features/creators/` |
 | `workspaces` | `backend/features/workspaces/` | `frontend/src/features/workspaces/` (creator shell) | `backend/tests/features/workspaces/`, e2e |
 | `content` | `backend/features/content/` | `frontend/src/features/content/` | `backend/tests/features/content/`, e2e |
+| `ai-assist` | `backend/features/ai_assist/` | `frontend/src/features/ai-assist/` | `backend/tests/features/ai_assist/`, e2e |
 | `deals` | `backend/features/deals/` | `frontend/src/features/deals/` | `backend/tests/features/deals/` |
 | `contracts` | `backend/features/contracts/` | `frontend/src/features/contracts/` | `backend/tests/features/contracts/` |
 | `contract-intelligence` | `backend/features/contract_intelligence/` | `frontend/src/features/contract-intelligence/` | `backend/tests/features/contract_intelligence/` |
@@ -139,12 +140,26 @@ owned workspaces (fair use, the app is free). URLs accept the slug (`ws-1a2b3c4d
 Content items from idea to published: Home (KPIs, content by platform, recent content, quick actions, onboarding banner),
 the Content Pipeline kanban (drag-and-drop or a "Move to" menu, filters) and the 5-step Add New Content Idea wizard.
 Target platforms are planning tags only — Creator OS does not post anywhere.
-- **Pages:** `/dashboard/[workspace]` → `HomePage.tsx`; `/dashboard/[workspace]/kanban` → `ContentPipelinePage.tsx` (`?new=1` opens the wizard)
-- **Frontend internals:** `components/AddContentWizard.tsx`, `components/KanbanBoard.tsx`, `hooks/useContent.ts`, `constants/content.ts` (types, stages, platforms), `content.module.css`
-- **API:** `GET /workspaces/{workspace}/content`, `POST /workspaces/{workspace}/content`, `PATCH /workspaces/{workspace}/content/{item_id}`, `GET /workspaces/{workspace}/content/stats`
-- **Backend:** `router.py`, `service.py` (`ContentService`: assignee must be a member, other workspaces' items are 404), `rules.py` (KPIs with 30-day deltas), `models.py`, `repository.py`, `supabase_repository.py`
-- **Database:** `supabase/migrations/20261113010000_content_items.sql`
-- **Depends on:** `workspaces`
+Each item has one script (Scripts page, auto-saved; the first script moves an idea to Scripted).
+- **Pages:**
+  - `/dashboard/[workspace]` → `HomePage.tsx`
+  - `/dashboard/[workspace]/kanban` → `ContentPipelinePage.tsx` (`?new=1` opens the wizard, `?item=<id>` opens the item editor)
+  - `/dashboard/[workspace]/scripts` → `ScriptsPage.tsx` (`?item=<id>` selects an item)
+- **Frontend internals:** `components/AddContentWizard.tsx`, `components/ContentItemDialog.tsx` (edit an item, inline AI), `components/KanbanBoard.tsx`, `hooks/useContent.ts`, `constants/content.ts` (types, stages, platforms), `content.module.css`
+- **API:** `GET /workspaces/{workspace}/content`, `POST /workspaces/{workspace}/content`, `PATCH /workspaces/{workspace}/content/{item_id}`, `GET /workspaces/{workspace}/content/stats`, `GET/PUT /workspaces/{workspace}/content/{item_id}/script`
+- **Backend:** `router.py`, `service.py` (`ContentService`: assignee must be a member, other workspaces' items are 404, scripts), `rules.py` (KPIs with 30-day deltas; Scripted = has a script or moved past Idea), `models.py`, `repository.py` (`ContentRepo`, `ScriptRepo`), `supabase_repository.py`
+- **Database:** `supabase/migrations/20261113010000_content_items.sql`, `20261114000000_scripts_and_ai.sql` (`content_scripts`)
+- **Depends on:** `workspaces`; frontend uses `ai-assist` (`GenerateButton`)
+
+## `ai-assist`
+AI help for a workspace, all fed by the workspace's AI knowledge: Generate Title / Description / Hook (wizard and item
+editor), Generate outline (Scripts), and AI Content Suggestions (kept 24 h; Create adds one to the pipeline, Dismiss hides it).
+- **Pages:** `/dashboard/[workspace]/ai-suggestions` → `AiSuggestionsPage.tsx`; `/dashboard/[workspace]/settings/ai-knowledge` → `AiKnowledgePage.tsx`
+- **Frontend internals:** `components/GenerateButton.tsx` + `hooks/useGenerate.ts` (exported via `index.ts` for `content`), `ai-assist.module.css`
+- **API:** `GET/PUT /workspaces/{workspace}/ai-knowledge`, `POST /workspaces/{workspace}/ai/generate`, `GET /workspaces/{workspace}/ai/suggestions`, `POST …/ai/suggestions/refresh`, `POST …/ai/suggestions/{suggestion_id}/dismiss`
+- **Backend:** `router.py` (`get_llm`: Gemini when `GEMINI_API_KEY` is set), `service.py` (`AiAssistService`; 503 when AI is unavailable, 429 over the per-workspace rate limit), `rules.py` (prompts, clean-up, 24 h freshness, `RateLimiter`), `models.py`, `repository.py`, `supabase_repository.py`
+- **Database:** `supabase/migrations/20261114000000_scripts_and_ai.sql` (`workspace_ai_knowledge`, `ai_suggestions`)
+- **Depends on:** `workspaces`, `content`; `shared/llm` (`write`, `write_structured`)
 
 ## `analytics`
 Brand-level revenue by month, the pipeline by stage, top campaigns, creator performance, overdue invoices and a roster breakdown.
@@ -191,7 +206,7 @@ Runs the whole backend on a seeded in-memory dataset when Supabase is unreachabl
 | `backend/shared/http_errors.py` (`map_errors`) | auth, contracts, creators, deals, deliverables, payments, workspaces, content routers |
 | `backend/shared/supabase_client.py`, `supabase_query.py` | every router (client) and every `supabase_repository.py` |
 | `backend/shared/pagination.py` | 7 list endpoints |
-| `backend/shared/llm/` (port + Gemini adapter) | contract-intelligence, contracts |
+| `backend/shared/llm/` (port + Gemini adapter) | contract-intelligence, contracts, ai-assist |
 | `frontend/src/shared/lib/api-client.ts` (+ generated `api-types.ts`) | every page |
 | `frontend/src/shared/lib/session.ts` | auth, app shell, most pages |
 | `frontend/src/shared/lib/format-currency.ts`, `status-variants.ts` | deals, creators, analytics, contracts, contract-intelligence, payments |

@@ -36,9 +36,9 @@ brand side stays as it is.
 | # | Phase | Status |
 |---|---|---|
 | 1 | Foundations: single .env ✅, security fixes ✅, workspace backend ✅ (verified on live DB), Google provider configured ✅ | done (Google button built in Phase 2) |
-| 2 | New creator shell + content core: shell, Home, 5-step Add Content wizard, Content Pipeline kanban, Google sign-in, old creator views removed | done — owner: run migration 002 + add Supabase redirect URLs, then live check |
-| 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | next |
-| 4 | Calendar + Approvals (publish state machine without platform posting) | pending |
+| 2 | New creator shell + content core: shell, Home, 5-step Add Content wizard, Content Pipeline kanban, Google sign-in, old creator views removed | done (verified on live DB) |
+| 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | done — owner: run migration 003, replace the invalid Gemini key |
+| 4 | Calendar + Approvals (publish state machine without platform posting) | next |
 | 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | pending |
 | 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | pending |
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | pending |
@@ -99,27 +99,58 @@ Phase 2 notes
 - Known gaps by design: no theme toggle (light only), no bell / Notifications (Phase 7), no Publish button (no posting),
   Deal Association in the wizard arrives with Brand CRM (Phase 5), AI Generate buttons in Phase 3.
 
-### Phase 3 plan — pick up here (Scripts + AI)
+### Phase 3 (done, 2026-11-14)
 Backend
-1. Migration 003: `content_scripts` (content_item_id PK → content_items on delete cascade, body text ≤ 50k, updated_by,
+1. ✅ Migration 003: `content_scripts` (content_item_id PK → content_items on delete cascade, body text ≤ 50k, updated_by,
    timestamps), `workspace_ai_knowledge` (workspace_id PK: brand, audience, strategy, custom_output_format, ≤ 4k each),
    `ai_suggestions` (workspace_id, suggestions jsonb, generated_at, dismissed ids) — RLS on, no policies.
-2. `features/scripts`: `GET/PUT /workspaces/{ws}/content/{item}/script` (auto-save; first non-empty save moves an
+2. ✅ Scripts (built inside `features/content` — a script always belongs to an item): `GET/PUT /workspaces/{ws}/content/{item}/script` (auto-save; first non-empty save moves an
    `idea` item to `scripted`; `content.rules.is_scripted` becomes "has a script"), `POST …/script/outline` (Gemini).
-3. `features/ai_assist`: `GET/PUT /workspaces/{ws}/ai-knowledge`; `POST /workspaces/{ws}/ai/generate`
+3. ✅ `features/ai_assist`: `GET/PUT /workspaces/{ws}/ai-knowledge`; `POST /workspaces/{ws}/ai/generate`
    (field = title | description | hook, from the draft + knowledge); `GET /workspaces/{ws}/ai/suggestions` (24 h cache),
    `POST …/suggestions/refresh`, `POST …/suggestions/{id}/dismiss`, create-from-suggestion via the content API.
    Add LLM port methods in `shared/llm`; 503 "temporarily unavailable" without a Gemini key (as contract-intelligence);
    per-workspace rate limit on AI calls (100-user target).
 Frontend
-4. Sidebar "Create" group: Scripts (`/scripts`: two panes — item list + editor with debounced auto-save and Generate
+4. ✅ Sidebar "Create" group: Scripts (`/scripts`: two panes — item list + editor with debounced auto-save and Generate
    outline) and AI Assistant (`/ai-suggestions`: 3 info cards, suggestions card, tips card).
-5. Settings shell with the AI knowledge tab only (`/settings/ai-knowledge`); other tabs arrive in Phases 6–7.
-6. Wizard + board: Generate Title / Description / Hook buttons; clicking a card opens an item editor (edit fields,
+5. ✅ Settings shell with the AI knowledge tab only (`/settings/ai-knowledge`); other tabs arrive in Phases 6–7.
+6. ✅ Wizard + board: Generate Title / Description / Hook buttons; clicking a card opens an item editor (edit fields,
    inline generate, link to its script).
 Verify: unit tests for rules, API tests with a fake LLM, cross-workspace 403/404 tests, e2e for Scripts/AI pages.
 
+Phase 3 notes
+- **Owner actions pending:** (1) run `supabase/migrations/20261114000000_scripts_and_ai.sql`; (2) the `GEMINI_API_KEY`
+  in the root `.env` is rejected by Google (401 "API key not valid" — it is not an AI Studio API key). Create one at
+  https://aistudio.google.com/apikey, put it in the root `.env` and in the deployed backend's env. Until then every AI
+  button answers "AI is temporarily unavailable" (503) and the rest of the app works.
+- Rate limit: 30 AI calls per workspace per 10 minutes, in process memory (`ai_assist/rules.py::RateLimiter`) — move to
+  Redis/DB if the API runs on several instances (Phase 8).
+- AI success paths are tested with a fake LLM (`tests/features/ai_assist/test_ai_assist_api.py`); e2e checks the
+  "unavailable" path because the e2e backend has no key.
+
+### Phase 4 plan — pick up here (Calendar + Approvals)
+Read spec §4.3 Calendar (`/schedule`) and §4.4 Approvals (`/approvals`) in the Rebuild Spec PDF first.
+Backend
+1. Migration 004: `scheduled_at timestamptz` on `content_items` (+ index); `publish_requests` (workspace_id,
+   content_item_id, requested_by, source human|agent, status pending|approved|rejected|published, reason, decided_by,
+   timestamps) — RLS on.
+2. content: schedule/unschedule an item (sets `scheduled_at`, moves it to Scheduled); list by date range for the calendar.
+3. `features/approvals`: create a publish request, list pending, approve / reject with a reason; approving marks the item
+   Published (no platform posting — "publish" means the creator confirms it went live). Agents (API keys) arrive in Phase 6.
+Frontend
+4. Calendar page (month/week grid, day cell → Add Content wizard with that date, "Schedule Post" button, drag an item to
+   a day); Approvals page (pending list, approve/reject dialog, empty state "Nothing waiting").
+5. Sidebar Plan group: Calendar, Approvals; ⌘K "Schedule Content".
+Verify: rules/service/API tests (cross-workspace 403/404), e2e for both pages, live DB check after migration 004.
 ### Phase log
+- **2026-11-14 — Phase 3 (Scripts + AI)**: migration 003; scripts with 1 s debounced auto-save (first script → Scripted;
+  Scripted KPI counts scripts); `features/ai_assist` (AI knowledge, Generate title/description/hook/outline, 24 h
+  suggestions with Create/Dismiss, 503 when AI is unavailable, 429 per-workspace limit); frontend Scripts page, AI
+  Suggestions page, Settings › AI knowledge, Generate buttons in the wizard and the new item editor (click a card),
+  sidebar Create/Workspace groups, ⌘K actions. Checks: 151 backend tests, import contracts kept, mypy 113 (no new),
+  tsc/eslint/prettier clean, build, route smoke 23/23, e2e 5/5. Live: migration 002 + content API verified on the
+  real DB (create/move/stats, stranger 403, bad assignee 400, cleanup ok); Gemini key found invalid (see notes).
 - **2026-11-13 — Phase 2 frontend**: workspace shell (`features/workspaces`: sidebar with switcher/new workspace/user menu,
   collapsible, ⌘K palette, `PageHeader`), Home and Content Pipeline (`features/content`: KPIs, content by platform,
   recent content, onboarding banner, kanban with drag-and-drop + "Move to" menu, filters, 5-step wizard), `/dashboard`

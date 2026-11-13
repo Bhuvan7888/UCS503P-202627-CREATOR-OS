@@ -2,7 +2,16 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, House, KanbanSquare, Plus, Search, type LucideIcon } from "lucide-react";
+import {
+  FileText,
+  House,
+  KanbanSquare,
+  PenLine,
+  Plus,
+  Search,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { Dialog } from "@/shared/components/ui/Dialog";
 import styles from "../workspace-shell.module.css";
@@ -67,6 +76,20 @@ export function CommandPalette({
         hint: "Manage content from idea to publication",
         href: `${base}/kanban`,
         icon: KanbanSquare,
+        quick: true,
+      },
+      {
+        label: "Generate AI Script",
+        hint: "Go to scripts to write with AI outlines",
+        href: `${base}/scripts`,
+        icon: PenLine,
+        quick: true,
+      },
+      {
+        label: "AI Content Suggestions",
+        hint: "Get new content ideas for this workspace",
+        href: `${base}/ai-suggestions`,
+        icon: Sparkles,
         quick: true,
       },
       { label: "Home", hint: "Workspace overview", href: base, icon: House, quick: true },

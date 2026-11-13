@@ -194,6 +194,7 @@ export default function HomePage() {
       <AddContentWizard
         open={wizardOpen}
         workspace={workspace.slug}
+        base={base}
         onClose={() => setWizardOpen(false)}
         onSaved={(item) => {
           setItems((list) => [item, ...(list ?? [])]);

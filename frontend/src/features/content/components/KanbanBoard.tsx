@@ -17,9 +17,11 @@ const PLATFORM_COLOR = Object.fromEntries(PLATFORMS.map((p) => [p.value, p.color
 export function KanbanBoard({
   items,
   onMove,
+  onOpen,
 }: {
   items: ContentItem[];
   onMove: (item: ContentItem, stage: ContentStage) => void;
+  onOpen: (item: ContentItem) => void;
 }) {
   const [over, setOver] = useState<ContentStage | null>(null);
 
@@ -57,7 +59,11 @@ export function KanbanBoard({
                 draggable
                 onDragStart={(e) => e.dataTransfer.setData("text/plain", item.id)}
               >
-                <h4>{item.title}</h4>
+                <h4>
+                  <button type="button" className={styles.cardTitle} onClick={() => onOpen(item)}>
+                    {item.title}
+                  </button>
+                </h4>
                 <p className={styles.cardMeta}>
                   {CONTENT_TYPE_LABEL[item.type]} · {item.pillar}
                 </p>

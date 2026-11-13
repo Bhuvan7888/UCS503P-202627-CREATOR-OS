@@ -260,6 +260,78 @@ test("creator: workspace home, add-content wizard, pipeline board and navigation
   expect(problems).toEqual([]);
 });
 
+test("creator: item editor, scripts with auto-save, AI pages and AI knowledge", async ({
+  page,
+}) => {
+  // The e2e backend has no Gemini key: AI calls answer 503 and the UI must say so and stay usable.
+  const problems = watchForProblems(page, [
+    /^503 POST \/workspaces\/[^/]+\/ai\/(generate|suggestions\/refresh)$/,
+  ]);
+  await loginWithDemo(page, "creator", "2. Rohan Mehta (Mamaearth)");
+  const base = new URL(page.url()).pathname;
+  const title = `Script me ${RUN}`;
+
+  // Wizard: an AI button reports the outage inline; the idea still saves
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  const wizard = page.getByRole("dialog", { name: "Add New Content Idea" });
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.getByRole("button", { name: "Generate Title" }).click();
+  await expect(
+    wizard.getByRole("alert").filter({ hasText: /temporarily unavailable/ }),
+  ).toBeVisible();
+  await wizard.getByPlaceholder("Enter content title...").fill(title);
+  await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.getByPlaceholder("e.g., Education, Entertainment...").fill("Edu");
+  await wizard.getByPlaceholder("Engaging opening line...").fill("Hook line");
+  for (let i = 0; i < 2; i++) await wizard.getByRole("button", { name: "Next" }).click();
+  await wizard.getByRole("button", { name: "Save Content" }).click();
+  await expect(wizard).toBeHidden();
+
+  // Board: open the card, edit it, jump to its script
+  await page.getByRole("link", { name: "Content", exact: true }).click();
+  await page.getByRole("button", { name: title }).click();
+  const editor = page.getByRole("dialog", { name: "Edit content" });
+  await editor.getByLabel("Content Pillar").fill("Education");
+  await editor.getByRole("button", { name: "Save changes" }).click();
+  await expect(editor).toBeHidden();
+  await expect(page.locator("article", { hasText: title })).toContainText("Education");
+  await page.getByRole("button", { name: title }).click();
+  await page.getByRole("link", { name: "Open script" }).click();
+  await page.waitForURL(`${WEB}${base}/scripts`);
+
+  // Scripts: auto-save, survives a reload, moves the idea to Scripted
+  const script = page.getByRole("textbox", { name: "Script" });
+  await script.fill(`Intro for ${RUN}`);
+  await expect(page.getByRole("status")).toHaveText(/Saved/);
+  await page.getByRole("button", { name: "Generate outline" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: /temporarily unavailable/ }),
+  ).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: new RegExp(title) }).click();
+  await expect(script).toHaveValue(`Intro for ${RUN}`);
+  await expect(page.getByRole("button", { name: new RegExp(title) })).toContainText("Scripted");
+
+  // AI Assistant: empty state, generating reports the outage
+  await page.getByRole("link", { name: "AI Assistant", exact: true }).click();
+  await expect(page.getByText(/No suggestions yet|All suggestions dismissed/)).toBeVisible();
+  await page.getByRole("button", { name: "Generate New Suggestions" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: /temporarily unavailable/ }),
+  ).toBeVisible();
+
+  // Settings › AI knowledge persists
+  await page.getByRole("link", { name: "Configure Knowledge" }).click();
+  await page.waitForURL(`${WEB}${base}/settings/ai-knowledge`);
+  await page.getByLabel("Brand").fill(`Budget travel ${RUN}`);
+  await page.getByRole("button", { name: "Save knowledge" }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(page.getByLabel("Brand")).toHaveValue(`Budget travel ${RUN}`);
+
+  expect(problems).toEqual([]);
+});
+
 test("unknown URLs show the 404 page", async ({ page }) => {
   await page.goto(`${WEB}/no-such-page-${RUN}`);
   await expect(page.getByRole("heading", { name: "We can't find that page" })).toBeVisible();
