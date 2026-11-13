@@ -26,10 +26,10 @@ async def get_activity_logs(
 ):
     limit = clamp_page_size(limit)
     if deal_id:
-        return await service.get_logs_for_deal(str(deal_id), limit, offset)
+        return await service.get_logs_for_deal(deal_id, limit, offset)
     if actor.actor_type == "creator":
-        return await service.get_logs_for_creator(str(actor.creator_id), limit, offset)
-    return await service.get_logs_for_brand(str(actor.brand_id), limit, offset)
+        return await service.get_logs_for_creator(actor.creator_id, limit, offset)
+    return await service.get_logs_for_brand(actor.brand_id, limit, offset)
 
 
 @router.post("", response_model=ActivityLog, status_code=201)

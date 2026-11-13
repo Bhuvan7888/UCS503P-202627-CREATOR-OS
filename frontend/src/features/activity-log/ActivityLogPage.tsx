@@ -94,6 +94,9 @@ export default function ActivityLogPage() {
             <span style={{ textTransform: "capitalize" }}>{log.actor_type}</span>
             <span style={{ color: "var(--color-ink-faint)" }}> · </span>
             <span>{actionLabel(log.action)}</span>
+            {typeof log.metadata?.note === "string" && (
+              <span style={{ color: "var(--color-ink-soft)" }}> — {log.metadata.note}</span>
+            )}
           </div>
           <div style={{ color: "var(--color-ink-faint)" }}>
             {new Date(log.created_at).toLocaleString()}
