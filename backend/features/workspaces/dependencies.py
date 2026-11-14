@@ -139,3 +139,14 @@ def require_human(*any_of: str) -> Callable[..., Awaitable[WorkspaceContext]]:
         return ctx
 
     return check
+
+
+async def require_person(
+    ctx: WorkspaceContext = Depends(require_workspace_member),
+) -> WorkspaceContext:
+    """A signed-in member (not an API key) — for personal things such as their own inbox."""
+    if ctx.api_key:
+        raise HTTPException(
+            status_code=403, detail="API keys can't do this; a signed-in person must"
+        )
+    return ctx

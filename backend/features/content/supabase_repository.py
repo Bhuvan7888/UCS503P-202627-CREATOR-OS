@@ -1,5 +1,6 @@
 """Supabase implementation of the content repository."""
 
+from datetime import date
 from typing import Any
 from uuid import UUID
 
@@ -35,6 +36,16 @@ class SupabaseContentRepo(DemoFallbackMixin):
             .select("*")
             .eq("workspace_id", str(workspace_id))
             .order("updated_at", desc=True)
+            .limit(limit)
+        )
+        return [ContentItem.model_validate(row) for row in res.data]
+
+    async def list_due_on(self, day: date, limit: int) -> list[ContentItem]:
+        res = await run_query(
+            self.client.table("content_items")
+            .select("*")
+            .eq("due_date", day.isoformat())
+            .neq("stage", "published")
             .limit(limit)
         )
         return [ContentItem.model_validate(row) for row in res.data]

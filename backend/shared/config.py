@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     TRANSACTIONAL_EMAIL_API_KEY: str
     # public address of the frontend, used in links sent by email (workspace invitations)
     APP_URL: str = "http://localhost:3000"
+    # where new support tickets are emailed (empty = tickets are only stored)
+    SUPPORT_EMAIL: str = ""
 
     # extra="ignore": the shared file also holds the frontend's NEXT_PUBLIC_* keys.
     model_config = SettingsConfigDict(

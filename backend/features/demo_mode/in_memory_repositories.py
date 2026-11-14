@@ -1,10 +1,11 @@
 """In-memory repositories backing demo mode (same method signatures as the Supabase repositories)."""
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
 from features.activity_log import ActivityLog
+from features.account.models import NotificationPreferences
 from features.ai_assist.models import AiKnowledge, SuggestionSet
 from features.approvals.models import PublishRequest
 from features.brands import Brand, BrandMember
@@ -14,6 +15,8 @@ from features.contracts import Contract
 from features.creators import Creator
 from features.crm.models import CrmDeal
 from features.integrations.models import ApiKey, WebhookDelivery, WebhookEndpoint
+from features.notifications.models import Notification
+from features.support.models import Ticket
 from features.deals import Deal
 from features.deliverables import Deliverable
 from features.messages import Message
@@ -598,6 +601,12 @@ class DemoAuditRepo:
 
 
 class DemoUserDirectory:
+    def __init__(self):
+        self.renamed: dict[UUID, str] = {}
+
+    async def set_name(self, user_id: UUID, name: str) -> None:
+        self.renamed[user_id] = name
+
     async def describe(self, user_ids: list[UUID]) -> dict[UUID, tuple[str, str | None]]:
         from features.demo_mode.accounts import DEMO_BRANDS, DEMO_CREATORS
 
@@ -605,6 +614,7 @@ class DemoUserDirectory:
             UUID(str(i["user_id"])): (str(i["display_name"]), e) for e, i in DEMO_CREATORS.items()
         }
         known |= {UUID(str(i["user_id"])): (str(i["name"]), e) for e, i in DEMO_BRANDS.items()}
+        known |= {u: (n, known.get(u, ("", None))[1]) for u, n in self.renamed.items()}
         return {u: known.get(u, ("Member", None)) for u in user_ids}
 
 
@@ -637,6 +647,11 @@ class DemoContentRepo:
 
     async def get(self, id: UUID) -> ContentItem | None:
         return self.data.get(id)
+
+    async def list_due_on(self, day: date, limit: int) -> list[ContentItem]:
+        return [i for i in self.data.values() if i.due_date == day and i.stage != "published"][
+            :limit
+        ]
 
     async def list_for_workspace(self, workspace_id: UUID, limit: int) -> list[ContentItem]:
         items = [i for i in self.data.values() if i.workspace_id == workspace_id]
@@ -796,3 +811,91 @@ class DemoWebhookRepo:
     async def update_delivery(self, id: UUID, changes: dict[str, Any]) -> None:
         if id in self.deliveries:
             self.deliveries[id] = self.deliveries[id].model_copy(update=changes)
+
+
+class DemoAccountRepo:
+    def __init__(self):
+        self.profiles: dict[UUID, dict[str, Any]] = {}
+        self.prefs: dict[UUID, NotificationPreferences] = {}
+
+    async def get_profile(self, user_id: UUID) -> dict[str, Any] | None:
+        return self.profiles.get(user_id)
+
+    async def save_profile(self, user_id: UUID, fields: dict[str, Any]) -> None:
+        self.profiles[user_id] = fields
+
+    async def get_preferences(self, user_id: UUID) -> NotificationPreferences | None:
+        return self.prefs.get(user_id)
+
+    async def save_preferences(self, user_id: UUID, prefs: NotificationPreferences) -> None:
+        self.prefs[user_id] = prefs
+
+
+class DemoNotificationRepo:
+    def __init__(self):
+        self.data: dict[UUID, Notification] = {}
+
+    async def add(self, notification: Notification) -> bool:
+        if notification.dedupe_key and any(
+            n.user_id == notification.user_id and n.dedupe_key == notification.dedupe_key
+            for n in self.data.values()
+        ):
+            return False
+        self.data[notification.id] = notification
+        return True
+
+    def _mine(self, workspace_id: UUID, user_id: UUID) -> list[Notification]:
+        return [
+            n for n in self.data.values() if n.workspace_id == workspace_id and n.user_id == user_id
+        ]
+
+    async def list_for_user(
+        self, workspace_id: UUID, user_id: UUID, archived: bool, limit: int
+    ) -> list[Notification]:
+        mine = [
+            n for n in self._mine(workspace_id, user_id) if (n.archived_at is not None) == archived
+        ]
+        return sorted(mine, key=lambda n: n.created_at, reverse=True)[:limit]
+
+    async def unread_count(self, workspace_id: UUID, user_id: UUID) -> int:
+        return sum(
+            1
+            for n in self._mine(workspace_id, user_id)
+            if n.read_at is None and n.archived_at is None
+        )
+
+    async def mark_read(
+        self, workspace_id: UUID, user_id: UUID, ids: list[UUID] | None, at: datetime
+    ) -> None:
+        for n in self._mine(workspace_id, user_id):
+            if n.read_at is None and (ids is None or n.id in ids):
+                self.data[n.id] = n.model_copy(update={"read_at": at})
+
+    async def archive(self, workspace_id: UUID, user_id: UUID, id: UUID, at: datetime) -> bool:
+        n = self.data.get(id)
+        if n is None or n.workspace_id != workspace_id or n.user_id != user_id:
+            return False
+        self.data[id] = n.model_copy(update={"archived_at": at, "read_at": at})
+        return True
+
+
+class DemoTicketRepo:
+    def __init__(self):
+        self.data: dict[UUID, Ticket] = {}
+
+    async def create(self, ticket: Ticket) -> Ticket:
+        self.data[ticket.id] = ticket
+        return ticket
+
+    async def get(self, id: UUID) -> Ticket | None:
+        return self.data.get(id)
+
+    async def list_for_user(self, workspace_id: UUID, user_id: UUID, limit: int) -> list[Ticket]:
+        mine = [
+            t for t in self.data.values() if t.workspace_id == workspace_id and t.user_id == user_id
+        ]
+        return sorted(mine, key=lambda t: t.created_at, reverse=True)[:limit]
+
+    async def update(self, id: UUID, changes: dict[str, Any]) -> Ticket:
+        self.data[id] = self.data[id].model_copy(update=changes)
+        return self.data[id]

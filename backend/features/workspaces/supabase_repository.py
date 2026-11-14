@@ -242,3 +242,10 @@ class SupabaseUserDirectory(DemoFallbackMixin):
             )
             out[uid] = (name, email)
         return out
+
+    async def set_name(self, user_id: UUID, name: str) -> None:
+        res = await asyncio.to_thread(self.client.auth.admin.get_user_by_id, str(user_id))
+        meta = {**(res.user.user_metadata or {}), "full_name": name}
+        await asyncio.to_thread(
+            self.client.auth.admin.update_user_by_id, str(user_id), {"user_metadata": meta}
+        )

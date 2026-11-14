@@ -33,6 +33,9 @@ containers =
     features.approvals
     features.crm
     features.integrations
+    features.account
+    features.notifications
+    features.support
     features.contracts
     features.creators
     features.deals

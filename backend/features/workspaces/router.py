@@ -1,8 +1,9 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Response
 
 from features.auth.dependencies import get_current_user_id
+from features.notifications.dependencies import notify
 from features.workspaces.dependencies import (
     WorkspaceContext,
     get_team_service,
@@ -182,9 +183,21 @@ async def preview_invite(
 
 @invites_router.post("/{token}/accept", response_model=Workspace)
 async def accept_invite(
+    background: BackgroundTasks,
     token: str,
     user_id: UUID = Depends(get_current_user_id),
     team: TeamService = Depends(get_team_service),
 ):
     with map_errors(_TEAM_ERRORS):
-        return await team.accept_invite(token, user_id)
+        ws = await team.accept_invite(token, user_id)
+    name, _ = (await team.user_directory.describe([user_id])).get(user_id, ("Someone", None))
+    notify(
+        background,
+        ws.id,
+        [ws.owner_user_id],
+        "workspace_activity",
+        f"{name} joined {ws.name}",
+        "They accepted your invitation.",
+        f"/dashboard/{ws.slug}/settings/workspace",
+    )
+    return ws
