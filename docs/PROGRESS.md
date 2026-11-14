@@ -41,8 +41,8 @@ brand side stays as it is.
 | 4 | Calendar + Approvals (publish state machine without platform posting) | done (verified on live DB) |
 | 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | done (verified on live DB) |
 | 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | done (verified on live DB) |
-| 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done — owner: run migration 008 before deploying |
-| 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | next |
+| 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
+| 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | in progress — speed + concurrency fix done; load test next |
 
 
 ### Phase 1 notes (done)
@@ -247,8 +247,17 @@ Phase 7 notes
   categories have no source yet (and billing doesn't exist). Digest frequencies are not built (all instant).
 - Settings is open to every member (Profile, Notifications); Workspace / AI knowledge / API keys / Webhooks tabs
   show only to roles that may use them.
-- **Deferred, needs an owner decision:** "Delete my account" (spec danger zone) — what happens to workspaces the
-  person owns, their brand deals and contracts.
+- "Delete my account": owner decision (2026-11-14) — delete everything. Built and verified on the live DB.
+
+### Phase 8 progress
+- ✅ Speed (2026-11-14). Measured with `scripts/perf_check.py` against the live DB from this machine (one database
+  round trip ≈ 190 ms here): reads 700 ms → ~190–210 ms (one round trip), card move 1.3 s → ~380 ms as users see it,
+  script autosave → ~430 ms (2 trips). Frontend: cached page data (`shared/lib/query-cache.ts`) + remembered workspace
+  list: sidebar navigation and browser refresh draw in ~50 ms even with 200 ms API latency.
+- ✅ Concurrency bug found by the benchmark: supabase-py's HTTP/2 sessions are not thread-safe — parallel queries
+  failed with `httpx.ReadError`. Database + auth sessions now pooled HTTP/1.1 (300 queries from 64 threads, 0 errors).
+- **Owner action for the biggest remaining win:** host the backend in the same region as the Supabase project
+  (Supabase → Project Settings → General → Region). Each round trip drops from ~190 ms to ~2–5 ms.
 
 ### Phase 8 plan — pick up here (Hardening)
 1. Load test: 100 concurrent users against a staging backend (locust or k6 script in `backend/scripts/`), covering
@@ -261,6 +270,11 @@ Phase 7 notes
    SUPPORT_EMAIL, GEMINI_MODEL_FALLBACK; migrations 001–008 in order).
 4. Final docs pass (README, ARCHITECTURE, FEATURES, PROGRESS) and a full e2e run.
 ### Phase log
+- **2026-11-14 — Delete my account + speed**: `DELETE /me` erases the person and everything theirs (verified live: no
+  rows left, login gone, old session 401, other workspaces intact); Settings › Profile danger zone. Backend: membership
+  cache + single-query lookup, parallel queries, background webhooks, 64 DB threads, thread-safe HTTP/1.1 sessions
+  (fixes parallel-query crash). Frontend: stale-while-revalidate page cache, shell drawn from the remembered workspace
+  list. Phase 7 verified live. Checks: 225 backend tests, contracts kept, tsc/eslint/prettier, build, e2e 11/11.
 - **2026-11-14 — Phase 7 (notifications, profile, support)**: migration 008; `features/account` (profile incl. name
   on the login, preferences with DND/quiet hours), `features/notifications` (events → inbox + email, hourly
   due-tomorrow sweep, bell + page with search/filters/archive), `features/support` (tickets, FAQ); Settings open to

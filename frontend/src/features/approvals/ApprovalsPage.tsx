@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Check, Inbox, X } from "lucide-react";
 import client from "@/shared/lib/api-client";
+import { useQuery } from "@/shared/lib/query-cache";
 import type { components } from "@/shared/lib/api-types";
 import { Dialog } from "@/shared/components/ui/Dialog";
 import { useWorkspace } from "@/features/workspaces";
@@ -18,31 +19,36 @@ const when = (iso: string) =>
 /** Approvals: the human checkpoint. Approving marks the content Published; nothing is posted anywhere. */
 export default function ApprovalsPage() {
   const { workspace } = useWorkspace();
-  const [requests, setRequests] = useState<PublishRequest[] | null>(null);
-  const [items, setItems] = useState<Record<string, ContentItem>>({});
-  const [members, setMembers] = useState<Record<string, string>>({});
   const [rejecting, setRejecting] = useState<PublishRequest | null>(null);
   const [reason, setReason] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setError] = useState<string | null>(null);
   const path = { workspace: workspace.slug };
 
-  const load = useCallback(async () => {
+  // cached: revisiting Approvals shows the last data at once and refreshes in the background
+  const query = useQuery(`approvals:${workspace.slug}`, async () => {
     const p = { path: { workspace: workspace.slug } };
     const [reqs, content, people] = await Promise.all([
       client.GET("/workspaces/{workspace}/approvals", { params: p }),
       client.GET("/workspaces/{workspace}/content", { params: p }),
       client.GET("/workspaces/{workspace}/members", { params: p }),
     ]);
-    if (reqs.error || !reqs.data) return setError("Couldn't load approvals.");
-    setRequests(reqs.data);
-    setItems(Object.fromEntries((content.data ?? []).map((i) => [i.id, i])));
-    setMembers(Object.fromEntries((people.data ?? []).map((m: Member) => [m.user_id, m.name])));
-  }, [workspace.slug]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount
-    load();
-  }, [load]);
+    if (!reqs.data) return undefined;
+    return {
+      requests: reqs.data,
+      items: Object.fromEntries((content.data ?? []).map((i) => [i.id, i])) as Record<
+        string,
+        ContentItem
+      >,
+      members: Object.fromEntries(
+        (people.data ?? []).map((m: Member) => [m.user_id, m.name]),
+      ) as Record<string, string>,
+    };
+  });
+  const requests: PublishRequest[] | null = query.data?.requests ?? null;
+  const items = query.data?.items ?? {};
+  const members = query.data?.members ?? {};
+  const load = query.refresh;
+  const error = actionError ?? (query.error && !query.data ? "Couldn't load approvals." : null);
 
   async function approve(r: PublishRequest) {
     setError(null);

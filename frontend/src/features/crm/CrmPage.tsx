@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ArrowUpDown,
   ChevronLeft,
@@ -18,6 +18,7 @@ import {
   Wallet,
 } from "lucide-react";
 import client from "@/shared/lib/api-client";
+import { useQuery } from "@/shared/lib/query-cache";
 import { PageHeader, useWorkspace } from "@/features/workspaces";
 import { DealWizard } from "./components/DealWizard";
 import {
@@ -88,10 +89,7 @@ function toCsv(deals: CrmDeal[]): string {
 /** Brand CRM: the creator's own brand deals plus the deals brands made with them on Creator OS. */
 export default function CrmPage() {
   const { workspace, base } = useWorkspace();
-  const [deals, setDeals] = useState<CrmDeal[] | null>(null);
-  const [stats, setStats] = useState<CrmStats | null>(null);
-  const [platform, setPlatform] = useState<PlatformDeal[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setError] = useState<string | null>(null);
   const [wizard, setWizard] = useState<{ deal?: CrmDeal } | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [query, setQuery] = useState("");
@@ -104,24 +102,22 @@ export default function CrmPage() {
   const [page, setPage] = useState(0);
   const [perPage, setPerPage] = useState(10);
 
-  const load = useCallback(async () => {
+  // cached: revisiting the CRM shows the last data at once and refreshes in the background
+  const crm = useQuery(`crm:${workspace.slug}`, async () => {
     const path = { workspace: workspace.slug };
     const [list, kpis, onPlatform] = await Promise.all([
       client.GET("/workspaces/{workspace}/crm/deals", { params: { path } }),
       client.GET("/workspaces/{workspace}/crm/stats", { params: { path } }),
       client.GET("/workspaces/{workspace}/crm/platform-deals", { params: { path } }),
     ]);
-    if (list.error || !list.data) return setError("Couldn't load your deals.");
-    setError(null);
-    setDeals(list.data);
-    if (kpis.data) setStats(kpis.data);
-    setPlatform(onPlatform.data ?? []);
-  }, [workspace.slug]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount
-    load();
-  }, [load]);
+    if (!list.data) return undefined;
+    return { deals: list.data, stats: kpis.data ?? null, platform: onPlatform.data ?? [] };
+  });
+  const deals: CrmDeal[] | null = crm.data?.deals ?? null;
+  const stats: CrmStats | null = crm.data?.stats ?? null;
+  const platform: PlatformDeal[] = crm.data?.platform ?? [];
+  const load = crm.refresh;
+  const error = actionError ?? (crm.error && !crm.data ? "Couldn't load your deals." : null);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();

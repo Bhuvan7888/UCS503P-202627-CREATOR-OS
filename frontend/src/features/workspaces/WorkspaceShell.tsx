@@ -14,7 +14,7 @@ import {
   UserRound,
 } from "lucide-react";
 import client from "@/shared/lib/api-client";
-import { clearSession, loadSession, type AuthSession } from "@/shared/lib/session";
+import { WORKSPACES_KEY, clearSession, loadSession, type AuthSession } from "@/shared/lib/session";
 import { NotificationBell } from "@/features/notifications";
 import { CommandPalette } from "./components/CommandPalette";
 import { NAV_GROUPS, SIDEBAR_COLLAPSED_KEY, canSee } from "./constants/nav";
@@ -38,17 +38,35 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
   const [menu, setMenu] = useState<"workspaces" | "user" | null>(null);
   const [wsError, setWsError] = useState<string | null>(null);
 
+  const show = useCallback(
+    (all: MyWorkspace[]) => {
+      const workspace = all.find((w) => w.slug === ref || w.id === ref);
+      if (!workspace) return setState({ kind: "missing" });
+      if (workspace.slug !== ref) {
+        // URLs accept the id too; show the short slug
+        router.replace(
+          window.location.pathname.replace(`/dashboard/${ref}`, `/dashboard/${workspace.slug}`),
+        );
+      }
+      setState({ kind: "ready", workspace, all });
+    },
+    [ref, router],
+  );
+
+  // Once per workspace (not on every page change). A refresh draws the shell from the last known list
+  // straight away, then re-checks with the API.
   const load = useCallback(async () => {
-    const { data } = await client.GET("/workspaces");
-    const all = data ?? [];
-    const workspace = all.find((w) => w.slug === ref || w.id === ref);
-    if (!workspace) return setState({ kind: "missing" });
-    if (workspace.slug !== ref) {
-      // URLs accept the id too; show the short slug
-      router.replace(pathname.replace(`/dashboard/${ref}`, `/dashboard/${workspace.slug}`));
+    try {
+      const remembered = sessionStorage.getItem(WORKSPACES_KEY);
+      if (remembered) show(JSON.parse(remembered) as MyWorkspace[]);
+    } catch {
+      sessionStorage.removeItem(WORKSPACES_KEY);
     }
-    setState({ kind: "ready", workspace, all });
-  }, [ref, pathname, router]);
+    const { data } = await client.GET("/workspaces");
+    if (!data) return;
+    sessionStorage.setItem(WORKSPACES_KEY, JSON.stringify(data));
+    show(data);
+  }, [show]);
 
   useEffect(() => {
     // localStorage is client-only, so the session and sidebar preference are read after mount

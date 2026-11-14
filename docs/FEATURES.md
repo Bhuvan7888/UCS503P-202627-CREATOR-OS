@@ -173,7 +173,7 @@ Each item has one script (Scripts page, auto-saved; the first script moves an id
 ## `account`
 The signed-in person (shared across all their workspaces): profile and notification preferences.
 - **Pages:** `/dashboard/[workspace]/settings/profile` → `ProfilePage.tsx`; `/dashboard/[workspace]/settings/notifications` → `NotificationPreferencesPage.tsx`
-- **API:** `GET/PUT /me/profile` (the name is saved on the login via `UserDirectory.set_name`, so teammates see it; email is read-only), `GET/PUT /me/notification-preferences`
+- **API:** `GET/PUT /me/profile` (the name is saved on the login via `UserDirectory.set_name`, so teammates see it; email is read-only), `GET/PUT /me/notification-preferences`, `DELETE /me` (body `{"confirm": "DELETE"}`: `SupabaseAccountEraser` deletes the creator profile, its deals, contracts and their stored files, deliverables, payments, messages, negotiation history, brand membership, the person's audit trail and invitations, then the login — which cascades owned workspaces and everything in them; cached sessions are dropped; demo accounts are refused)
 - **Backend:** `router.py`, `service.py` (`AccountService`), `rules.py` (category defaults, quiet hours across midnight, `may_email`), `models.py`, `repository.py`, `supabase_repository.py`
 - **Database:** `user_profiles`, `notification_preferences` (migration 008)
 

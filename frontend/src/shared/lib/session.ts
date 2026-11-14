@@ -1,4 +1,5 @@
 import type { components } from "@/shared/lib/api-types";
+import { clearQueryCache } from "@/shared/lib/query-cache";
 
 export type AuthSession = components["schemas"]["AuthSession"];
 
@@ -21,4 +22,9 @@ export function loadSession(): AuthSession | null {
 
 export function clearSession() {
   localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(WORKSPACES_KEY);
+  clearQueryCache(); // the next person in this tab must never see the previous person's data
 }
+
+/** Last known workspace list, so a page refresh can draw the shell before the API answers. */
+export const WORKSPACES_KEY = "creatoros_workspaces";

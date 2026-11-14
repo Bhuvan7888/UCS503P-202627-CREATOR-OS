@@ -32,6 +32,7 @@ def main() -> None:
             .auth.sign_in_with_password({"email": email, "password": password})
             .session
         )
+        assert session is not None
         h = {"Authorization": f"Bearer {session.access_token}"}
         client.post("/auth/creator/oauth", headers=h, json={"refresh_token": session.refresh_token})
         w = "/workspaces/" + client.get("/workspaces", headers=h).json()[0]["slug"]

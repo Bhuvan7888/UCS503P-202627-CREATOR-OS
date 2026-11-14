@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import client from "@/shared/lib/api-client";
-import { loadSession } from "@/shared/lib/session";
+import { WORKSPACES_KEY, loadSession } from "@/shared/lib/session";
 import { PENDING_INVITE_KEY } from "./constants/nav";
 
 /** /dashboard → the user's primary workspace (created on first visit for a creator). */
@@ -17,6 +17,8 @@ export default function WorkspaceRedirectPage() {
     if (invite) return router.replace(`/invite/${invite}`);
     if (session.role === "brand") return router.replace("/brand");
     client.GET("/workspaces").then(({ data }) => {
+      // the shell draws from this right away instead of asking again
+      if (data) sessionStorage.setItem(WORKSPACES_KEY, JSON.stringify(data));
       const target = data?.find((w) => w.is_primary) ?? data?.[0];
       router.replace(target ? `/dashboard/${target.slug}` : "/creator/login");
     });
