@@ -10,6 +10,9 @@ Every feature has the same name everywhere. The backend uses `snake_case` becaus
 | `creators` | `backend/features/creators/` | `frontend/src/features/creators/` | `backend/tests/features/creators/` |
 | `workspaces` | `backend/features/workspaces/` | `frontend/src/features/workspaces/` (creator shell) | `backend/tests/features/workspaces/`, e2e |
 | `content` | `backend/features/content/` | `frontend/src/features/content/` | `backend/tests/features/content/`, e2e |
+| `account` | `backend/features/account/` | `frontend/src/features/account/` | `backend/tests/features/account/`, e2e |
+| `notifications` | `backend/features/notifications/` | `frontend/src/features/notifications/` | `backend/tests/features/notifications/`, e2e |
+| `support` | `backend/features/support/` | `frontend/src/features/support/` | `backend/tests/features/notifications/test_notifications_api.py`, e2e |
 | `integrations` | `backend/features/integrations/` | `frontend/src/features/integrations/` | `backend/tests/features/integrations/`, e2e |
 | `crm` | `backend/features/crm/` | `frontend/src/features/crm/` | `backend/tests/features/crm/`, e2e |
 | `approvals` | `backend/features/approvals/` | `frontend/src/features/approvals/` | `backend/tests/features/approvals/`, e2e |
@@ -166,6 +169,33 @@ Each item has one script (Scripts page, auto-saved; the first script moves an id
 - **Backend:** `router.py`, `service.py` (`ContentService`: assignee must be a member, other workspaces' items are 404, scripts), `rules.py` (KPIs with 30-day deltas; Scripted = has a script or moved past Idea; `apply_stage_rules`: scheduling moves an item to Scheduled, Published stamps `published_at`), `models.py`, `repository.py` (`ContentRepo`, `ScriptRepo`), `supabase_repository.py`
 - **Database:** `supabase/migrations/20261113010000_content_items.sql`, `20261114000000_scripts_and_ai.sql` (`content_scripts`), `20261115000000_calendar_and_approvals.sql` (`scheduled_at`, `published_at`)
 - **Depends on:** `workspaces`; frontend uses `ai-assist` (`GenerateButton`)
+
+## `account`
+The signed-in person (shared across all their workspaces): profile and notification preferences.
+- **Pages:** `/dashboard/[workspace]/settings/profile` → `ProfilePage.tsx`; `/dashboard/[workspace]/settings/notifications` → `NotificationPreferencesPage.tsx`
+- **API:** `GET/PUT /me/profile` (the name is saved on the login via `UserDirectory.set_name`, so teammates see it; email is read-only), `GET/PUT /me/notification-preferences`
+- **Backend:** `router.py`, `service.py` (`AccountService`), `rules.py` (category defaults, quiet hours across midnight, `may_email`), `models.py`, `repository.py`, `supabase_repository.py`
+- **Database:** `user_profiles`, `notification_preferences` (migration 008)
+
+## `notifications`
+The per-person inbox. Created only by real events (routers call `dependencies.notify(...)`, which runs after the
+response and never fails the request): assignment → assignee; publish waiting → owner (high priority); approved /
+rejected → the person who asked; member joined → owner; due tomorrow → assignee or owner (hourly sweep in the
+`main.py` background loop, deduplicated per item and day). Categories: task_assignments, publishing_updates,
+deadlines, workspace_activity. In-app per category; email per category unless Do Not Disturb or quiet hours (profile
+timezone); never emails in demo mode.
+- **Pages:** `NotificationBell` in the shell's top bar (unread badge polled every 60 s and refreshed on
+  `creatoros:notifications-changed`), `/dashboard/[workspace]/notifications` → `NotificationsPage.tsx`
+- **API:** `GET /workspaces/{workspace}/notifications?archived=`, `GET …/notifications/unread-count`, `POST …/notifications/read` (ids or all), `POST …/notifications/{id}/archive` — people only (`require_person`), never API keys
+- **Backend:** `router.py`, `dependencies.py` (`get_notification_service`, `notify`), `service.py` (`NotificationService`, `remind_due_tomorrow`), `models.py`, `repository.py`, `supabase_repository.py`
+- **Database:** `notifications` (migration 008)
+
+## `support`
+Help tickets per workspace and person, FAQ written for this app.
+- **Pages:** `/dashboard/[workspace]/support` → `SupportPage.tsx` (Overview, My Tickets, Knowledge Base, create-ticket dialog)
+- **API:** `GET/POST /workspaces/{workspace}/support/tickets`, `POST …/support/tickets/{id}/close` (people only); new tickets are emailed to `SUPPORT_EMAIL` when set
+- **Backend:** `router.py`, `service.py` (`SupportService`), `models.py`, `repository.py`, `supabase_repository.py`
+- **Database:** `support_tickets` (migration 008)
 
 ## `integrations`
 API keys that let an agent or automation act inside one workspace, and signed outgoing webhooks.

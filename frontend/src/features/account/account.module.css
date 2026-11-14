@@ -1,0 +1,146 @@
+/* Settings › Profile and Notifications. Colours are the app tokens. */
+.muted {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+}
+
+.ok,
+.error {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+
+.ok {
+  border: 1px solid var(--color-success);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.error {
+  border: 1px solid var(--color-danger);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.card {
+  margin-bottom: 16px;
+  padding: 20px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.card h3 {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.photo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent), #8b5cf6);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.grid label,
+.full {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.full {
+  margin-top: 14px;
+}
+
+.grid small,
+.full small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-ink-faint);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.switchRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.switchRow:first-of-type {
+  border-top: none;
+}
+
+.switchRow span {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.switchRow small {
+  font-size: 12px;
+  color: var(--color-ink-faint);
+}
+
+.switchRow input,
+.table input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-ink);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  padding: 8px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table td small {
+  display: block;
+  font-size: 12px;
+  color: var(--color-ink-faint);
+}

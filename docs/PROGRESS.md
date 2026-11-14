@@ -40,9 +40,9 @@ brand side stays as it is.
 | 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | done (verified on live DB + live Gemini) |
 | 4 | Calendar + Approvals (publish state machine without platform posting) | done (verified on live DB) |
 | 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | done (verified on live DB) |
-| 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | done (6a verified live) — owner: run migration 007 before deploying |
-| 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | next |
-| 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
+| 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | done (verified on live DB) |
+| 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done — owner: run migration 008 before deploying |
+| 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | next |
 
 
 ### Phase 1 notes (done)
@@ -228,19 +228,45 @@ Phase 6b notes
   posting. "Approve" marks the item Published.
 - The retry loop runs inside each API process (atomic claims). Move it to a worker if delivery volume grows (Phase 8).
 
-### Phase 7 plan — pick up here (Notifications, Support, Settings)
+### Phase 7 (done, 2026-11-14)
 Read spec §4.9 Notifications, §4.11 Support, §4.12 Profile / Notifications / Appearance first. No Billing (free app),
 no Connections (no platform integrations), light only (no Appearance theme toggle — owner decision).
-1. Migration 008: `notifications` (workspace, user, category, title, body, link, read_at, archived_at),
+1. ✅ Migration 008: `notifications` (workspace, user, category, title, body, link, read_at, archived_at),
    `notification_preferences` (user: dnd, quiet hours, per-category in-app/email), `support_tickets`
    (workspace, user, subject, category, priority, description, status) — RLS on.
-2. Create notifications from existing events: publish requested/approved/rejected (to owner/requester), content
+2. ✅ Create notifications from existing events: publish requested/approved/rejected (to owner/requester), content
    assigned, invite accepted, due tomorrow (daily sweep in the background loop).
-3. Bell popover in the top bar (unread count, filters, "View all"), Notifications page (list, read/archive,
+3. ✅ Bell popover in the top bar (unread count, filters, "View all"), Notifications page (list, read/archive,
    filters), Settings › Profile (name, phone, location, timezone, bio, website; email read-only), Settings ›
    Notifications (preferences), Support page (overview, my tickets, FAQ accordion, create-ticket dialog).
 Verify: unit/API tests, e2e for bell + notifications + support, live DB after migration 008.
+Phase 7 notes
+- **Owner actions:** run `supabase/migrations/20261119000000_notifications_profile_support.sql` BEFORE deploying;
+  optionally set `SUPPORT_EMAIL` (backend env) to receive new tickets by email.
+- Categories are the 4 the app can actually produce; the spec's comments, announcements, security and billing
+  categories have no source yet (and billing doesn't exist). Digest frequencies are not built (all instant).
+- Settings is open to every member (Profile, Notifications); Workspace / AI knowledge / API keys / Webhooks tabs
+  show only to roles that may use them.
+- **Deferred, needs an owner decision:** "Delete my account" (spec danger zone) — what happens to workspaces the
+  person owns, their brand deals and contracts.
+
+### Phase 8 plan — pick up here (Hardening)
+1. Load test: 100 concurrent users against a staging backend (locust or k6 script in `backend/scripts/`), covering
+   login, workspace shell, content list/create/move, scripts auto-save, CRM, notifications poll. Targets: p95 < 500 ms
+   (non-AI), 0 errors. Fix hot spots (per-request Supabase clients, N+1 lookups such as `UserDirectory.describe` per
+   audit entry, `GET /workspaces` permission lookups, missing indexes).
+2. Security review: dependency audit (`uv pip audit` / `npm audit`), auth/permission matrix re-check, rate limits on
+   auth and AI, headers (CSP, HSTS) on the frontend, secrets scan; rotate any leaked keys.
+3. Ops: structured logging, health endpoint, error page polish; README deploy steps (env vars incl. APP_URL,
+   SUPPORT_EMAIL, GEMINI_MODEL_FALLBACK; migrations 001–008 in order).
+4. Final docs pass (README, ARCHITECTURE, FEATURES, PROGRESS) and a full e2e run.
 ### Phase log
+- **2026-11-14 — Phase 7 (notifications, profile, support)**: migration 008; `features/account` (profile incl. name
+  on the login, preferences with DND/quiet hours), `features/notifications` (events → inbox + email, hourly
+  due-tomorrow sweep, bell + page with search/filters/archive), `features/support` (tickets, FAQ); Settings open to
+  every member with permission-aware tabs; bell refreshes instantly after read/archive. Phase 6b verified live.
+  Checks: 221 backend tests, contracts kept, mypy 113, tsc/eslint/prettier, build, smoke 36/36, e2e 11/11 (fresh
+  backend and warm).
 - **2026-11-14 — Phase 6b (API keys + webhooks)**: migration 007; `features/integrations` (scoped, hashed, audited
   keys acting as role `agent`; agent publish requests; signed webhooks with public-https check, first try after the
   response and ~15 h of retries via an atomic-claim loop); Settings › API keys and › Webhooks. Phase 6a verified live

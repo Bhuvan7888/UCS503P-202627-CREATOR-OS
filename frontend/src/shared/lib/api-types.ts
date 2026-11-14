@@ -1129,6 +1129,145 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workspaces/{workspace}/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inbox */
+        get: operations["inbox_workspaces__workspace__notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Unread Count */
+        get: operations["unread_count_workspaces__workspace__notifications_unread_count_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Read */
+        post: operations["mark_read_workspaces__workspace__notifications_read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/notifications/{notification_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive */
+        post: operations["archive_workspaces__workspace__notifications__notification_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/support/tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Tickets */
+        get: operations["my_tickets_workspaces__workspace__support_tickets_get"];
+        put?: never;
+        /** Create Ticket */
+        post: operations["create_ticket_workspaces__workspace__support_tickets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace}/support/tickets/{ticket_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close Ticket */
+        post: operations["close_ticket_workspaces__workspace__support_tickets__ticket_id__close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Profile */
+        get: operations["get_profile_me_profile_get"];
+        /** Save Profile */
+        put: operations["save_profile_me_profile_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Preferences */
+        get: operations["get_preferences_me_notification_preferences_get"];
+        /** Save Preferences */
+        put: operations["save_preferences_me_notification_preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1408,6 +1547,19 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** CategoryPreference */
+        CategoryPreference: {
+            /**
+             * In App
+             * @default true
+             */
+            in_app: boolean;
+            /**
+             * Email
+             * @default false
+             */
+            email: boolean;
         };
         /** ClauseCardOut */
         ClauseCardOut: {
@@ -2195,6 +2347,14 @@ export interface components {
             /** Invite Code */
             invite_code: string;
         };
+        /**
+         * MarkRead
+         * @description Mark these notifications read; omit `ids` to mark all of them.
+         */
+        MarkRead: {
+            /** Ids */
+            ids?: string[] | null;
+        };
         /** MemberOut */
         MemberOut: {
             /**
@@ -2312,6 +2472,90 @@ export interface components {
             /** Avg Engagement Rate */
             avg_engagement_rate?: number | null;
         };
+        /** Notification */
+        Notification: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "task_assignments" | "publishing_updates" | "deadlines" | "workspace_activity";
+            /**
+             * Priority
+             * @default normal
+             * @enum {string}
+             */
+            priority: "normal" | "high";
+            /** Title */
+            title: string;
+            /**
+             * Body
+             * @default
+             */
+            body: string;
+            /**
+             * Link
+             * @default
+             */
+            link: string;
+            /** Dedupe Key */
+            dedupe_key?: string | null;
+            /** Read At */
+            read_at?: string | null;
+            /** Archived At */
+            archived_at?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** NotificationPreferences */
+        NotificationPreferences: {
+            /**
+             * Do Not Disturb
+             * @default false
+             */
+            do_not_disturb: boolean;
+            /**
+             * Quiet Hours Enabled
+             * @default false
+             */
+            quiet_hours_enabled: boolean;
+            /**
+             * Quiet Start
+             * Format: time
+             * @default 22:00:00
+             */
+            quiet_start: string;
+            /**
+             * Quiet End
+             * Format: time
+             * @default 07:00:00
+             */
+            quiet_end: string;
+            /**
+             * Categories
+             * @default {}
+             */
+            categories: {
+                [key: string]: components["schemas"]["CategoryPreference"];
+            };
+        };
         /**
          * OAuthCompleteRequest
          * @description Sent after a Google (Supabase OAuth) sign-in; the access token travels in the Authorization header.
@@ -2417,6 +2661,56 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** Profile */
+        Profile: {
+            /** Name */
+            name: string;
+            /** Phone */
+            phone?: string | null;
+            /** Location */
+            location?: string | null;
+            /**
+             * Timezone
+             * @default Asia/Kolkata
+             */
+            timezone: string;
+            /**
+             * Currency
+             * @default INR
+             * @enum {string}
+             */
+            currency: "INR" | "USD";
+            /** Bio */
+            bio?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Email */
+            email?: string | null;
+        };
+        /** ProfileSave */
+        ProfileSave: {
+            /** Name */
+            name: string;
+            /** Phone */
+            phone?: string | null;
+            /** Location */
+            location?: string | null;
+            /**
+             * Timezone
+             * @default Asia/Kolkata
+             */
+            timezone: string;
+            /**
+             * Currency
+             * @default INR
+             * @enum {string}
+             */
+            currency: "INR" | "USD";
+            /** Bio */
+            bio?: string | null;
+            /** Website */
+            website?: string | null;
         };
         /** PublishRequest */
         PublishRequest: {
@@ -2566,6 +2860,75 @@ export interface components {
             /** Generated At */
             generated_at?: string | null;
         };
+        /** Ticket */
+        Ticket: {
+            /** Subject */
+            subject: string;
+            /**
+             * Category
+             * @default general
+             * @enum {string}
+             */
+            category: "general" | "technical" | "feature_request" | "bug_report";
+            /**
+             * Priority
+             * @default medium
+             * @enum {string}
+             */
+            priority: "low" | "medium" | "high" | "urgent";
+            /** Description */
+            description: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /**
+             * Status
+             * @default open
+             * @enum {string}
+             */
+            status: "open" | "in_progress" | "resolved" | "closed";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** TicketCreate */
+        TicketCreate: {
+            /** Subject */
+            subject: string;
+            /**
+             * Category
+             * @default general
+             * @enum {string}
+             */
+            category: "general" | "technical" | "feature_request" | "bug_report";
+            /**
+             * Priority
+             * @default medium
+             * @enum {string}
+             */
+            priority: "low" | "medium" | "high" | "urgent";
+            /** Description */
+            description: string;
+        };
         /** TopBrand */
         TopBrand: {
             /** Campaign Name */
@@ -2574,6 +2937,11 @@ export interface components {
             deal_count: number;
             /** Total Value */
             total_value: number;
+        };
+        /** UnreadCount */
+        UnreadCount: {
+            /** Unread */
+            unread: number;
         };
         /** UnreadSummaryResponse */
         UnreadSummaryResponse: {
@@ -5542,6 +5910,377 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WebhookDelivery"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inbox_workspaces__workspace__notifications_get: {
+        parameters: {
+            query?: {
+                archived?: boolean;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Notification"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unread_count_workspaces__workspace__notifications_unread_count_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadCount"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_read_workspaces__workspace__notifications_read_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkRead"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_workspaces__workspace__notifications__notification_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                notification_id: string;
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_tickets_workspaces__workspace__support_tickets_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_ticket_workspaces__workspace__support_tickets_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_ticket_workspaces__workspace__support_tickets__ticket_id__close_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                ticket_id: string;
+                workspace: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_profile_me_profile_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Profile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_profile_me_profile_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Profile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_preferences_me_notification_preferences_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_preferences_me_notification_preferences_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationPreferences"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
                 };
             };
             /** @description Validation Error */

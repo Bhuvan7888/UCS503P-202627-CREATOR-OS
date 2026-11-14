@@ -1,5 +1,7 @@
 import {
+  Bell,
   CalendarDays,
+  LifeBuoy,
   Handshake,
   House,
   Inbox,
@@ -55,13 +57,10 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "Workspace",
     items: [
-      {
-        label: "Settings",
-        path: "/settings/workspace",
-        icon: Settings,
-        prefix: true,
-        anyOf: ["view_settings", "manage_workspace", "invite_members"],
-      },
+      { label: "Notifications", path: "/notifications", icon: Bell },
+      // everyone has Settings (their own profile); workspace tabs inside check permissions
+      { label: "Settings", path: "/settings/profile", icon: Settings, prefix: true },
+      { label: "Support", path: "/support", icon: LifeBuoy },
     ],
   },
 ];

@@ -8,11 +8,18 @@ import { useWorkspace } from "../hooks/useWorkspace";
 import { PageHeader } from "./PageHeader";
 import styles from "../workspace-shell.module.css";
 
-const TABS = [
-  { label: "Workspace", path: "/settings/workspace" },
-  { label: "AI knowledge", path: "/settings/ai-knowledge" },
-  { label: "API keys", path: "/settings/api-keys", needs: "manage_workspace" },
-  { label: "Webhooks", path: "/settings/webhooks", needs: "manage_workspace" },
+// `anyOf`: shown when the caller's role has one of these (personal tabs have none)
+const TABS: { label: string; path: string; anyOf?: string[] }[] = [
+  { label: "Profile", path: "/settings/profile" },
+  {
+    label: "Workspace",
+    path: "/settings/workspace",
+    anyOf: ["view_settings", "manage_workspace", "invite_members"],
+  },
+  { label: "AI knowledge", path: "/settings/ai-knowledge", anyOf: ["view_settings"] },
+  { label: "Notifications", path: "/settings/notifications" },
+  { label: "API keys", path: "/settings/api-keys", anyOf: ["manage_workspace"] },
+  { label: "Webhooks", path: "/settings/webhooks", anyOf: ["manage_workspace"] },
 ];
 
 /** Settings page header plus the tab bar; each tab is its own route. */
@@ -29,7 +36,9 @@ export function SettingsHeader({ tab }: { tab: string }) {
         subtitle="Manage your workspace, team and preferences"
       />
       <nav className={styles.tabs} aria-label="Settings sections">
-        {TABS.filter((t) => !t.needs || workspace.permissions?.includes(t.needs)).map((t) => (
+        {TABS.filter(
+          (t) => !t.anyOf || t.anyOf.some((p) => workspace.permissions?.includes(p)),
+        ).map((t) => (
           <Link
             key={t.path}
             href={`${base}${t.path}`}

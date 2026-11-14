@@ -3,9 +3,19 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { Check, ChevronsUpDown, LogOut, PanelLeft, Plus, Search } from "lucide-react";
+import {
+  Bell,
+  Check,
+  ChevronsUpDown,
+  LogOut,
+  PanelLeft,
+  Plus,
+  Search,
+  UserRound,
+} from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { clearSession, loadSession, type AuthSession } from "@/shared/lib/session";
+import { NotificationBell } from "@/features/notifications";
 import { CommandPalette } from "./components/CommandPalette";
 import { NAV_GROUPS, SIDEBAR_COLLAPSED_KEY, canSee } from "./constants/nav";
 import { WorkspaceContext, type MyWorkspace } from "./hooks/useWorkspace";
@@ -225,6 +235,24 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
                     </small>
                   </span>
                 </div>
+                <Link
+                  href={`${base}/settings/profile`}
+                  className={styles.popItem}
+                  role="menuitem"
+                  onClick={() => setMenu(null)}
+                >
+                  <UserRound size={14} />
+                  <span className={styles.grow}>Profile</span>
+                </Link>
+                <Link
+                  href={`${base}/notifications`}
+                  className={styles.popItem}
+                  role="menuitem"
+                  onClick={() => setMenu(null)}
+                >
+                  <Bell size={14} />
+                  <span className={styles.grow}>Notifications</span>
+                </Link>
                 <button type="button" className={styles.popItem} onClick={signOut} role="menuitem">
                   <LogOut size={14} />
                   <span className={styles.grow}>Sign out</span>
@@ -264,6 +292,8 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
               <span>Search workspace…</span>
               <kbd>⌘K</kbd>
             </button>
+            <span className={styles.spacer} />
+            <NotificationBell slug={workspace.slug} base={base} />
           </div>
           <main className={styles.panel} onClick={() => menu && setMenu(null)}>
             {blocked ? (

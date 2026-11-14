@@ -142,6 +142,8 @@ A file belongs in `shared/` **only** when two or more features use it. Otherwise
 - API keys reach workspace routes as role `agent` (see FEATURES.md › integrations). Anything only a person may do must use
   `require_human(...)` (or an owner check); never grant a key-reachable permission to a human-only action.
 - Outgoing webhook URLs must pass `integrations.rules.is_public_https_url` (blocks requests to internal addresses).
+- Personal routes (inbox, tickets) use `require_person`: an API key acts as the person who issued it and must never read their inbox.
+- Side effects after an action (webhooks, notifications) go through `integrations.dependencies.emit_event` / `notifications.dependencies.notify` as background tasks — they must never fail or slow the action.
 - Demo accounts work only when `features.demo_mode.demo_access_enabled()` is true (offline demo dataset, not production).
 - Tests: `tests/features/auth/test_access_control_api.py` (cross-tenant 403s). Add a case for every new scoped endpoint;
   API tests point the access checks at fakes with `tests/fakes/access.py::use_fake_access_repos`.

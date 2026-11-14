@@ -30,5 +30,9 @@
   "/invite/[token]",
   "/dashboard/[workspace]/settings/workspace",
   "/dashboard/[workspace]/settings/api-keys",
-  "/dashboard/[workspace]/settings/webhooks"
+  "/dashboard/[workspace]/settings/webhooks",
+  "/dashboard/[workspace]/notifications",
+  "/dashboard/[workspace]/support",
+  "/dashboard/[workspace]/settings/profile",
+  "/dashboard/[workspace]/settings/notifications"
 ]

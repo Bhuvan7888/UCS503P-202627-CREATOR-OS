@@ -522,6 +522,8 @@ test("team: invite a script writer, permissions shape their workspace, owner see
 
   // Owner invites the script writer (demo mode never emails: the link is shown to copy)
   await ownerPage.getByRole("link", { name: "Settings", exact: true }).click();
+  await ownerPage.waitForURL(`${WEB}${base}/settings/profile`);
+  await ownerPage.getByRole("link", { name: "Workspace", exact: true }).click();
   await ownerPage.waitForURL(`${WEB}${base}/settings/workspace`);
   await ownerPage.getByRole("tab", { name: "Members" }).click();
   await ownerPage.getByPlaceholder("colleague@company.com").fill("demo.creator5@creatoros.dev");
@@ -544,7 +546,7 @@ test("team: invite a script writer, permissions shape their workspace, owner see
   // The sidebar only shows what a script writer may open; the API refuses the rest
   const sidebar = writerPage.getByRole("complementary", { name: "Sidebar" });
   await expect(sidebar.getByRole("link", { name: "Scripts" })).toBeVisible();
-  for (const hidden of ["Brand CRM", "AI Assistant", "Contracts", "Settings"])
+  for (const hidden of ["Brand CRM", "AI Assistant", "Contracts"])
     await expect(sidebar.getByRole("link", { name: hidden, exact: true })).toHaveCount(0);
   await writerPage.goto(`${WEB}${base}/crm`);
   await expect(writerPage.getByText("You don't have access to this page")).toBeVisible();
@@ -630,6 +632,83 @@ test("integrations: an API key lets an agent prepare a publish; webhooks can be 
   page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Delete https://example.com/creator-os-hook" }).click();
   await expect(endpoints).toHaveCount(0);
+
+  expect(problems).toEqual([]);
+});
+
+test("notifications, profile, preferences and support", async ({ page, request }) => {
+  const problems = watchForProblems(page);
+  await loginWithDemo(page, "creator", "3. Zara Khan (Nykaa)");
+  const base = new URL(page.url()).pathname;
+  const slug = base.split("/")[2];
+  const ownerToken = await page.evaluate(
+    () => JSON.parse(localStorage.getItem("creatoros_session") ?? "{}").access_token,
+  );
+
+  // Someone joins → the owner's bell shows it
+  const owner = { Authorization: `Bearer ${ownerToken}` };
+  const invite = await request.post(`${API}/workspaces/${slug}/invites`, {
+    headers: owner,
+    data: { email: "demo.creator1@creatoros.dev", role: "brand_manager" },
+  });
+  const token = (await invite.json()).accept_path.split("/").pop();
+  const member = await request.post(`${API}/auth/creator/login`, {
+    data: { email: "demo.creator1@creatoros.dev", password: "DemoPass123!" },
+  });
+  const memberAuth = { Authorization: `Bearer ${(await member.json()).access_token}` };
+  expect(
+    (await request.post(`${API}/invites/${token}/accept`, { headers: memberAuth })).status(),
+  ).toBe(200);
+
+  await page.reload();
+  const bell = page.getByRole("button", { name: /Notifications, \d+ unread/ });
+  await expect(bell).toBeVisible();
+  await bell.click();
+  const popover = page.getByRole("dialog", { name: "Notifications" });
+  await expect(popover).toContainText("joined");
+  await popover.getByRole("link", { name: /View All Notifications/ }).click();
+  await page.waitForURL(`${WEB}${base}/notifications`);
+  await expect(page.getByRole("list", { name: "Notifications" })).toContainText("joined");
+  await page.getByRole("button", { name: "Mark all read" }).click();
+  await expect(page.getByRole("button", { name: "Notifications", exact: true })).toBeVisible(); // no unread badge
+
+  // Profile (everyone can open Settings › Profile)
+  await page.getByRole("link", { name: "Settings", exact: true }).click();
+  await page.waitForURL(`${WEB}${base}/settings/profile`);
+  await page.getByPlaceholder("City, Country").fill(`Mumbai ${RUN}`);
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Profile saved.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByPlaceholder("City, Country")).toHaveValue(`Mumbai ${RUN}`);
+
+  // Notification preferences
+  await page.goto(`${WEB}${base}/settings/notifications`);
+  await page.getByRole("switch", { name: /Do Not Disturb/ }).check();
+  await page.getByRole("button", { name: "Save Changes" }).click();
+  await expect(page.getByText("Preferences saved.")).toBeVisible();
+
+  // Support: create and close a ticket
+  await page.getByRole("link", { name: "Support", exact: true }).click();
+  await page.getByRole("button", { name: "New Ticket" }).first().click();
+  const dialog = page.getByRole("dialog", { name: "Create Support Ticket" });
+  await expect(dialog.getByRole("button", { name: "Create Ticket" })).toBeDisabled();
+  await dialog.getByPlaceholder("Brief description of your issue").fill(`Help ${RUN}`);
+  await dialog.getByPlaceholder(/detailed information/).fill("The calendar shows the wrong week.");
+  await dialog.getByRole("button", { name: "Create Ticket" }).click();
+  const row = page.getByRole("list", { name: "Tickets" }).locator("li", { hasText: `Help ${RUN}` });
+  await expect(row).toContainText("open");
+  await row.getByRole("button", { name: "Close" }).click();
+  await expect(row).toContainText("closed");
+  await page.getByRole("tab", { name: "Knowledge Base" }).click();
+  await page.getByRole("textbox", { name: "Search knowledge base" }).fill("free");
+  await expect(page.getByText("Is there a paid plan?")).toBeVisible();
+
+  // tidy up the membership
+  const members = await (
+    await request.get(`${API}/workspaces/${slug}/members`, { headers: owner })
+  ).json();
+  const memberId = members.find((m: { role: string }) => m.role === "brand_manager").user_id;
+  await request.delete(`${API}/workspaces/${slug}/members/${memberId}`, { headers: owner });
 
   expect(problems).toEqual([]);
 });

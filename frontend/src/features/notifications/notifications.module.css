@@ -1,0 +1,254 @@
+/* Bell popover and the Notifications page. Colours are the app tokens. */
+.bellWrap {
+  position: relative;
+}
+
+.bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+}
+
+.bell:hover {
+  background: var(--color-surface-sunken);
+}
+
+.badge {
+  position: absolute;
+  top: 3px;
+  right: 2px;
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  width: min(380px, calc(100vw - 32px));
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.popHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.popHead strong {
+  font-size: 16px;
+}
+
+.popFilters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.popFilters :global(.field) {
+  margin: 0;
+}
+
+.popEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 24px 0;
+  font-size: 13px;
+  color: var(--color-ink-faint);
+}
+
+.popList,
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.popList {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.popList button,
+.itemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.popList button:hover,
+.itemBody:hover {
+  background: var(--color-surface-sunken);
+}
+
+.popList strong,
+.itemBody strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.popList span,
+.itemBody span {
+  font-size: 13px;
+  color: var(--color-ink-soft);
+}
+
+.popList small,
+.itemBody small {
+  font-size: 11px;
+  color: var(--color-ink-faint);
+}
+
+.unread {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.popAll {
+  display: block;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+  font-size: 13px;
+  text-align: center;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+/* Page */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.page > :global(.field) {
+  margin-bottom: 12px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--color-surface-sunken);
+}
+
+.segmented button {
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chip[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.iconBtn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-right: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  flex: none;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: 450px;
+  margin: 24px auto;
+  padding: 32px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-ink-soft);
+}
+
+.empty strong {
+  color: var(--color-ink);
+}
+
+.muted {
+  font-size: 14px;
+  color: var(--color-ink-soft);
+}
