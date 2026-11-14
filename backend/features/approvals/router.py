@@ -81,7 +81,7 @@ async def request_publish(
 ):
     with map_errors(_ERRORS):
         req = await service.request(ctx.workspace.id, ctx.user_id, body, agent_name=ctx.api_key)
-    await emit_event(background, ctx.workspace.id, "publish.pending_approval", _event(req))
+    emit_event(background, ctx.workspace.id, "publish.pending_approval", _event(req))
     owner = ctx.workspace.owner_user_id
     if (
         ctx.api_key or owner != ctx.user_id
@@ -110,7 +110,7 @@ async def approve(
 ):
     with map_errors(_ERRORS):
         req = await service.approve(ctx.workspace.id, request_id, ctx.user_id)
-    await emit_event(background, ctx.workspace.id, "publish.approved", _event(req))
+    emit_event(background, ctx.workspace.id, "publish.approved", _event(req))
     await _tell_requester(background, ctx, service, req)
     return req
 
@@ -125,6 +125,6 @@ async def reject(
 ):
     with map_errors(_ERRORS):
         req = await service.reject(ctx.workspace.id, request_id, ctx.user_id, body.reason)
-    await emit_event(background, ctx.workspace.id, "publish.rejected", _event(req))
+    emit_event(background, ctx.workspace.id, "publish.rejected", _event(req))
     await _tell_requester(background, ctx, service, req)
     return req

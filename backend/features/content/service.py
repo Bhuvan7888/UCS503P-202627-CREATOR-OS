@@ -1,3 +1,4 @@
+import asyncio
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
@@ -37,8 +38,9 @@ class ContentService:
         )
 
     async def stats(self, workspace_id: UUID) -> ContentStats:
-        items = await self.list(workspace_id)
-        scripted = await self.script_repo.scripted_item_ids(workspace_id)
+        items, scripted = await asyncio.gather(
+            self.list(workspace_id), self.script_repo.scripted_item_ids(workspace_id)
+        )
         return content_stats(items, datetime.now(UTC), scripted)
 
     async def create(
@@ -67,9 +69,16 @@ class ContentService:
         return item
 
     async def update(
-        self, workspace_id: UUID, item_id: UUID, request: ContentItemUpdate
+        self,
+        workspace_id: UUID,
+        item_id: UUID,
+        request: ContentItemUpdate,
+        current: ContentItem | None = None,
     ) -> ContentItem:
-        item = await self.get(workspace_id, item_id)
+        """`current`: the item if the caller already loaded it (saves a database round trip)."""
+        item = (
+            current if current and current.id == item_id else await self.get(workspace_id, item_id)
+        )
         changes = request.model_dump(exclude_unset=True)
         cleared = sorted(k for k in _REQUIRED_FIELDS if k in changes and changes[k] is None)
         if cleared:

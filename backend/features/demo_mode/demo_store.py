@@ -16,16 +16,16 @@ from features.demo_mode.in_memory_repositories import (
     DemoDeliverableRepo,
     DemoEscalationRepo,
     DemoKnowledgeRepo,
-    DemoNotificationRepo,
     DemoMessageRepo,
+    DemoNotificationRepo,
     DemoPaymentRepo,
     DemoPublishRequestRepo,
     DemoScriptRepo,
     DemoSuggestionRepo,
     DemoTeamRepo,
     DemoTicketRepo,
-    DemoWebhookRepo,
     DemoUserDirectory,
+    DemoWebhookRepo,
     DemoWorkspaceRepo,
 )
 from features.demo_mode.seed import seed_demo_data

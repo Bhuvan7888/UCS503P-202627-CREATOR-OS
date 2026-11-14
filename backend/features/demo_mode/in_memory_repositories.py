@@ -4,8 +4,8 @@ from datetime import UTC, date, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from features.activity_log import ActivityLog
 from features.account.models import NotificationPreferences
+from features.activity_log import ActivityLog
 from features.ai_assist.models import AiKnowledge, SuggestionSet
 from features.approvals.models import PublishRequest
 from features.brands import Brand, BrandMember
@@ -14,13 +14,13 @@ from features.contract_intelligence import ClauseCardOut, EscalationOut
 from features.contracts import Contract
 from features.creators import Creator
 from features.crm.models import CrmDeal
-from features.integrations.models import ApiKey, WebhookDelivery, WebhookEndpoint
-from features.notifications.models import Notification
-from features.support.models import Ticket
 from features.deals import Deal
 from features.deliverables import Deliverable
+from features.integrations.models import ApiKey, WebhookDelivery, WebhookEndpoint
 from features.messages import Message
+from features.notifications.models import Notification
 from features.payments import Payment
+from features.support.models import Ticket
 from features.workspaces.models import AuditEntry, Invite, Workspace, WorkspaceMember, WorkspaceRole
 from shared.errors import DuplicateError
 
@@ -509,6 +509,13 @@ class DemoWorkspaceRepo:
             (m for m in self.members.values() if m.user_id == user_id), key=lambda m: m.created_at
         )
         return [(self.data[m.workspace_id], m.role) for m in mine if m.workspace_id in self.data]
+
+    async def get_membership(
+        self, ref: str, user_id: UUID
+    ) -> tuple[Workspace, WorkspaceRole] | None:
+        ws = next((w for w in self.data.values() if ref in (w.slug, str(w.id))), None)
+        member = self.members.get((ws.id, user_id)) if ws else None
+        return (ws, member.role) if ws and member else None
 
     async def list_members(self, workspace_id: UUID) -> list[WorkspaceMember]:
         return sorted(

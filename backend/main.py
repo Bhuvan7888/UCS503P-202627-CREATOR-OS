@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from collections.abc import AsyncIterator
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
@@ -35,6 +36,7 @@ from shared.supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)
 WEBHOOK_RETRY_INTERVAL_SECONDS = 30
+DB_THREADS = 64
 DEADLINE_SWEEP_EVERY = 120  # ticks of the loop (= 1 hour)
 
 
@@ -61,6 +63,9 @@ async def _background_work_forever() -> None:
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    # Database calls run in worker threads (the Supabase client is synchronous); the default pool
+    # (CPU count + 4) would queue requests long before 100 concurrent users.
+    asyncio.get_running_loop().set_default_executor(ThreadPoolExecutor(max_workers=DB_THREADS))
     task = asyncio.create_task(_background_work_forever())
     yield
     task.cancel()

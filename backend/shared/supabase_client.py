@@ -1,13 +1,40 @@
+import warnings
 from functools import lru_cache
 
+import httpx
 from supabase import Client, create_client
 
 from shared.config import settings
 
+# One client per key is shared by every request, and requests run their queries in parallel worker threads.
+# supabase-py's sessions use HTTP/2 over a single connection, which is not safe across threads (parallel
+# queries fail with "Resource temporarily unavailable"). HTTP/1.1 sessions with a connection pool are
+# thread-safe, so the database and auth sessions are replaced with those.
+POOL = httpx.Limits(max_connections=100, max_keepalive_connections=64)
+TIMEOUT = httpx.Timeout(20.0, connect=5.0)
+
+
+def _thread_safe(client: Client) -> Client:
+    with warnings.catch_warnings():
+        # supabase-py builds its own session with a deprecated `timeout` argument; we replace that session below
+        warnings.simplefilter("ignore", DeprecationWarning)
+        db = client.postgrest
+    db.session = httpx.Client(
+        base_url=db.session.base_url,
+        headers=db.session.headers,
+        timeout=TIMEOUT,
+        limits=POOL,
+        follow_redirects=True,
+    )
+    auth_http = httpx.Client(timeout=TIMEOUT, limits=POOL, follow_redirects=True)
+    client.auth._http_client = auth_http
+    client.auth.admin._http_client = auth_http
+    return client
+
 
 def _build_client(service_role: bool) -> Client:
     key = settings.SUPABASE_SERVICE_ROLE_KEY if service_role else settings.SUPABASE_ANON_KEY
-    return create_client(settings.SUPABASE_URL, key)
+    return _thread_safe(create_client(settings.SUPABASE_URL, key))
 
 
 @lru_cache(maxsize=2)

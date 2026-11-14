@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import time
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
@@ -44,6 +46,38 @@ from shared.errors import (
 
 logger = logging.getLogger(__name__)
 
+MEMBERSHIP_CACHE_SECONDS = 15
+
+
+class MembershipCache:
+    """Per-process cache of "this person's view of this workspace" (role + permissions).
+
+    Every workspace request needs it, and resolving it costs database round trips. Entries live
+    MEMBERSHIP_CACHE_SECONDS and are dropped at once when this process changes the team (role change,
+    removal, permission edit, rename). ponytail: with several API processes another process may serve a
+    changed role for up to MEMBERSHIP_CACHE_SECONDS; move to Redis pub/sub if that ever matters.
+    """
+
+    def __init__(self) -> None:
+        self._entries: dict[tuple[UUID, str], tuple[MyWorkspace, float]] = {}
+
+    def get(self, user_id: UUID, ref: str) -> MyWorkspace | None:
+        found = self._entries.get((user_id, ref))
+        return found[0] if found and found[1] > time.monotonic() else None
+
+    def put(self, user_id: UUID, mine: MyWorkspace) -> None:
+        expires = time.monotonic() + MEMBERSHIP_CACHE_SECONDS
+        for ref in (mine.slug, str(mine.id)):
+            self._entries[(user_id, ref)] = (mine, expires)
+
+    def invalidate(self, workspace_id: UUID) -> None:
+        for key, (mine, _) in list(self._entries.items()):
+            if mine.id == workspace_id:
+                self._entries.pop(key, None)
+
+
+membership_cache = MembershipCache()
+
 
 class WorkspaceService:
     def __init__(
@@ -71,13 +105,14 @@ class WorkspaceService:
 
     async def list_for_user(self, user_id: UUID) -> list[MyWorkspace]:
         """The caller's workspaces. A creator always has one: it is created on first use."""
-        creator = await self.creator_repo.get_by_user_id(user_id)
-        if creator is not None:
-            await self.ensure_primary_workspace(user_id, creator.id)
-        return [
-            await self._mine(ws, role)
-            for ws, role in await self.workspace_repo.list_for_user(user_id)
-        ]
+        rows = await self.workspace_repo.list_for_user(user_id)
+        if not any(ws.is_primary and ws.owner_user_id == user_id for ws, _ in rows):
+            # first visit (or not a creator): only then look for a creator profile to create one
+            creator = await self.creator_repo.get_by_user_id(user_id)
+            if creator is not None:
+                await self.ensure_primary_workspace(user_id, creator.id)
+                rows = await self.workspace_repo.list_for_user(user_id)
+        return list(await asyncio.gather(*(self._mine(ws, role) for ws, role in rows)))
 
     async def ensure_primary_workspace(self, owner_user_id: UUID, creator_id: UUID) -> Workspace:
         """Idempotent and race-safe: concurrent first requests end with exactly one workspace."""
@@ -118,11 +153,16 @@ class WorkspaceService:
 
     async def get_for_member(self, ref: str, user_id: UUID) -> MyWorkspace:
         """Resolve a slug or id the caller is a member of. Raises NotFoundError / PermissionDeniedError."""
-        ws = await self.resolve(ref)
-        member = await self.workspace_repo.get_member(ws.id, user_id)
-        if member is None:
+        cached = membership_cache.get(user_id, ref)
+        if cached is not None:
+            return cached
+        found = await self.workspace_repo.get_membership(ref, user_id)  # one round trip
+        if found is None:
+            await self.resolve(ref)  # 404 when the workspace doesn't exist at all
             raise PermissionDeniedError("You are not a member of this workspace")
-        return await self._mine(ws, member.role)
+        mine = await self._mine(*found)
+        membership_cache.put(user_id, mine)
+        return mine
 
     async def list_members(self, workspace_id: UUID) -> list[MemberOut]:
         members = await self.workspace_repo.list_members(workspace_id)
@@ -229,6 +269,7 @@ class TeamService:
     # --- workspace ---------------------------------------------------------------------------
     async def rename(self, ws: MyWorkspace, user_id: UUID, name: str) -> MyWorkspace:
         renamed = await self.workspace_repo.rename(ws.id, name.strip())
+        membership_cache.invalidate(ws.id)
         await self.record(ws, user_id, "Renamed the workspace", f"{ws.name} → {renamed.name}")
         return ws.model_copy(update={"name": renamed.name})
 
@@ -256,6 +297,7 @@ class TeamService:
         await self.team_repo.set_role_permissions(
             ws.id, role, [p for p in PERMISSIONS if p in permissions]
         )
+        membership_cache.invalidate(ws.id)
         await self.record(ws, user_id, "Changed role permissions", role.replace("_", " "))
         return await self.roles(ws)
 
@@ -270,12 +312,14 @@ class TeamService:
         if (await self._seats_left(ws.id)).get(role, 0) <= 0:
             raise ConflictError(f"No {role.replace('_', ' ')} seats left")
         await self.workspace_repo.update_member_role(ws.id, member_id, role)
+        membership_cache.invalidate(ws.id)
         await self.record(ws, user_id, "Changed a member's role", role.replace("_", " "))
 
     async def remove_member(self, ws: MyWorkspace, user_id: UUID, member_id: UUID) -> None:
         self._owner_only(ws)
         await self._member(ws, member_id)
         await self.workspace_repo.remove_member(ws.id, member_id)
+        membership_cache.invalidate(ws.id)
         await self.record(ws, user_id, "Removed a member", str(member_id))
 
     # --- invites -----------------------------------------------------------------------------

@@ -18,15 +18,17 @@ def get_integrations_service() -> IntegrationsService:
     return IntegrationsService(SupabaseApiKeyRepo(client), SupabaseWebhookRepo(client))
 
 
-async def emit_event(
-    background: BackgroundTasks, workspace_id: UUID, event: str, data: dict[str, Any]
-) -> None:
-    """Queue a webhook event and try to send it right after the response; never fails the request."""
+async def _emit_and_deliver(workspace_id: UUID, event: str, data: dict[str, Any]) -> None:
     service = get_integrations_service()
     try:
-        queued = await service.emit(workspace_id, event, data)
+        for delivery in await service.emit(workspace_id, event, data):
+            await service.deliver(delivery)
     except Exception:
         logger.exception("Could not queue webhook event %s", event)
-        return
-    for delivery in queued:
-        background.add_task(service.deliver, delivery)
+
+
+def emit_event(
+    background: BackgroundTasks, workspace_id: UUID, event: str, data: dict[str, Any]
+) -> None:
+    """Queue a webhook event and send it after the response (never delays or fails the request)."""
+    background.add_task(_emit_and_deliver, workspace_id, event, data)

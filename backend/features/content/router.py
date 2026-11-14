@@ -93,10 +93,10 @@ async def update_content(
 ):
     with map_errors({NotFoundError: 404, ValidationError: 400}):
         before = await service.get(ctx.workspace.id, item_id)
-        item = await service.update(ctx.workspace.id, item_id, request)
+        item = await service.update(ctx.workspace.id, item_id, request, current=before)
     _notify_assignee(background, ctx, item, previous=before.assignee_user_id)
     if item.stage != before.stage:
-        await emit_event(
+        emit_event(
             background,
             ctx.workspace.id,
             "content.stage_changed",

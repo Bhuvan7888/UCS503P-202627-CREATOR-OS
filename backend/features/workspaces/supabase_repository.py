@@ -10,6 +10,7 @@ from supabase import Client
 
 from features.demo_mode import DemoFallbackMixin
 from features.workspaces.models import AuditEntry, Invite, Workspace, WorkspaceMember, WorkspaceRole
+from features.workspaces.rules import parse_workspace_ref
 from shared.errors import DuplicateError
 from shared.supabase_query import first_or_none, run_query
 
@@ -81,6 +82,20 @@ class SupabaseWorkspaceRepo(DemoFallbackMixin):
             .order("created_at")
         )
         return [(Workspace.model_validate(row["workspaces"]), row["role"]) for row in res.data]
+
+    async def get_membership(
+        self, ref: str, user_id: UUID
+    ) -> tuple[Workspace, WorkspaceRole] | None:
+        column = "workspaces.id" if parse_workspace_ref(ref) else "workspaces.slug"
+        res = await run_query(
+            self.client.table("workspace_members")
+            .select("role, workspaces!inner(*)")
+            .eq("user_id", str(user_id))
+            .eq(column, ref)
+        )
+        if not res.data:
+            return None
+        return Workspace.model_validate(res.data[0]["workspaces"]), res.data[0]["role"]
 
     async def list_members(self, workspace_id: UUID) -> list[WorkspaceMember]:
         res = await run_query(
