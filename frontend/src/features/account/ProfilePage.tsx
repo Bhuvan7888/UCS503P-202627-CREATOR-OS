@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { clearSession } from "@/shared/lib/session";
+import { Dialog } from "@/shared/components/ui/Dialog";
 import client from "@/shared/lib/api-client";
 import type { components } from "@/shared/lib/api-types";
 import { SettingsHeader } from "@/features/workspaces";
@@ -11,6 +14,10 @@ const BIO_MAX = 500;
 
 /** Settings › Profile: the signed-in person (shared across all their workspaces). */
 export default function ProfilePage() {
+  const router = useRouter();
+  const [deleting, setDeleting] = useState(false);
+  const [confirm, setConfirm] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [saved, setSaved] = useState<Profile | null>(null);
   const [form, setForm] = useState<Profile | null>(null);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
@@ -37,6 +44,17 @@ export default function ProfilePage() {
   const set = <K extends keyof Profile>(key: K, value: Profile[K]) =>
     setForm({ ...form, [key]: value });
   const dirty = JSON.stringify(form) !== JSON.stringify(saved);
+
+  async function deleteAccount() {
+    setDeleteError(null);
+    const { error } = await client.DELETE("/me", { body: { confirm: "DELETE" } });
+    if (error)
+      return setDeleteError(
+        typeof error.detail === "string" ? error.detail : "Couldn't delete the account.",
+      );
+    clearSession();
+    router.replace("/");
+  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -176,6 +194,62 @@ export default function ProfilePage() {
           </button>
         </div>
       </form>
+      <section className={styles.danger}>
+        <h3>Danger zone</h3>
+        <p>Permanently delete your account and everything that belongs to it.</p>
+        <button type="button" className={styles.dangerBtn} onClick={() => setDeleting(true)}>
+          Delete my account
+        </button>
+      </section>
+      <Dialog
+        open={deleting}
+        onClose={() => setDeleting(false)}
+        title="Delete your account?"
+        width={520}
+        footer={
+          <>
+            <button type="button" className="btn btn-outline" onClick={() => setDeleting(false)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={styles.dangerBtn}
+              disabled={confirm !== "DELETE"}
+              onClick={deleteAccount}
+            >
+              Delete everything
+            </button>
+          </>
+        }
+      >
+        <div className={styles.deleteBody}>
+          <p>This can&apos;t be undone. We will permanently delete:</p>
+          <ul>
+            <li>
+              the workspaces you own, with all their content, scripts, calendar, approvals, CRM
+              deals, API keys and webhooks;
+            </li>
+            <li>
+              your creator profile, your brand deals, contracts (and their files), deliverables,
+              payments and messages;
+            </li>
+            <li>
+              your memberships in other workspaces, your notifications, support tickets, profile and
+              sign-in.
+            </li>
+          </ul>
+          <label>
+            Type <strong>DELETE</strong> to confirm
+            <input
+              className="field"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              aria-label="Type DELETE to confirm"
+            />
+          </label>
+          {deleteError && <p className={styles.error}>{deleteError}</p>}
+        </div>
+      </Dialog>
     </>
   );
 }

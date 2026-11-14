@@ -144,3 +144,59 @@
   font-size: 12px;
   color: var(--color-ink-faint);
 }
+
+.danger {
+  margin-top: 24px;
+  padding: 20px 24px;
+  border: 1px solid var(--color-danger);
+  border-radius: 14px;
+  background: var(--color-danger-soft);
+}
+
+.danger h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: var(--color-danger);
+}
+
+.danger p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--color-ink-soft);
+}
+
+.dangerBtn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-danger);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dangerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.deleteBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.deleteBody p,
+.deleteBody ul {
+  margin: 0;
+  color: var(--color-ink-soft);
+}
+
+.deleteBody label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+}

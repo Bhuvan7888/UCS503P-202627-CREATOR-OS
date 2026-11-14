@@ -30,6 +30,12 @@ class Profile(ProfileSave):
     email: str | None = None
 
 
+class AccountDeletion(BaseModel):
+    """The person types DELETE to confirm; nothing is kept afterwards."""
+
+    confirm: Literal["DELETE"]
+
+
 class CategoryPreference(BaseModel):
     in_app: bool = True
     email: bool = False

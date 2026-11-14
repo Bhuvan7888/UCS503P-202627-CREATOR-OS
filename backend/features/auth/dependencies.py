@@ -38,6 +38,14 @@ class ActorContext:
         self.creator_id = creator_id
 
 
+def forget_user(user_id: UUID) -> None:
+    """Drop every cached session of this person (after account deletion)."""
+    for cache in (_user_cache, _actor_cache):
+        for token, (value, _) in list(cache.items()):
+            if (value if isinstance(value, UUID) else value.user_id) == user_id:
+                cache.pop(token, None)
+
+
 def _extract_token(authorization: str | None) -> str:
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")

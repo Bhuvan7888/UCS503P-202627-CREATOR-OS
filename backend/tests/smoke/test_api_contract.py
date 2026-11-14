@@ -88,6 +88,7 @@ API_CONTRACT: list[tuple[str, str, str]] = [
     ("PUT", "/me/profile", "user"),
     ("GET", "/me/notification-preferences", "user"),
     ("PUT", "/me/notification-preferences", "user"),
+    ("DELETE", "/me", "user"),
     ("GET", "/invites/{token}", "user"),
     ("POST", "/invites/{token}/accept", "user"),
     ("GET", "/workspaces/{workspace}/content", "user"),
