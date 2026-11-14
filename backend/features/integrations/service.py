@@ -1,6 +1,7 @@
 import json
 import logging
 import secrets
+import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
@@ -31,6 +32,10 @@ from shared.errors import NotFoundError, ValidationError
 
 logger = logging.getLogger(__name__)
 RECENT_DELIVERIES = 20
+# per-process cache of each workspace's endpoints (cleared here on add/delete; other processes see changes
+# within ENDPOINT_CACHE_SECONDS)
+ENDPOINT_CACHE_SECONDS = 30
+_endpoint_cache: dict[UUID, tuple[list[WebhookEndpoint], float]] = {}
 CLAIM_BATCH = 50
 
 
@@ -103,6 +108,7 @@ class IntegrationsService:
             ),
             secret,
         )
+        _endpoint_cache.pop(workspace_id, None)
         return WebhookEndpointCreated(endpoint=endpoint, secret=secret)
 
     async def list_endpoints(self, workspace_id: UUID) -> list[WebhookEndpoint]:
@@ -114,9 +120,19 @@ class IntegrationsService:
             raise NotFoundError("Endpoint not found")
         return endpoint
 
+    async def _endpoints_cached(self, workspace_id: UUID) -> list[WebhookEndpoint]:
+        """Most workspaces have no endpoints; don't ask the database on every event."""
+        found = _endpoint_cache.get(workspace_id)
+        if found and found[1] > time.monotonic():
+            return found[0]
+        endpoints = await self.webhook_repo.list_endpoints(workspace_id)
+        _endpoint_cache[workspace_id] = (endpoints, time.monotonic() + ENDPOINT_CACHE_SECONDS)
+        return endpoints
+
     async def delete_endpoint(self, workspace_id: UUID, endpoint_id: UUID) -> None:
         await self._endpoint(workspace_id, endpoint_id)
         await self.webhook_repo.delete_endpoint(endpoint_id)
+        _endpoint_cache.pop(workspace_id, None)
 
     async def deliveries(self, workspace_id: UUID, endpoint_id: UUID) -> list[WebhookDelivery]:
         await self._endpoint(workspace_id, endpoint_id)
@@ -137,7 +153,7 @@ class IntegrationsService:
         """Queue `event` for every endpoint subscribed to it (empty subscription = all events)."""
         queued = [
             self._delivery(e, event, workspace_id, data)
-            for e in await self.webhook_repo.list_endpoints(workspace_id)
+            for e in await self._endpoints_cached(workspace_id)
             if not e.events or event in e.events
         ]
         if queued:

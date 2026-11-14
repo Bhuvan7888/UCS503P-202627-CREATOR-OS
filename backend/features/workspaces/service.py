@@ -77,6 +77,8 @@ class MembershipCache:
 
 
 membership_cache = MembershipCache()
+# (workspace, person) -> when this process last recorded "Opened the workspace"
+_recent_opens: dict[tuple[UUID, UUID], float] = {}
 
 
 class WorkspaceService:
@@ -257,6 +259,15 @@ class TeamService:
                 created_at=datetime.now(UTC),
             )
         )
+
+    def should_record_open(self, ws: MyWorkspace, user_id: UUID) -> bool:
+        """In-memory first pass of the throttle, so most workspace loads cost no database work."""
+        now = time.monotonic()
+        key = (ws.id, user_id)
+        if now - _recent_opens.get(key, -1e9) < OPEN_LOG_INTERVAL_MINUTES * 60:
+            return False
+        _recent_opens[key] = now
+        return True
 
     async def record_open(self, ws: MyWorkspace, user_id: UUID) -> None:
         last = await self.audit_repo.last_open(ws.id, user_id)

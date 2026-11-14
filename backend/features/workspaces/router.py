@@ -54,11 +54,13 @@ async def create_workspace(
 
 @router.get("/{workspace}", response_model=MyWorkspace)
 async def get_workspace(
+    background: BackgroundTasks,
     ctx: WorkspaceContext = Depends(require_workspace_member),
     team: TeamService = Depends(get_team_service),
 ):
-    """The workspace shell calls this on load, which is what "Opened the workspace" records."""
-    await team.record_open(ctx.workspace, ctx.user_id)
+    """The workspace shell calls this on load, which is what "Opened the workspace" records (after the response)."""
+    if team.should_record_open(ctx.workspace, ctx.user_id):
+        background.add_task(team.record_open, ctx.workspace, ctx.user_id)
     return ctx.workspace
 
 
