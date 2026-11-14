@@ -3,7 +3,7 @@
 Creator OS has two sides, free for everyone:
 
 - **Creators** get a workspace to plan content from idea to published: Home with KPIs, a Content Pipeline kanban, a 5-step Add Content wizard, Scripts, a Calendar, Approvals, a Brand CRM and AI help (Gemini) (more pages arrive phase by phase — see [docs/PROGRESS.md](docs/PROGRESS.md)).
-- **Brands** manage sponsorship deals: creator onboarding, contracts with automatic red-flag clause scanning, deliverables, invoices and payments, chat, analytics, and an activity log.
+- **Brands** manage sponsorship deals in the same layout as the creator workspace: a Home with KPIs and analytics, deals (each deal page holds its contract with automatic red-flag clause scanning, deliverables and invoices), a creator roster with an invite code creators use to connect, two-way chat, and an activity log.
 
 - **Backend:** FastAPI (Python 3.13, `uv`) on Supabase (Postgres, Auth incl. Google sign-in, Storage), Google Gemini for AI features, Resend for email
 - **Frontend:** Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS v4, and a typed API client generated from the backend's OpenAPI schema
@@ -23,14 +23,15 @@ Creator OS has two sides, free for everyone:
 | `crm` | Brand CRM: own deals, KPIs, New Deal wizard, Creator OS brand deals | `/dashboard/[workspace]/crm` |
 | `approvals` | Publish requests approved or rejected by a person | `/dashboard/[workspace]/approvals` |
 | `ai-assist` | AI knowledge, Generate Title/Description/Hook/outline, AI Content Suggestions | `/dashboard/[workspace]/ai-suggestions`, `/dashboard/[workspace]/settings/ai-knowledge` |
-| `deals` | Brand deal pipeline and deal workspace | `/brand`, `/deals/[id]` |
-| `creators` | Creator roster and profiles, brand linking | `/creators/[id]` |
+| `brand-shell` | Brand app shell: sidebar, ⌘K search, account menu | `(brand)` layout |
+| `deals` | Brand deal list and the deal page (contract, deliverables, invoices) | `/deals`, `/deals/[id]` |
+| `creators` | Creator roster with invite code, profiles, creator Settings → Brands | `/creators`, `/creators/[id]`, `/dashboard/[workspace]/settings/brands` |
 | `contracts` | Contract upload, status lifecycle, sample contract PDF | `/contracts` |
 | `contract-intelligence` | Red-flag clause scanning, AI explanations, escalations | `/contracts/[id]/clauses` |
 | `deliverables` | Deliverables and their production workflow | `/deliverables` |
 | `payments` | Invoices, platform fees, payment status | `/payments` |
-| `messages` | Brand ↔ creator chat with an unread indicator | `/chat` |
-| `analytics` | Revenue, pipeline, top campaigns, creator performance | `/analytics` |
+| `messages` | Two-way brand ↔ creator chat with unread indicators | `/chat`, `/dashboard/[workspace]/messages` |
+| `analytics` | Brand Home: KPIs, revenue, pipeline, recent deals, top campaigns, creator performance | `/brand` |
 | `activity-log` | Audit trail of actions | `/activity` |
 | `demo-mode` | Seeded in-memory dataset when Supabase is unavailable | demo logins |
 | `landing` | Public landing page | `/` |

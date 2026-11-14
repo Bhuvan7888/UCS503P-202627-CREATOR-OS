@@ -2,7 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, RefreshCw, Send } from "lucide-react";
-import { PageHeader, useWorkspace } from "@/features/workspaces";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useWorkspace } from "@/features/workspaces";
 import { AddContentWizard } from "./components/AddContentWizard";
 import { ContentItemDialog } from "./components/ContentItemDialog";
 import { PLATFORMS, PLATFORM_LABEL, type ContentItem, type Platform } from "./constants/content";

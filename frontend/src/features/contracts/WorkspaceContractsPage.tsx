@@ -7,7 +7,8 @@ import client from "@/shared/lib/api-client";
 import type { components } from "@/shared/lib/api-types";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { contractStatusVariant } from "@/shared/lib/status-variants";
-import { PageHeader, useWorkspace } from "@/features/workspaces";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useWorkspace } from "@/features/workspaces";
 import styles from "./workspace-contracts.module.css";
 
 type Contract = components["schemas"]["Contract"];

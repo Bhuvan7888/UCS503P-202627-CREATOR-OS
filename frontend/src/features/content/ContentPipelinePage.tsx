@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Filter, KanbanSquare, Plus, X } from "lucide-react";
 import client from "@/shared/lib/api-client";
-import { PageHeader, useWorkspace } from "@/features/workspaces";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useWorkspace } from "@/features/workspaces";
 import { AddContentWizard } from "./components/AddContentWizard";
 import { ContentItemDialog } from "./components/ContentItemDialog";
 import { KanbanBoard } from "./components/KanbanBoard";

@@ -15,7 +15,8 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
-import { PageHeader, useWorkspace } from "@/features/workspaces";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useWorkspace } from "@/features/workspaces";
 import { AddContentWizard } from "./components/AddContentWizard";
 import { CONTENT_TYPE_LABEL, PLATFORMS, STAGE_LABEL, type ContentStats } from "./constants/content";
 import { useContent } from "./hooks/useContent";

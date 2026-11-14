@@ -38,14 +38,15 @@ backend/
 
 frontend/
 ├── src/
-│   ├── app/                routing only: layouts + one-line page stubs, plus _shell/AppShell.tsx (brand app)
+│   ├── app/                routing only: layouts + one-line page stubs
 │   ├── features/<feature>/ one folder per feature (kebab-case)
 │   │   ├── <Name>Page.tsx  page components (default export)
 │   │   ├── components/  hooks/  constants/  utils/  services/
 │   │   └── index.ts        public API: only what other features import (optional)
 │   ├── shared/
 │   │   ├── components/ui/  primitives used by 2+ features
-│   │   ├── lib/            api-client, api-types (generated), session, formatting, status colours
+│   │   ├── components/shell/ shell.module.css, page.module.css, PageHeader — the look both app shells share
+│   │   ├── lib/            api-client, api-types (generated), session, query-cache, brand-queries, formatting, status colours
 │   │   └── constants/
 │   └── styles/globals.css
 └── tests/
@@ -63,8 +64,18 @@ export { default } from "@/features/deals/DealDetailPage";
 
 | Who | Routes | Shell |
 |---|---|---|
-| Brands | `src/app/(brand)/…` (`/brand`, `/deals/[id]`, `/contracts`, …) | `src/app/_shell/AppShell.tsx`; brand pages render only for non-creator sessions, creators are redirected to `/dashboard` |
-| Creators (and, from Phase 6, invited team members) | `src/app/dashboard/[workspace]/…` | `features/workspaces/WorkspaceShell.tsx`: sidebar, ⌘K, workspace context (`useWorkspace()`), page header (`PageHeader`) |
+| Brands | `src/app/(brand)/…` (`/brand`, `/deals`, `/deals/[id]`, `/creators`, `/contracts`, …) | `features/brand-shell/BrandShell.tsx`: the same sidebar groups, top bar, ⌘K (`BrandCommandPalette`) and account menu as the creator shell; renders only for brand sessions (creators are sent to `/dashboard`) |
+| Creators (and, from Phase 6, invited team members) | `src/app/dashboard/[workspace]/…` | `features/workspaces/WorkspaceShell.tsx`: sidebar, ⌘K, workspace context (`useWorkspace()`) |
+
+Both shells and every page use the shared look in `shared/components/shell/` (`shell.module.css` for the frame and
+tabs, `page.module.css` for KPI cards, cards, lists, tables, filters and forms, `PageHeader` for the breadcrumb/title
+row). Brand pages read their lists through `shared/lib/brand-queries.ts` (`useDeals`, `useCreators`, `useContracts`,
+`useDeliverables`, `usePayments`): one cached copy per list shared by every brand page, so moving between pages is
+instant. **The deal page (`/deals/[id]`) is the only place a brand creates or changes contracts, deliverables and
+invoices**; Contracts / Deliverables / Payments are filterable read-only lists that link to the deal. Brand ↔ creator
+chat is one component (`features/messages/components/ChatView.tsx`) used by the brand `/chat` page and the creator
+`/dashboard/[workspace]/messages` page; a creator connects to a brand by entering the brand's invite code in
+Settings → Brands (`POST /creators/me/link-brand`).
 
 Creator pages live in their feature (e.g. `features/content/HomePage.tsx`), read the active workspace with
 `useWorkspace()` from `@/features/workspaces`, and call `/workspaces/{workspace}/…` endpoints with `workspace.slug`.
@@ -182,7 +193,7 @@ Example: `content-calendar`.
    ```
 9. Add the URL to `frontend/tests/smoke/routes.snapshot.json` and a nav entry: creator pages go under
    `src/app/dashboard/[workspace]/` with an entry in `features/workspaces/constants/nav.ts`; brand pages under
-   `src/app/(brand)/` with an entry in `src/app/_shell/AppShell.tsx`. Add an e2e step in `frontend/tests/e2e/app-flows.spec.ts`.
+   `src/app/(brand)/` with an entry in `features/brand-shell/constants/nav.ts`. Add an e2e step in `frontend/tests/e2e/app-flows.spec.ts`.
 10. Add the feature to [FEATURES.md](FEATURES.md).
 
 ## Verification commands

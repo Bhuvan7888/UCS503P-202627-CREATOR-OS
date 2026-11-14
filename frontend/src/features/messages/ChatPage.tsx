@@ -1,215 +1,42 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import client from "@/shared/lib/api-client";
-import { EmptyState } from "@/shared/components/ui/EmptyState";
-import type { components } from "@/shared/lib/api-types";
-import { MESSAGES_POLL_INTERVAL_MS } from "./constants/messages-polling";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useCreators } from "@/shared/lib/brand-queries";
+import { ChatView } from "./components/ChatView";
 
-type Message = components["schemas"]["Message"];
-type Creator = components["schemas"]["Creator"];
-
-// ponytail: real-time via polling every 4s while a thread is open, not a
-// Supabase Realtime subscription — no new client-side infra/RLS policy
-// needed. Upgrade to Realtime if 4s latency ever matters.
+/** Brand: chat with your creators (deal pages link here with ?creator=<id>). */
 export default function ChatPage() {
-  const [contacts, setContacts] = useState<{ id: string; label: string }[] | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [draft, setDraft] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [sendError, setSendError] = useState("");
-  const [unreadByContact, setUnreadByContact] = useState<Record<string, number>>({});
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  function fetchUnread() {
-    client.GET("/messages/unread").then(({ data }) => {
-      if (data) {
-        setUnreadByContact(data.by_contact || {});
-        window.dispatchEvent(new Event("messagesUpdated"));
-      }
-    });
-  }
+  const creators = useCreators().data;
+  const [initialId, setInitialId] = useState<string | null>(null);
 
   useEffect(() => {
-    client.GET("/creators", { params: { query: { limit: 200 } } }).then(({ data }) => {
-      setContacts((data ?? []).map((c: Creator) => ({ id: c.id, label: c.display_name })));
-      fetchUnread();
-    });
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-off read of the URL after mount
+    setInitialId(new URLSearchParams(window.location.search).get("creator"));
   }, []);
 
-  useEffect(() => {
-    if (!selectedId) return;
-    let cancelled = false;
-    function poll() {
-      client.GET("/messages", { params: { query: { with_id: selectedId! } } }).then(({ data }) => {
-        if (!cancelled) {
-          setMessages(data ?? []);
-          fetchUnread();
-        }
-      });
-    }
-    poll();
-    const interval = setInterval(poll, MESSAGES_POLL_INTERVAL_MS);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [selectedId]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "nearest" });
-  }, [messages]);
-
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    if (!selectedId || !draft.trim()) return;
-    setBusy(true);
-    setSendError("");
-    const { data, error } = await client.POST("/messages", {
-      params: { query: { with_id: selectedId } },
-      body: { body: draft },
-    });
-    setBusy(false);
-    if (error || !data) {
-      setSendError("Couldn't send that — try again.");
-      return;
-    }
-    setMessages((prev) => [...prev, data]);
-    setDraft("");
-    fetchUnread();
-  }
-
-  if (contacts === null) {
-    return <div style={{ fontSize: "13px", color: "var(--color-ink-faint)" }}>Loading…</div>;
-  }
-  if (contacts.length === 0) {
-    return (
-      <EmptyState
-        icon={MessageCircle}
-        message="No creators yet. Onboard one from the Deals page to start chatting."
-      />
-    );
-  }
-
-  const isMine = (m: Message) => m.sender_type === "brand";
-
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "220px 1fr",
-        gap: "16px",
-        height: "calc(100vh - 140px)",
-      }}
-    >
-      <div className="mtile" style={{ overflowY: "auto", padding: "8px" }}>
-        <div className="lbl" style={{ margin: "4px 6px 8px" }}>
-          Creators
-        </div>
-        {contacts.map((c) => {
-          const hasPending = (unreadByContact[c.id] || 0) > 0;
-          return (
-            <button
-              key={c.id}
-              onClick={() => setSelectedId(c.id)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                width: "100%",
-                textAlign: "left",
-                padding: "8px 10px",
-                borderRadius: "6px",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "12.5px",
-                background: c.id === selectedId ? "var(--color-surface-sunken)" : "transparent",
-                color: "var(--color-ink)",
-                fontWeight: hasPending ? 600 : 400,
-              }}
-            >
-              <span>{c.label}</span>
-              {hasPending && (
-                <span
-                  style={{
-                    width: "7px",
-                    height: "7px",
-                    borderRadius: "50%",
-                    backgroundColor: "var(--color-danger, #C4351C)",
-                    flexShrink: 0,
-                    marginLeft: "8px",
-                  }}
-                />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="mtile" style={{ display: "flex", flexDirection: "column", padding: "12px" }}>
-        {!selectedId ? (
-          <div style={{ margin: "auto", fontSize: "12.5px", color: "var(--color-ink-faint)" }}>
-            Pick a creator to start chatting.
-          </div>
-        ) : (
+    <>
+      <PageHeader
+        base="/brand"
+        icon={MessageCircle}
+        title="Chat"
+        subtitle="Talk to the creators you work with"
+      />
+      <ChatView
+        key={initialId ?? "none"}
+        self="brand"
+        initialId={initialId}
+        contacts={creators?.map((c) => ({ id: c.id, label: c.display_name })) ?? null}
+        emptyText={
           <>
-            <div
-              style={{
-                flex: 1,
-                overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px",
-                paddingBottom: "8px",
-              }}
-            >
-              {messages.length === 0 && (
-                <div
-                  style={{ margin: "auto", fontSize: "12.5px", color: "var(--color-ink-faint)" }}
-                >
-                  No messages yet.
-                </div>
-              )}
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  style={{
-                    alignSelf: isMine(m) ? "flex-end" : "flex-start",
-                    maxWidth: "70%",
-                    fontSize: "12.5px",
-                    background: isMine(m) ? "var(--color-ink)" : "var(--color-surface-sunken)",
-                    color: isMine(m) ? "var(--color-surface)" : "var(--color-ink)",
-                    borderRadius: isMine(m) ? "10px 10px 2px 10px" : "10px 10px 10px 2px",
-                    padding: "8px 10px",
-                  }}
-                >
-                  {m.body}
-                </div>
-              ))}
-              <div ref={bottomRef} />
-            </div>
-            <form onSubmit={send} style={{ display: "flex", gap: "8px" }}>
-              <input
-                className="field"
-                style={{ flex: 1, margin: 0 }}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Message…"
-              />
-              <button className="btn" disabled={busy || !draft.trim()} type="submit">
-                Send
-              </button>
-            </form>
-            {sendError && (
-              <div style={{ fontSize: "11.5px", color: "var(--color-danger)", marginTop: "6px" }}>
-                {sendError}
-              </div>
-            )}
+            No creators yet. <Link href="/creators">Add or invite a creator</Link> to start
+            chatting.
           </>
-        )}
-      </div>
-    </div>
+        }
+      />
+    </>
   );
 }

@@ -5,11 +5,13 @@ export function BarRow({
   value,
   max,
   color,
+  format = String,
 }: {
   label: string;
   value: number;
   max: number;
   color: string;
+  format?: (value: number) => string;
 }) {
   const pct = max > 0 ? Math.max((value / max) * 100, value > 0 ? 3 : 0) : 0;
   return (
@@ -33,7 +35,7 @@ export function BarRow({
       >
         <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: "4px" }} />
       </div>
-      <div style={{ fontWeight: 600, minWidth: "70px", textAlign: "right" }}>{value}</div>
+      <div style={{ fontWeight: 600, minWidth: "70px", textAlign: "right" }}>{format(value)}</div>
     </div>
   );
 }

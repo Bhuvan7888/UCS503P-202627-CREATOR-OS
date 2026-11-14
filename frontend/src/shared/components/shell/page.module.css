@@ -1,0 +1,258 @@
+/* Page building blocks shared by the brand pages and creator pages that need cards, KPIs and tables.
+   Same look as the creator workspace (content.module.css / crm.module.css). */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.spaced {
+  margin-bottom: 16px;
+}
+
+.muted {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+}
+
+.errorBox {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: 14px;
+}
+
+.notice {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  font-size: 14px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.kpi,
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  padding: 20px 24px;
+}
+
+.kpi > span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+}
+
+.kpi strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.kpi .danger {
+  color: var(--color-danger);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cardSub {
+  margin: 2px 0 16px;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.twoUp {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 14px;
+}
+
+.list li:last-child {
+  border-bottom: none;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.grow small {
+  color: var(--color-ink-soft);
+  font-size: 12px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filters :global(.field) {
+  margin: 0;
+  width: auto;
+  min-width: 180px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  padding: 0 14px;
+  height: 40px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table a {
+  color: var(--color-accent);
+}
+
+.empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-ink-soft);
+  font-size: 14px;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form :global(.field) {
+  margin: 0;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.inlineForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-top: 16px;
+}
+
+.inlineForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 160px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.inlineForm :global(.field) {
+  margin: 0;
+}
+
+.select {
+  width: auto;
+  min-width: 150px;
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.code {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+}

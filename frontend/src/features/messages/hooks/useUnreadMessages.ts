@@ -5,12 +5,14 @@ import { MESSAGES_POLL_INTERVAL_MS } from "../constants/messages-polling";
 
 /**
  * Whether the signed-in user has unread messages. Re-checks on an interval, when the window
- * regains focus, on the `messagesUpdated` window event, and whenever `pathname` changes.
+ * regains focus, on the `messagesUpdated` window event, and whenever `pathname` changes. `enabled: false`
+ * skips it (e.g. workspace members without a creator profile, who have no chat).
  */
-export function useUnreadMessages(pathname: string): boolean {
+export function useUnreadMessages(pathname: string, enabled = true): boolean {
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     async function checkUnread() {
       const session = loadSession();
@@ -41,7 +43,7 @@ export function useUnreadMessages(pathname: string): boolean {
       window.removeEventListener("messagesUpdated", onUpdate);
       window.removeEventListener("focus", onUpdate);
     };
-  }, [pathname]);
+  }, [pathname, enabled]);
 
   return hasUnread;
 }

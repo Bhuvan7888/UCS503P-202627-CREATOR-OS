@@ -16,10 +16,11 @@ import {
 import client from "@/shared/lib/api-client";
 import { WORKSPACES_KEY, clearSession, loadSession, type AuthSession } from "@/shared/lib/session";
 import { NotificationBell } from "@/features/notifications";
+import { useUnreadMessages } from "@/features/messages";
 import { CommandPalette } from "./components/CommandPalette";
 import { NAV_GROUPS, SIDEBAR_COLLAPSED_KEY, canSee } from "./constants/nav";
 import { WorkspaceContext, type MyWorkspace } from "./hooks/useWorkspace";
-import styles from "./workspace-shell.module.css";
+import styles from "@/shared/components/shell/shell.module.css";
 
 type LoadState =
   | { kind: "loading" }
@@ -37,6 +38,11 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [menu, setMenu] = useState<"workspaces" | "user" | null>(null);
   const [wsError, setWsError] = useState<string | null>(null);
+  // only the owner has brand chat (it belongs to their creator profile)
+  const hasUnread = useUnreadMessages(
+    pathname,
+    state.kind === "ready" && state.workspace.role === "owner",
+  );
 
   const show = useCallback(
     (all: MyWorkspace[]) => {
@@ -233,6 +239,11 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
                       >
                         <Icon size={16} />
                         <span>{item.label}</span>
+                        {item.path === "/messages" && hasUnread && (
+                          <span className="pill pill-bad" aria-label="Unread messages">
+                            New
+                          </span>
+                        )}
                       </Link>
                     );
                   })}

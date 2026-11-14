@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { Layers, MousePointerClick, Plus, RefreshCw, Sparkles, X } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import type { components } from "@/shared/lib/api-types";
-import { PageHeader, useWorkspace } from "@/features/workspaces";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useWorkspace } from "@/features/workspaces";
 import styles from "./ai-assist.module.css";
 
 type SuggestionSet = components["schemas"]["SuggestionSet"];

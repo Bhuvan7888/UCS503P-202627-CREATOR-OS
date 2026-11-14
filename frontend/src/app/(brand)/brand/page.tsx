@@ -1,1 +1,1 @@
-export { default } from "@/features/deals/BrandDealsPage";
+export { default } from "@/features/analytics/BrandHomePage";

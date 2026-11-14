@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import styles from "../workspace-shell.module.css";
+import styles from "./shell.module.css";
 
 interface PageHeaderProps {
   base: string;

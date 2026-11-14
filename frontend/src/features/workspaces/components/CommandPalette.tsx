@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { Dialog } from "@/shared/components/ui/Dialog";
-import styles from "../workspace-shell.module.css";
+import styles from "@/shared/components/shell/shell.module.css";
 
 interface Entry {
   label: string;

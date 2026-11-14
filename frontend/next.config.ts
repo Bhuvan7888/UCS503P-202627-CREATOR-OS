@@ -26,6 +26,10 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  async redirects() {
+    // Analytics merged into the brand Home (2026-11-14)
+    return [{ source: "/analytics", destination: "/brand", permanent: true }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },

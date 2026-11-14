@@ -13,7 +13,8 @@ import {
   Zap,
 } from "lucide-react";
 import client from "@/shared/lib/api-client";
-import { PageHeader, useWorkspace } from "@/features/workspaces";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useWorkspace } from "@/features/workspaces";
 import {
   CATEGORY_INFO,
   ago,

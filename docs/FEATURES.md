@@ -23,6 +23,7 @@ Every feature has the same name everywhere. The backend uses `snake_case` becaus
 | `deliverables` | `backend/features/deliverables/` | `frontend/src/features/deliverables/` | `backend/tests/features/deliverables/` |
 | `payments` | `backend/features/payments/` | `frontend/src/features/payments/` | `backend/tests/features/payments/` |
 | `analytics` | `backend/features/analytics/` | `frontend/src/features/analytics/` | `backend/tests/features/analytics/` |
+| `brand-shell` | — | `frontend/src/features/brand-shell/` | e2e |
 | `messages` | `backend/features/messages/` | `frontend/src/features/messages/` | demo-mode smoke |
 | `activity-log` | `backend/features/activity_log/` | `frontend/src/features/activity-log/` | demo-mode smoke |
 | `demo-mode` | `backend/features/demo_mode/` | demo-account buttons in `features/auth/constants/demo-accounts.ts` | `backend/tests/smoke/test_demo_mode_contract.py` |
@@ -61,28 +62,36 @@ Brand accounts and brand membership. Data only; it has no endpoints of its own.
 - **Backend:** `models.py` (`Brand`, `BrandMember`), `repository.py` (ports), `supabase_repository.py`
 - **Used by:** `auth` (signup and identity), `creators` (linking a creator to a brand)
 
+## `brand-shell`
+The brand app's frame — same structure as the creator workspace shell.
+- **Frontend:** `BrandShell.tsx` (sidebar groups, top bar, account menu, session guard), `constants/nav.ts` (`BRAND_NAV`), `components/BrandCommandPalette.tsx` (⌘K: quick actions, pages, deals and creators)
+- **Used by:** `src/app/(brand)/layout.tsx`
+
 ## `creators`
 The brand's creator roster, the creator profile view, and brand linking via invite code.
-- **Pages:** `/creators/[id]` → `CreatorProfilePage.tsx` (also includes the brand ↔ creator chat panel)
+- **Pages:**
+  - `/creators` → `CreatorsPage.tsx` (roster, invite code, Onboard creator dialog)
+  - `/creators/[id]` → `CreatorProfilePage.tsx` (profile, KPIs, their deals, Message button)
+  - `/dashboard/[workspace]/settings/brands` → `ConnectedBrandsPage.tsx` (creator enters a brand's invite code; owner only)
 - **API:**
   - `POST /creators`, `GET /creators`, `GET /creators/{id}`
   - `GET /creators/me/brands`, `POST /creators/me/link-brand`
 - **Backend:** `router.py`, `service.py` (`CreatorService`), `models.py` (`Creator`), `repository.py`, `supabase_repository.py`
-- **Depends on:** `auth`, `brands`, `activity-log`; frontend uses `messages` (poll interval)
+- **Depends on:** `auth`, `brands`, `activity-log`; frontend uses `workspaces` (`SettingsHeader`)
 
 ## `deals`
-The brand's deal pipeline and creator onboarding, and the per-deal workspace.
+The brand's deals and the deal page — the one place a brand creates or changes a deal's contract, deliverables and invoices.
 - **Pages:**
-  - `/brand` → `BrandDealsPage.tsx`
-  - `/deals/[id]` → `DealDetailPage.tsx`
+  - `/deals` → `DealsListPage.tsx` (search, stage filter, New deal dialog)
+  - `/deals/[id]` → `DealDetailPage.tsx` (stage, KPIs, tabs: Contract / Deliverables / Payments)
 - **API:** `POST /deals`, `GET /deals`, `POST /deals/{id}/view`, `PATCH /deals/{id}/status`
 - **Backend:** `router.py`, `service.py` (`DealService`), `models.py` (`Deal`), `repository.py`, `supabase_repository.py`
 - **Shared code used:** `shared/constants/deal-stages.ts`, `shared/lib/status-variants.ts`, `shared/lib/format-currency.ts`
-- **Depends on:** `auth`, `creators`, `activity-log`; frontend uses `deliverables` (status labels)
+- **Depends on:** `auth`, `creators`, `activity-log`; frontend uses `contracts` (status labels/options) and `deliverables` (status labels, variants, options)
 
 ## `contracts`
 Contract upload by the brand per deal, the status lifecycle and the sample contract PDF.
-- **Pages:** `/contracts` → `ContractsPage.tsx`
+- **Pages:** `/contracts` → `ContractsPage.tsx` (read-only list with creator/status filters; uploads happen on the deal page); `constants/contract-status.ts` exported via `index.ts`
 - **API:**
   - `GET /contracts`, `GET /contracts/{id}`
   - `POST /deals/{deal_id}/contracts`
@@ -137,7 +146,7 @@ owned workspaces (fair use, the app is free). URLs accept the slug (`ws-1a2b3c4d
 - **Pages:**
   - `/dashboard` → `WorkspaceRedirectPage.tsx` (opens the primary workspace; brands go to `/brand`)
   - `/dashboard/[workspace]/*` layout → `WorkspaceShell.tsx`: sidebar (workspace switcher with "new workspace", nav groups, user menu with Sign out), top bar (sidebar toggle saved in localStorage, ⌘K)
-- **Frontend internals:** `components/CommandPalette.tsx` (quick actions + content search), `components/PageHeader.tsx` (breadcrumb, icon tile, title, actions), `constants/nav.ts` (only built pages are listed), `hooks/useWorkspace.ts` (active workspace context); `index.ts` exports `PageHeader`, `useWorkspace`
+- **Frontend internals:** `components/CommandPalette.tsx` (quick actions + content search), `constants/nav.ts` (only built pages are listed), `hooks/useWorkspace.ts` (active workspace context); `index.ts` exports `useWorkspace`, `SettingsHeader` (`PageHeader` lives in `shared/components/shell/`)
 - **Team (Phase 6a):** 11 permissions (`rules.PERMISSIONS`); the owner has all; Script Writer / Video Editor / Brand Manager
   default to 5 / 6 / 8 and the owner can change them per workspace. `require_permission(...)` guards every workspace
   route and audits refusals; the shell hides pages a role can't open and shows a "no access" panel. Invites: 2 seats per
@@ -249,14 +258,14 @@ editor), Generate outline (Scripts), and AI Content Suggestions (kept 24 h; Crea
 
 ## `analytics`
 Brand-level revenue by month, the pipeline by stage, top campaigns, creator performance, overdue invoices and a roster breakdown.
-- **Pages:** `/analytics` → `AnalyticsPage.tsx` (+ `components/RevenueChart.tsx`, `components/BarRow.tsx`)
+- **Pages:** `/brand` → `BrandHomePage.tsx` (brand Home: KPIs, revenue, pipeline, recent deals, top campaigns, creator performance, roster; `/analytics` redirects here) (+ `components/RevenueChart.tsx`, `components/BarRow.tsx`)
 - **API:** `GET /analytics/brand`
 - **Backend:** `router.py`, `service.py` (fetches the data), `rules.py` (pure aggregations), `models.py`
 - **Depends on:** `deals`, `creators`, `contracts`, `payments` (reads through their repository ports)
 
 ## `messages`
-Brand ↔ creator chat and the unread dot in the sidebar.
-- **Pages:** `/chat` → `ChatPage.tsx`
+Two-way brand ↔ creator chat and the unread badges in both sidebars.
+- **Pages:** `/chat` → `ChatPage.tsx` (brand); `/dashboard/[workspace]/messages` → `MessagesPage.tsx` (creator, owner only) — both render `components/ChatView.tsx`
 - **Frontend internals:**
   - `hooks/useUnreadMessages.ts`: used by the app shell
   - `constants/messages-polling.ts`: `MESSAGES_POLL_INTERVAL_MS`
@@ -298,5 +307,6 @@ Runs the whole backend on a seeded in-memory dataset when Supabase is unreachabl
 | `frontend/src/shared/lib/format-currency.ts`, `status-variants.ts` | deals, creators, analytics, contracts, contract-intelligence, payments |
 | `frontend/src/shared/constants/deal-stages.ts` | deals, deliverables, creators, analytics |
 | `frontend/src/shared/components/ui/` (`StatusPill`, `EmptyState`, `GradientPanel`) | most brand pages |
-| `frontend/src/shared/components/ui/Dialog.tsx` (native `<dialog>` modal) | content (Add Content wizard), workspaces (⌘K palette) |
-| `frontend/src/app/_shell/AppShell.tsx` | the `(brand)` layout (brand app only; creators are sent to `/dashboard`) |
+| `frontend/src/shared/components/ui/Dialog.tsx` (native `<dialog>` modal) | content (Add Content wizard), workspaces and brand-shell (⌘K palettes), deals and creators (New deal / Onboard creator) |
+| `frontend/src/shared/components/shell/` (`shell.module.css`, `page.module.css`, `PageHeader`) | both app shells and every page |
+| `frontend/src/shared/lib/brand-queries.ts` (cached brand lists) | brand-shell, analytics, deals, creators, contracts, deliverables, payments, messages |

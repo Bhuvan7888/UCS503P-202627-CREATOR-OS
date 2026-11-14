@@ -14,7 +14,8 @@ import client from "@/shared/lib/api-client";
 import type { components } from "@/shared/lib/api-types";
 import { loadSession } from "@/shared/lib/session";
 import { Dialog } from "@/shared/components/ui/Dialog";
-import { PageHeader, useWorkspace } from "@/features/workspaces";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useWorkspace } from "@/features/workspaces";
 import styles from "./support.module.css";
 
 type Ticket = components["schemas"]["Ticket"];

@@ -6,6 +6,7 @@ import {
   House,
   Inbox,
   KanbanSquare,
+  MessageCircle,
   PenLine,
   Settings,
   ShieldCheck,
@@ -52,6 +53,8 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { label: "Brand CRM", path: "/crm", icon: Handshake, anyOf: ["view_brand_deals"] },
       { label: "Contracts", path: "/contracts", icon: ShieldCheck, prefix: true, ownerOnly: true },
+      // chat with connected brands belongs to the owner's creator profile
+      { label: "Messages", path: "/messages", icon: MessageCircle, ownerOnly: true },
     ],
   },
   {

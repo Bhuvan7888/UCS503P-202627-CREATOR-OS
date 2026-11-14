@@ -5,11 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Settings } from "lucide-react";
 import { useWorkspace } from "../hooks/useWorkspace";
-import { PageHeader } from "./PageHeader";
-import styles from "../workspace-shell.module.css";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import styles from "@/shared/components/shell/shell.module.css";
 
-// `anyOf`: shown when the caller's role has one of these (personal tabs have none)
-const TABS: { label: string; path: string; anyOf?: string[] }[] = [
+// `anyOf`: shown when the caller's role has one of these (personal tabs have none);
+// `ownerOnly`: backed by the owner's own creator profile
+const TABS: { label: string; path: string; anyOf?: string[]; ownerOnly?: boolean }[] = [
   { label: "Profile", path: "/settings/profile" },
   {
     label: "Workspace",
@@ -17,6 +18,7 @@ const TABS: { label: string; path: string; anyOf?: string[] }[] = [
     anyOf: ["view_settings", "manage_workspace", "invite_members"],
   },
   { label: "AI knowledge", path: "/settings/ai-knowledge", anyOf: ["view_settings"] },
+  { label: "Brands", path: "/settings/brands", ownerOnly: true },
   { label: "Notifications", path: "/settings/notifications" },
   { label: "API keys", path: "/settings/api-keys", anyOf: ["manage_workspace"] },
   { label: "Webhooks", path: "/settings/webhooks", anyOf: ["manage_workspace"] },
@@ -36,8 +38,10 @@ export function SettingsHeader({ tab }: { tab: string }) {
         subtitle="Manage your workspace, team and preferences"
       />
       <nav className={styles.tabs} aria-label="Settings sections">
-        {TABS.filter(
-          (t) => !t.anyOf || t.anyOf.some((p) => workspace.permissions?.includes(p)),
+        {TABS.filter((t) =>
+          t.ownerOnly
+            ? workspace.role === "owner"
+            : !t.anyOf || t.anyOf.some((p) => workspace.permissions?.includes(p)),
         ).map((t) => (
           <Link
             key={t.path}

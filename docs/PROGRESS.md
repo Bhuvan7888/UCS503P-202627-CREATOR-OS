@@ -44,7 +44,44 @@ brand side stays as it is.
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | done (2026-11-14) |
 
-### Live sign-in fix (2026-11-14)
+### Brand side redesign (started 2026-11-14)
+Goal: the brand app gets the creator workspace's layout (same shell, page headers, cards, tables) and its features are
+cleaned up. Audit of the live brand app (all pages load, no API/console errors) found: the brand invite code could not
+be used (no creator UI to enter it), chat was one-way (creators had no chat), and contract upload / deliverables /
+invoices / chat were each repeated on 2–3 pages.
+
+Owner decisions (2026-11-14):
+- **Linking:** creators connect to a brand by entering the brand's invite code in their workspace
+  (Settings → Brands, owner only). Brand-added (offline) creators stay.
+- **Chat:** two-way — creators get a Messages page for their connected brands; one shared chat component.
+- **Deal page is the hub:** contract upload/status, deliverables and invoices are created and changed only on the deal
+  page (tabs). Contracts / Deliverables / Payments become filterable lists that link to the deal.
+- **Analytics merges into a brand Home** (KPIs, revenue, pipeline, recent deals). Contract status control and activity
+  notes stay as they are.
+
+Steps:
+| # | Step | Status |
+|---|---|---|
+| B1 | Shell styles + `PageHeader` move to `shared/components/shell/` (used by both shells) | done |
+| B2 | Brand shell (same sidebar/top bar/⌘K/user menu), brand Home (merged analytics), Deals and Creators pages | done |
+| B3 | Deal hub (tabs), Contracts/Deliverables/Payments lists, creator profile, Chat, Activity, clause review restyled | done |
+| B4 | Creator side: Settings → Brands (enter code, list connected brands), Messages page | done |
+| B5 | e2e, docs, deploy, live check | done (e2e 13/13 ×2; live check after deploy) |
+
+What changed (2026-11-14):
+- Brand sidebar: Overview (Home) · Partnerships (Deals, Creators, Chat) · Operations (Contracts, Deliverables,
+  Payments) · Account (Activity); ⌘K search over pages, deals and creators; account menu with Sign out.
+- `/brand` is the Home (KPIs + everything the Analytics page showed); `/analytics` redirects to it.
+- New `/deals` list (search, stage filter, New deal dialog with optional value) and `/creators` roster (invite code,
+  Onboard creator dialog, "On Creator OS" vs "Added by you").
+- Deal page tabs: Contract (upload, status, clause review, sample PDF), Deliverables (add, status), Payments (invoice,
+  status). The contract → deal-stage rules live in one place (`stageAfterContract`).
+- Creator profile = profile, KPIs, their deals, Message button (the inline chat and upload were duplicates).
+- Creator workspace: Messages page (owner only, unread badge in the sidebar) and Settings → Brands.
+- Removed: `app/_shell/AppShell.tsx`, `BrandDealsPage.tsx`, the `/analytics` route, the unused `dealStageVariant`.
+- The upload button says "Uploading & scanning…": the upload waits for the AI clause scan (slow Gemini model).
+
+
 "Sign-in failed — Invalid or expired session" on the live site. Causes and fixes:
 1. A stale stored session overrode the token the Google callback sent explicitly → the bearer middleware keeps a
    request's own `Authorization` header, and `OAuthCallbackPage` clears the old session first.

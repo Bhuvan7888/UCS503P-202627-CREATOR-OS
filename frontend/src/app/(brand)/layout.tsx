@@ -1,6 +1,6 @@
 import React from "react";
-import { AppShell } from "@/app/_shell/AppShell";
+import BrandShell from "@/features/brand-shell/BrandShell";
 
 export default function BrandLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+  return <BrandShell>{children}</BrandShell>;
 }

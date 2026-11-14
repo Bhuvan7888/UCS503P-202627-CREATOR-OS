@@ -1,360 +1,120 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { PackageOpen } from "lucide-react";
-import client from "@/shared/lib/api-client";
+import React, { useState } from "react";
+import Link from "next/link";
+import { Package } from "lucide-react";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
-import { EmptyState } from "@/shared/components/ui/EmptyState";
-import type { components } from "@/shared/lib/api-types";
-import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
+import { nameById, useCreators, useDeals, useDeliverables } from "@/shared/lib/brand-queries";
+import page from "@/shared/components/shell/page.module.css";
 import { DELIVERABLE_STATUS_LABEL } from "./constants/deliverable-status";
-import {
-  dealStageVariant,
-  getBrandAvailableStatuses,
-  deliverableStatusVariant,
-} from "./utils/deliverable-status.utils";
+import { deliverableStatusVariant } from "./utils/deliverable-status.utils";
 
-type Deliverable = components["schemas"]["Deliverable"];
-type Deal = components["schemas"]["Deal"];
-type Creator = components["schemas"]["Creator"];
-type Contract = components["schemas"]["Contract"];
-
+/** Brand: every deliverable across deals. Adding one or changing its status happens on the deal page. */
 export default function DeliverablesPage() {
-  const [items, setItems] = useState<Deliverable[] | null>(null);
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [creators, setCreators] = useState<Creator[]>([]);
-  const [contracts, setContracts] = useState<Contract[]>([]);
-  const [selectedCreatorId, setSelectedCreatorId] = useState<string | null>(null);
-  const [selectedDealId, setSelectedDealId] = useState("");
-  const [error, setError] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const deliverables = useDeliverables();
+  const creators = useCreators().data;
+  const deals = useDeals().data;
+  const names = nameById(creators);
+  const [creator, setCreator] = useState("all");
+  const [status, setStatus] = useState("all");
 
-  function reload() {
-    client.GET("/deliverables").then(({ data, error: apiError }) => {
-      if (apiError) {
-        setError(true);
-        return;
-      }
-      setItems(data ?? []);
-    });
-  }
+  const dealOf = (dealId: string) => deals?.find((d) => d.id === dealId);
+  const visible = (deliverables.data ?? []).filter(
+    (d) =>
+      (status === "all" || d.status === status) &&
+      (creator === "all" || dealOf(d.deal_id)?.creator_id === creator),
+  );
 
-  useEffect(() => {
-    reload();
-    client
-      .GET("/deals", { params: { query: { limit: 100 } } })
-      .then(({ data }) => setDeals(data ?? []));
-    client.GET("/contracts").then(({ data }) => setContracts(data ?? []));
-    client
-      .GET("/creators", { params: { query: { limit: 100 } } })
-      .then(({ data }) => setCreators(data ?? []));
-  }, []);
-
-  async function createDeliverable(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formEl = e.currentTarget;
-    const form = new FormData(formEl);
-    const dealId = String(form.get("deal_id"));
-    const contractId = String(form.get("contract_id") || "");
-    setBusy(true);
-    await client.POST("/deals/{deal_id}/deliverables", {
-      params: { path: { deal_id: dealId } },
-      body: {
-        deal_id: dealId,
-        contract_id: contractId || null,
-        title: String(form.get("title")),
-        description: String(form.get("description")),
-      },
-    });
-    setBusy(false);
-    formEl.reset();
-    setSelectedDealId("");
-    setShowForm(false);
-    reload();
-  }
-
-  async function handleStatusChange(d: Deliverable, newStatus: string) {
-    if (newStatus === d.status) return;
-    await client.PATCH("/deliverables/{id}/status", {
-      params: { path: { id: d.id }, query: { deal_id: d.deal_id } },
-      body: {
-        status: newStatus as components["schemas"]["DeliverableStatusUpdateRequest"]["status"],
-      },
-    });
-    reload();
-  }
-
-  if (error) {
-    return (
-      <EmptyState icon={PackageOpen} message="Couldn't load deliverables. Try signing in again." />
-    );
-  }
-  if (items === null) {
-    return <div style={{ fontSize: "13px", color: "var(--color-ink-faint)" }}>Loading…</div>;
-  }
-
-  const dealCreatorId = new Map(deals.map((d) => [d.id, d.creator_id]));
-  const filteredItems = selectedCreatorId
-    ? items.filter((d) => dealCreatorId.get(d.deal_id) === selectedCreatorId)
-    : items;
-
-  const content = (
+  return (
     <>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
-        <button className="btn" onClick={() => setShowForm((v) => !v)}>
-          {showForm ? "Cancel" : "+ New deliverable"}
-        </button>
-      </div>
-
-      {showForm && (
-        <form
-          onSubmit={createDeliverable}
-          className="mtile"
-          style={{ marginBottom: "14px", display: "grid", gap: "10px" }}
-        >
-          <label className="text-label">
-            Deal
-            <select
-              name="deal_id"
-              required
-              className="field"
-              value={selectedDealId}
-              onChange={(e) => setSelectedDealId(e.target.value)}
-            >
-              <option value="">Select deal…</option>
-              {deals.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.campaign_name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-label">
-            Contract (optional — leave blank to add one from your side)
-            <select name="contract_id" className="field" disabled={!selectedDealId}>
-              <option value="">— Not tied to a contract —</option>
-              {contracts
-                .filter((c) => c.deal_id === selectedDealId)
-                .map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.id.slice(0, 8)} — {c.status}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label className="text-label">
-            Title
-            <input name="title" required className="field" />
-          </label>
-          <label className="text-label">
-            Description
-            <input name="description" required className="field" />
-          </label>
-          <div>
-            <button className="btn" disabled={busy} type="submit">
-              Create
-            </button>
-          </div>
-        </form>
+      <PageHeader
+        base="/brand"
+        icon={Package}
+        title="Deliverables"
+        subtitle="What creators deliver across your deals — open a deal to add or update one"
+      />
+      {deliverables.error && !deliverables.data && (
+        <p className={page.errorBox} role="alert">
+          Couldn&apos;t load deliverables. Try refreshing.
+        </p>
       )}
-
-      {filteredItems.length === 0 ? (
-        <EmptyState
-          icon={PackageOpen}
-          message="No deliverables yet. They'll show up here once a deal has content in flight."
-        />
-      ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
+      <div className={page.filters}>
+        <select
+          className="field"
+          value={creator}
+          onChange={(e) => setCreator(e.target.value)}
+          aria-label="Filter by creator"
+        >
+          <option value="all">All creators</option>
+          {(creators ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.display_name}
+            </option>
+          ))}
+        </select>
+        <select
+          className="field"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          aria-label="Filter by status"
+        >
+          <option value="all">All statuses</option>
+          {Object.entries(DELIVERABLE_STATUS_LABEL).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className={page.tableWrap}>
+        <table className={page.table}>
           <thead>
-            <tr style={{ color: "var(--color-ink-faint)", textAlign: "left" }}>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Title
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Description
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Contract
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Status
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                  textAlign: "right",
-                }}
-              >
-                Action
-              </th>
+            <tr>
+              <th>Deliverable</th>
+              <th>Deal</th>
+              <th>Creator</th>
+              <th>Status</th>
+              <th>Updated</th>
             </tr>
           </thead>
           <tbody>
-            {filteredItems.map((d) => {
+            {visible.map((d) => {
+              const deal = dealOf(d.deal_id);
               return (
                 <tr key={d.id}>
-                  <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                    {d.title}
+                  <td>
+                    <span className={page.grow}>
+                      {d.title}
+                      <small>{d.description}</small>
+                    </span>
                   </td>
-                  <td
-                    style={{
-                      padding: "8px 4px",
-                      borderBottom: "1px solid var(--color-border)",
-                      color: "var(--color-ink-soft)",
-                    }}
-                  >
-                    {d.description}
+                  <td>
+                    <Link href={`/deals/${d.deal_id}`}>{deal?.campaign_name ?? "Open deal"}</Link>
                   </td>
-                  <td
-                    style={{
-                      padding: "8px 4px",
-                      borderBottom: "1px solid var(--color-border)",
-                      color: "var(--color-ink-soft)",
-                    }}
-                  >
-                    {d.contract_id ? `${d.contract_id.slice(0, 8)}` : "—"}
-                  </td>
-                  <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
+                  <td>{deal ? (names[deal.creator_id] ?? "—") : "—"}</td>
+                  <td>
                     <StatusPill
                       status={DELIVERABLE_STATUS_LABEL[d.status] ?? d.status}
                       variant={deliverableStatusVariant(d.status)}
                     />
                   </td>
-                  <td
-                    style={{
-                      padding: "8px 4px",
-                      borderBottom: "1px solid var(--color-border)",
-                      textAlign: "right",
-                    }}
-                  >
-                    <select
-                      className="field"
-                      style={{
-                        display: "inline-block",
-                        margin: 0,
-                        width: "auto",
-                        minWidth: "210px",
-                        fontSize: "12.5px",
-                        padding: "6px 10px",
-                        cursor: "pointer",
-                        background: "var(--color-surface-sunken)",
-                        borderColor: "var(--color-border)",
-                        color: "var(--color-ink)",
-                        borderRadius: "var(--radius-sm)",
-                        fontWeight: 500,
-                      }}
-                      value={d.status}
-                      onChange={(e) => handleStatusChange(d, e.target.value)}
-                    >
-                      {getBrandAvailableStatuses(d).map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
+                  <td>{new Date(d.updated_at ?? d.created_at).toLocaleDateString()}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
-      )}
-    </>
-  );
-
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: "16px" }}>
-      <div className="mtile" style={{ padding: "8px", height: "fit-content" }}>
-        <div className="lbl" style={{ margin: "4px 6px 8px" }}>
-          Creators
-        </div>
-        <button
-          onClick={() => setSelectedCreatorId(null)}
-          style={{
-            display: "block",
-            width: "100%",
-            textAlign: "left",
-            padding: "6px 6px",
-            marginBottom: "4px",
-            borderRadius: "6px",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "12px",
-            fontWeight: 600,
-            background: selectedCreatorId === null ? "var(--color-surface-sunken)" : "transparent",
-          }}
-        >
-          All creators
-        </button>
-        {creators.map((cr) => {
-          const creatorDeals = deals.filter((d) => d.creator_id === cr.id);
-          return (
-            <button
-              key={cr.id}
-              onClick={() => setSelectedCreatorId(cr.id)}
-              style={{
-                display: "block",
-                width: "100%",
-                textAlign: "left",
-                padding: "8px 6px",
-                marginBottom: "2px",
-                borderRadius: "6px",
-                border: "none",
-                cursor: "pointer",
-                background:
-                  selectedCreatorId === cr.id ? "var(--color-surface-sunken)" : "transparent",
-              }}
-            >
-              <div style={{ fontSize: "12.5px", color: "var(--color-ink)", marginBottom: "4px" }}>
-                {cr.display_name}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                {creatorDeals.length === 0 ? (
-                  <span style={{ fontSize: "10.5px", color: "var(--color-ink-faint)" }}>
-                    No deals
-                  </span>
-                ) : (
-                  creatorDeals.map((d) => (
-                    <StatusPill
-                      key={d.id}
-                      status={DEAL_STAGE_LABEL[d.status] ?? d.status}
-                      variant={dealStageVariant(d.status)}
-                    />
-                  ))
-                )}
-              </div>
-            </button>
-          );
-        })}
+        {visible.length === 0 && (
+          <p className={page.empty}>
+            {!deliverables.data
+              ? "Loading…"
+              : deliverables.data.length
+                ? "No deliverables match these filters."
+                : "No deliverables yet — add one from a deal."}
+          </p>
+        )}
       </div>
-      <div>{content}</div>
-    </div>
+    </>
   );
 }

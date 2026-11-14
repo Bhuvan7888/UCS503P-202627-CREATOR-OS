@@ -1,108 +1,91 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Activity } from "lucide-react";
 import client from "@/shared/lib/api-client";
-import { EmptyState } from "@/shared/components/ui/EmptyState";
-import type { components } from "@/shared/lib/api-types";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useQuery } from "@/shared/lib/query-cache";
+import page from "@/shared/components/shell/page.module.css";
 
-type ActivityLog = components["schemas"]["ActivityLog"];
+const actionLabel = (action: string) => action.replace(/_/g, " ");
 
-function actionLabel(action: string): string {
-  return action.replace(/_/g, " ");
-}
-
+/** Brand: everything that happened across the brand's deals, newest first, plus manual notes. */
 export default function ActivityLogPage() {
-  const [items, setItems] = useState<ActivityLog[] | null>(null);
-  const [error, setError] = useState(false);
+  const log = useQuery("brand:activity", async () => (await client.GET("/activity-log")).data);
   const [note, setNote] = useState("");
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    client.GET("/activity-log").then(({ data, error: apiError }) => {
-      if (apiError) {
-        setError(true);
-        return;
-      }
-      setItems(data ?? []);
-    });
-  }, []);
-
-  async function onAddNote(e: React.FormEvent) {
+  async function addNote(e: React.FormEvent) {
     e.preventDefault();
     if (!note.trim()) return;
     setPending(true);
+    setError(null);
     const { data, error: apiError } = await client.POST("/activity-log", {
-      body: { action: "manual_note", note },
+      body: { action: "manual_note", note: note.trim() },
     });
     setPending(false);
-    if (apiError || !data) return;
-    setItems((prev) => [data, ...(prev ?? [])]);
+    if (apiError || !data) return setError("Couldn't add the note.");
+    log.mutate((items) => [data, ...(items ?? [])]);
     setNote("");
   }
 
-  if (error) {
-    return <EmptyState icon={Activity} message="Couldn't load activity. Try signing in again." />;
-  }
-  if (items === null) {
-    return <div style={{ fontSize: "13px", color: "var(--color-ink-faint)" }}>Loading…</div>;
-  }
-
-  const sorted = [...items].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+  const items = [...(log.data ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-      <form onSubmit={onAddNote} style={{ display: "flex", gap: "8px", padding: "4px 4px 14px" }}>
-        <input
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Log a manual note (e.g. a call with the brand)"
-          style={{
-            flex: 1,
-            fontSize: "12.5px",
-            padding: "8px 10px",
-            border: "1px solid var(--color-border)",
-            borderRadius: "6px",
-          }}
-        />
-        <button
-          type="submit"
-          disabled={pending || !note.trim()}
-          style={{ fontSize: "12.5px", padding: "8px 14px", borderRadius: "6px" }}
-        >
-          {pending ? "Adding…" : "Add"}
-        </button>
-      </form>
-      {items.length === 0 && (
-        <EmptyState
-          icon={Activity}
-          message="No activity yet. Every action across your deals will be logged here."
-        />
-      )}
-      {sorted.map((log) => (
-        <div
-          key={log.id}
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "10px 4px",
-            borderBottom: "1px solid var(--color-border)",
-            fontSize: "12.5px",
-          }}
-        >
-          <div>
-            <span style={{ textTransform: "capitalize" }}>{log.actor_type}</span>
-            <span style={{ color: "var(--color-ink-faint)" }}> · </span>
-            <span>{actionLabel(log.action)}</span>
-            {typeof log.metadata?.note === "string" && (
-              <span style={{ color: "var(--color-ink-soft)" }}> — {log.metadata.note}</span>
-            )}
-          </div>
-          <div style={{ color: "var(--color-ink-faint)" }}>
-            {new Date(log.created_at).toLocaleString()}
-          </div>
-        </div>
-      ))}
-    </div>
+    <>
+      <PageHeader
+        base="/brand"
+        icon={Activity}
+        title="Activity"
+        subtitle="Everything that happened across your deals"
+      />
+      <section className={page.card}>
+        <form className={page.inlineForm} onSubmit={addNote}>
+          <label>
+            Add a note
+            <input
+              className="field"
+              value={note}
+              maxLength={1000}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="e.g. Call with the creator about timelines"
+            />
+          </label>
+          <button className="btn" type="submit" disabled={pending || !note.trim()}>
+            {pending ? "Adding…" : "Add note"}
+          </button>
+        </form>
+        {error && (
+          <p className={page.errorBox} role="alert">
+            {error}
+          </p>
+        )}
+        {items.length ? (
+          <ul className={page.list}>
+            {items.map((entry) => (
+              <li key={entry.id}>
+                <span className={page.grow}>
+                  <span>
+                    <strong>{entry.actor_type === "brand" ? "You" : "Creator"}</strong> ·{" "}
+                    {actionLabel(entry.action)}
+                    {typeof entry.metadata?.note === "string" && ` — ${entry.metadata.note}`}
+                  </span>
+                  <small>{new Date(entry.created_at).toLocaleString()}</small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className={page.empty}>
+            {log.data
+              ? "No activity yet. Every action across your deals is logged here."
+              : log.error
+                ? "Couldn't load activity. Try refreshing."
+                : "Loading…"}
+          </p>
+        )}
+      </section>
+    </>
   );
 }

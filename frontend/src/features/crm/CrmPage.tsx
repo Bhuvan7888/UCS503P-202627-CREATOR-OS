@@ -19,7 +19,8 @@ import {
 } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import { useQuery } from "@/shared/lib/query-cache";
-import { PageHeader, useWorkspace } from "@/features/workspaces";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
+import { useWorkspace } from "@/features/workspaces";
 import { DealWizard } from "./components/DealWizard";
 import {
   PRIORITIES,

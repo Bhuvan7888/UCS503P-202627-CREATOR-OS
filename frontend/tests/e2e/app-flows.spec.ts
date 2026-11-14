@@ -62,112 +62,154 @@ test("landing page links to both roles", async ({ page }) => {
 });
 
 test("brand: every page loads and every main action works", async ({ page }) => {
+  test.setTimeout(180_000); // the contract upload waits for the AI clause scan
   const problems = watchForProblems(page);
   await loginWithDemo(page, "brand", "1. Mamaearth");
   await expectSettled(page);
+  // Home (formerly Analytics) shows KPIs and the pipeline
+  await expect(page.getByRole("heading", { name: /Welcome back/ })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Active deals" })).toBeVisible();
 
-  // Deals: create a deal for an existing creator
-  await page.getByRole("button", { name: "+ New deal" }).click();
+  // Deals: create a deal — it opens on its deal page (the hub)
+  await visit(page, "/deals");
+  await page.getByRole("button", { name: "New deal" }).click();
   await page.locator('select[name="creator_id"]').selectOption({ index: 1 });
   await page.locator('input[name="campaign_name"]').fill(`E2E Campaign ${RUN}`);
   await page.locator('input[name="contact_email"]').fill("e2e@example.com");
+  await page.locator('input[name="value_inr"]').fill("50000");
   await page.getByRole("button", { name: "Create deal" }).click();
-  await expect(page.getByText(`E2E Campaign ${RUN}`)).toBeVisible();
+  await page.waitForURL(/\/deals\/[0-9a-f-]{36}$/);
+  await expect(page.getByRole("heading", { name: `E2E Campaign ${RUN}` })).toBeVisible();
 
-  // Creators: onboard a creator
-  await page.getByRole("button", { name: "+ Onboard creator" }).click();
-  await page.locator('input[name="display_name"]').fill(`E2E Creator ${RUN}`);
-  await page.locator('input[name="instagram_handle"]').fill(`@e2e_${RUN}`);
-  await page.locator('input[name="niche"]').fill("beauty");
-  await page.locator('select[name="follower_tier"]').selectOption("micro");
-  await page.getByRole("button", { name: "Onboard", exact: true }).click();
-  await expect(page.getByText(`E2E Creator ${RUN}`).first()).toBeVisible();
-
-  // Deal detail: open a deal and add a deliverable from there
-  await page.locator("a[href^='/deals/']").first().click();
-  await page.waitForURL(/\/deals\//);
-  await expectSettled(page);
-  await page.locator('input[name="title"]').fill(`Deal-page deliverable ${RUN}`);
-  await page.locator('input[name="description"]').fill("Created from the deal page");
-  await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByText(`Deal-page deliverable ${RUN}`)).toBeVisible();
-
-  // Chat: send a message
-  await visit(page, "/chat");
-  await page.getByRole("button", { name: "Ananya Sharma" }).click();
-  await page.getByPlaceholder("Message…").fill(`Hello from E2E ${RUN}`);
-  await page.getByRole("button", { name: "Send" }).click();
-  await expect(page.getByText(`Hello from E2E ${RUN}`)).toBeVisible();
-
-  // Contracts: upload the sample PDF against a deal, then change a contract's status
-  await visit(page, "/contracts");
+  // Deal page → Contract: upload the sample PDF, accept it
   const pdf = await (await page.request.get(`${API}/contracts/sample-contract-pdf`)).body();
-  const before = await page.locator("a[href$='/clauses']").count();
-  await page.getByRole("button", { name: "+ Upload contract" }).click();
-  await page.locator('select[name="deal_id"]').selectOption({ index: 2 });
   await page
     .locator('input[name="file"]')
     .setInputFiles({ name: "contract.pdf", mimeType: "application/pdf", buffer: pdf });
   await page.getByRole("button", { name: "Upload", exact: true }).click();
-  await expect(page.locator("a[href$='/clauses']")).toHaveCount(before + 1, { timeout: 15_000 });
-  await page
-    .locator("select")
-    .filter({ has: page.locator('option[value="signed"]') })
-    .first()
-    .selectOption("signed");
-  await expect(page.getByText(/Couldn't update contract status/)).toHaveCount(0);
+  // the upload runs the AI clause scan before it answers
+  await expect(page.getByRole("link", { name: "Review clauses" })).toHaveCount(1, {
+    timeout: 60_000,
+  });
+  await page.getByRole("combobox", { name: "Contract status" }).selectOption("signed");
+  await expect(page.getByRole("combobox", { name: "Deal stage" })).toHaveValue("in_production");
+  await expect(page.getByText(/^Couldn't/)).toHaveCount(0);
 
-  // Clause review for a contract
-  await page.locator("a[href$='/clauses']").first().click();
-  await page.waitForURL(/\/clauses$/);
-  await expectSettled(page);
-  // brands see the red-flag scan too, and can switch to the clean contract
-  await page.getByRole("button", { name: /Clean Contract View/ }).click();
-  await page.getByRole("button", { name: /Flagged Clauses Review/ }).click();
-
-  // Deliverables: create one and move another through a status
-  await visit(page, "/deliverables");
-  await page.getByRole("button", { name: "+ New deliverable" }).click();
-  await page.locator('select[name="deal_id"]').selectOption({ index: 1 });
+  // Deal page → Deliverables: add one, approve it
+  await page.getByRole("button", { name: /^Deliverables/ }).click();
   await page.locator('input[name="title"]').fill(`E2E Deliverable ${RUN}`);
   await page.locator('input[name="description"]').fill("Reel + 2 stories");
-  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("button", { name: "Add deliverable" }).click();
   await expect(page.getByText(`E2E Deliverable ${RUN}`)).toBeVisible();
   await page
-    .locator("select")
-    .filter({ has: page.locator('option[value="approved"]') })
-    .first()
+    .getByRole("combobox", { name: `Status of E2E Deliverable ${RUN}` })
     .selectOption("approved");
 
-  // Payments: raise an invoice and mark one paid
-  await visit(page, "/payments");
-  await page.getByRole("button", { name: "+ New invoice" }).click();
-  await page.locator('select[name="contract_id"]').selectOption({ index: 1 });
+  // Deal page → Payments: raise an invoice, mark it paid
+  await page.getByRole("button", { name: /^Payments/ }).click();
   await page.locator('input[name="amount_inr"]').fill("12345");
   await page.locator('input[name="due_date"]').fill("2026-12-31");
   await page.getByRole("button", { name: "Create invoice" }).click();
   await expect(page.getByText(/12,345/).first()).toBeVisible();
-  await page
-    .locator("select")
-    .filter({ has: page.locator('option[value="paid"]') })
-    .first()
-    .selectOption("paid");
+  await page.getByRole("combobox", { name: /^Status of INV-/ }).first().selectOption("paid");
+  await expect(page.getByText(/^Couldn't/)).toHaveCount(0);
+
+  // Clause review (red-flag scan) for the uploaded contract
+  await page.getByRole("button", { name: "Contract" }).click();
+  await page.getByRole("link", { name: "Review clauses" }).click();
+  await page.waitForURL(/\/clauses$/);
+  await expectSettled(page);
+  await page.getByRole("button", { name: /Clean Contract View/ }).click();
+  await page.getByRole("button", { name: /Flagged Clauses Review/ }).click();
+
+  // The section pages list what the deal page created, linking back to the deal
+  for (const path of ["/contracts", "/deliverables", "/payments"]) {
+    await visit(page, path);
+    await expect(page.getByRole("link", { name: `E2E Campaign ${RUN}` }).first()).toBeVisible();
+  }
+
+  // Creators: invite code + onboard a creator
+  await visit(page, "/creators");
+  await expect(page.getByRole("heading", { name: "Invite code" })).toBeVisible();
+  await page.getByRole("button", { name: "Onboard creator" }).click();
+  await page.locator('input[name="display_name"]').fill(`E2E Creator ${RUN}`);
+  await page.locator('input[name="instagram_handle"]').fill(`@e2e_${RUN}`);
+  await page.locator('input[name="niche"]').fill("beauty");
+  await page.locator('select[name="follower_tier"]').selectOption("micro");
+  await page.locator("dialog").getByRole("button", { name: "Onboard creator" }).click();
+  await expect(page.getByRole("link", { name: `E2E Creator ${RUN}` })).toBeVisible();
+  await page.getByRole("link", { name: `E2E Creator ${RUN}` }).click();
+  await expect(page.getByRole("heading", { name: `E2E Creator ${RUN}` })).toBeVisible();
+
+  // Chat: send a message
+  await visit(page, "/chat");
+  await page.getByRole("button", { name: "Ananya Sharma" }).click();
+  await page.getByPlaceholder("Message Ananya Sharma…").fill(`Hello from E2E ${RUN}`);
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByText(`Hello from E2E ${RUN}`)).toBeVisible();
 
   // Activity log: add a manual note; its text is shown in the list (also after a reload)
   await visit(page, "/activity");
-  await page.getByPlaceholder(/Log a manual note/).fill(`E2E note ${RUN}`);
-  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.getByPlaceholder(/Call with the creator/).fill(`E2E note ${RUN}`);
+  await page.getByRole("button", { name: "Add note" }).click();
   await expect(page.getByText(`E2E note ${RUN}`)).toBeVisible();
-  await expect(page.getByPlaceholder(/Log a manual note/)).toHaveValue("");
   await visit(page, "/activity");
   await expect(page.getByText(`E2E note ${RUN}`)).toBeVisible();
 
-  // Analytics
-  await visit(page, "/analytics");
+  // ⌘K finds the new deal; the old Analytics URL lands on Home
+  await page.keyboard.press("ControlOrMeta+k");
+  await page.getByRole("textbox", { name: "Search" }).fill(`E2E Campaign ${RUN}`);
+  await page.keyboard.press("Enter");
+  await page.waitForURL(/\/deals\//);
+  await page.goto(`${WEB}/analytics`);
+  await page.waitForURL(`${WEB}/brand`);
 
-  // Log out
-  await page.getByRole("button", { name: "Log out" }).click();
-  await page.waitForURL(`${WEB}/`);
+  // Sign out from the account menu
+  await page.getByRole("button", { name: "Account menu" }).click();
+  await page.getByRole("menuitem", { name: "Sign out" }).click();
+  await page.waitForURL(`${WEB}/brand/login`);
+
+  expect(problems).toEqual([]);
+});
+
+test("creator ↔ brand: connect with the brand's invite code, then chat both ways", async ({
+  page,
+}) => {
+  const problems = watchForProblems(page);
+  const boat = await (
+    await page.request.post(`${API}/auth/brand/login`, {
+      data: { email: "demo.brand2@creatoros.dev", password: "DemoPass123!" },
+    })
+  ).json();
+
+  // the creator enters boAt's invite code in Settings → Brands
+  await loginWithDemo(page, "creator", "1. Ananya Sharma (Mamaearth, Nykaa)");
+  const base = new URL(page.url()).pathname;
+  await visit(page, `${base}/settings/brands`);
+  await page.getByLabel("Invite code").fill(boat.brand_id);
+  await page.getByRole("button", { name: "Connect" }).click();
+  await expect(page.getByText(/Connected to boAt/)).toBeVisible();
+  await expect(page.getByRole("listitem").filter({ hasText: "boAt" })).toBeVisible();
+
+  // …and messages boAt from the workspace
+  await page.getByRole("link", { name: "Messages" }).click();
+  await expectSettled(page);
+  await page.getByRole("button", { name: "boAt" }).click();
+  await page.getByPlaceholder("Message boAt…").fill(`Hi boAt ${RUN}`);
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByText(`Hi boAt ${RUN}`)).toBeVisible();
+  await page.getByRole("button", { name: "Account menu" }).click();
+  await page.getByRole("menuitem", { name: "Sign out" }).click();
+  await page.waitForURL(`${WEB}/creator/login`);
+
+  // boAt now has Ananya as a creator, sees the message and replies
+  await loginWithDemo(page, "brand", "2. boAt");
+  await visit(page, "/chat");
+  await page.getByRole("button", { name: /Ananya Sharma/ }).click();
+  await expect(page.getByText(`Hi boAt ${RUN}`)).toBeVisible();
+  await page.getByPlaceholder("Message Ananya Sharma…").fill(`Hello Ananya ${RUN}`);
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByText(`Hello Ananya ${RUN}`)).toBeVisible();
 
   expect(problems).toEqual([]);
 });

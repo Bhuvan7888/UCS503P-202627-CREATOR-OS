@@ -501,8 +501,13 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-.tabs a {
+.tabs a,
+.tabs button {
   padding: 8px 12px;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
   margin-bottom: -1px;
   font-size: 14px;
   color: var(--color-ink-soft);
@@ -510,7 +515,8 @@
   border-bottom: 2px solid transparent;
 }
 
-.tabs a.tabOn {
+.tabs a.tabOn,
+.tabs button.tabOn {
   font-weight: 600;
   color: var(--color-ink);
   border-bottom-color: var(--color-ink);

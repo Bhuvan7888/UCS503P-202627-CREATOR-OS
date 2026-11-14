@@ -3,24 +3,6 @@ import type { components } from "@/shared/lib/api-types";
 
 type Deliverable = components["schemas"]["Deliverable"];
 
-// Intentionally differs from the shared dealStatusVariant (contracted/in_production are "accent" here).
-export function dealStageVariant(status: string): StatusVariant {
-  switch (status) {
-    case "negotiating":
-      return "warning";
-    case "contracted":
-      return "accent";
-    case "in_production":
-      return "accent";
-    case "completed":
-      return "success";
-    case "cancelled":
-      return "danger";
-    default:
-      return "neutral";
-  }
-}
-
 export function getBrandAvailableStatuses(d: Deliverable): { value: string; label: string }[] {
   const options = [
     { value: "in_production", label: "In progress" },

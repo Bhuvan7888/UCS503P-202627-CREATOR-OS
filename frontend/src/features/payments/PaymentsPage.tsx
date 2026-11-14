@@ -1,323 +1,133 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import { Receipt } from "lucide-react";
-import client from "@/shared/lib/api-client";
+import { PageHeader } from "@/shared/components/shell/PageHeader";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
-import { EmptyState } from "@/shared/components/ui/EmptyState";
-import type { components } from "@/shared/lib/api-types";
+import {
+  nameById,
+  useContracts,
+  useCreators,
+  useDeals,
+  usePayments,
+} from "@/shared/lib/brand-queries";
+import { formatInr } from "@/shared/lib/format-currency";
 import { paymentStatusVariant } from "@/shared/lib/status-variants";
+import page from "@/shared/components/shell/page.module.css";
 
-type Payment = components["schemas"]["Payment"];
-type Contract = components["schemas"]["Contract"];
-type Deliverable = components["schemas"]["Deliverable"];
+const PAYMENT_LABEL: Record<string, string> = {
+  pending: "Pending",
+  paid: "Paid",
+  overdue: "Overdue",
+};
 
+/** Brand: every invoice across deals, with totals. Invoices are raised and updated on the deal page. */
 export default function PaymentsPage() {
-  const [items, setItems] = useState<Payment[] | null>(null);
-  const [contracts, setContracts] = useState<Contract[]>([]);
-  const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
-  const [selectedContractId, setSelectedContractId] = useState("");
-  const [error, setError] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [formError, setFormError] = useState("");
+  const payments = usePayments();
+  const contracts = useContracts().data;
+  const deals = useDeals().data;
+  const names = nameById(useCreators().data);
+  const [status, setStatus] = useState("all");
 
-  function reload() {
-    client
-      .GET("/payments", { params: { query: { limit: 100 } } })
-      .then(({ data, error: apiError }) => {
-        if (apiError) {
-          setError(true);
-          return;
-        }
-        setItems(data ?? []);
-      });
-  }
-
-  useEffect(() => {
-    reload();
-    client.GET("/contracts").then(({ data }) => setContracts(data ?? []));
-    client.GET("/deliverables").then(({ data }) => setDeliverables(data ?? []));
-  }, []);
-
-  async function createInvoice(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formEl = e.currentTarget;
-    const form = new FormData(formEl);
-    const contractId = String(form.get("contract_id"));
-    const deliverableId = String(form.get("deliverable_id") || "");
-    setBusy(true);
-    setFormError("");
-    let apiError;
-    try {
-      ({ error: apiError } = await client.POST("/payments", {
-        params: { query: { deal_id: contracts.find((c) => c.id === contractId)?.deal_id ?? "" } },
-        body: {
-          contract_id: contractId,
-          deliverable_id: deliverableId || null,
-          amount_inr: Number(form.get("amount_inr")),
-          platform_fee_inr: Number(form.get("platform_fee_inr") || 0),
-          due_date: String(form.get("due_date") || "") || null,
-        },
-      }));
-    } catch {
-      apiError = true;
-    }
-    setBusy(false);
-    if (apiError) {
-      setFormError("Couldn't create the invoice.");
-      return;
-    }
-    formEl.reset();
-    setSelectedContractId("");
-    setShowForm(false);
-    reload();
-  }
-
-  async function handlePaymentStatusChange(p: Payment, newStatus: "pending" | "paid" | "overdue") {
-    if (newStatus === p.status) return;
-    const contract = contracts.find((c) => c.id === p.contract_id);
-    if (!contract || !contract.deal_id) return;
-    await client.PATCH("/payments/{contract_id}/status", {
-      params: {
-        path: { contract_id: p.contract_id },
-        query: { payment_id: p.id, deal_id: contract.deal_id },
-      },
-      body: { status: newStatus },
-    });
-    reload();
-  }
-
-  if (error) {
-    return <EmptyState icon={Receipt} message="Couldn't load invoices. Try signing in again." />;
-  }
-  if (items === null) {
-    return <div style={{ fontSize: "13px", color: "var(--color-ink-faint)" }}>Loading…</div>;
-  }
-
-  const dealDeliverables = deliverables.filter(
-    (d) => d.deal_id === contracts.find((c) => c.id === selectedContractId)?.deal_id,
-  );
-  const deliverableTitle = (id: string | null | undefined) =>
-    deliverables.find((d) => d.id === id)?.title;
+  const all = payments.data ?? [];
+  const dealOf = (contractId: string) => {
+    const dealId = contracts?.find((c) => c.id === contractId)?.deal_id;
+    return deals?.find((d) => d.id === dealId);
+  };
+  const total = (s: string) =>
+    all.filter((p) => p.status === s).reduce((sum, p) => sum + Number(p.amount_inr), 0);
+  const visible = all.filter((p) => status === "all" || p.status === status);
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
-        <button className="btn" onClick={() => setShowForm((v) => !v)}>
-          {showForm ? "Cancel" : "+ New invoice"}
-        </button>
+      <PageHeader
+        base="/brand"
+        icon={Receipt}
+        title="Payments"
+        subtitle="Invoices across your deals — open a deal to raise or update one"
+      />
+      {payments.error && !payments.data && (
+        <p className={page.errorBox} role="alert">
+          Couldn&apos;t load invoices. Try refreshing.
+        </p>
+      )}
+      <div className={page.kpis}>
+        <section className={page.kpi} aria-label="Pending">
+          <span>Pending</span>
+          <strong>{formatInr(total("pending"))}</strong>
+        </section>
+        <section className={page.kpi} aria-label="Overdue">
+          <span>Overdue</span>
+          <strong className={total("overdue") ? page.danger : undefined}>
+            {formatInr(total("overdue"))}
+          </strong>
+        </section>
+        <section className={page.kpi} aria-label="Paid">
+          <span>Paid</span>
+          <strong>{formatInr(total("paid"))}</strong>
+        </section>
       </div>
-
-      {showForm && (
-        <form
-          onSubmit={createInvoice}
-          className="mtile"
-          style={{
-            marginBottom: "14px",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "10px",
-          }}
+      <div className={page.filters}>
+        <select
+          className="field"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          aria-label="Filter by status"
         >
-          <label className="text-label" style={{ gridColumn: "1 / -1" }}>
-            Contract
-            <select
-              name="contract_id"
-              required
-              className="field"
-              value={selectedContractId}
-              onChange={(e) => setSelectedContractId(e.target.value)}
-            >
-              <option value="">Select contract…</option>
-              {contracts.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.id.slice(0, 8)} — {c.status}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-label" style={{ gridColumn: "1 / -1" }}>
-            Deliverable (optional)
-            <select name="deliverable_id" className="field" disabled={!selectedContractId}>
-              <option value="">— None —</option>
-              {dealDeliverables.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.title}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-label">
-            Amount billed to brand (₹)
-            <input name="amount_inr" type="number" step="0.01" required className="field" />
-          </label>
-          <label className="text-label">
-            Platform fee (₹, optional)
-            <input name="platform_fee_inr" type="number" step="0.01" min={0} className="field" />
-          </label>
-          <label className="text-label">
-            Due date
-            <input name="due_date" type="date" className="field" />
-          </label>
-          <div style={{ gridColumn: "1 / -1" }}>
-            <button className="btn" disabled={busy} type="submit">
-              Create invoice
-            </button>
-          </div>
-        </form>
-      )}
-
-      {formError && (
-        <div style={{ fontSize: "12px", color: "var(--color-danger)", marginBottom: "10px" }}>
-          {formError}
-        </div>
-      )}
-
-      {items.length === 0 ? (
-        <EmptyState
-          icon={Receipt}
-          message="No invoices yet. Create one once a contract is signed."
-        />
-      ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
+          <option value="all">All invoices</option>
+          {Object.entries(PAYMENT_LABEL).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className={page.tableWrap}>
+        <table className={page.table}>
           <thead>
-            <tr style={{ color: "var(--color-ink-faint)", textAlign: "left" }}>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Invoice #
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Deliverable
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Amount
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
-              >
-                Due
-              </th>
-              <th
-                style={{
-                  fontWeight: 600,
-                  padding: "6px 4px",
-                  borderBottom: "1px solid var(--color-border)",
-                  textAlign: "right",
-                }}
-              >
-                Status
-              </th>
+            <tr>
+              <th>Invoice</th>
+              <th>Deal</th>
+              <th>Creator</th>
+              <th>Amount</th>
+              <th>Due</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            {items.map((p) => (
-              <tr key={p.id}>
-                <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                  {p.invoice_number}
-                </td>
-                <td
-                  style={{
-                    padding: "8px 4px",
-                    borderBottom: "1px solid var(--color-border)",
-                    color: "var(--color-ink-soft)",
-                  }}
-                >
-                  {deliverableTitle(p.deliverable_id) ?? "—"}
-                </td>
-                <td style={{ padding: "8px 4px", borderBottom: "1px solid var(--color-border)" }}>
-                  ₹{Number(p.amount_inr).toLocaleString()}
-                </td>
-                <td
-                  style={{
-                    padding: "8px 4px",
-                    borderBottom: "1px solid var(--color-border)",
-                    color: "var(--color-ink-soft)",
-                  }}
-                >
-                  {p.due_date ? new Date(p.due_date).toLocaleDateString() : "—"}
-                </td>
-                <td
-                  style={{
-                    padding: "8px 4px",
-                    borderBottom: "1px solid var(--color-border)",
-                    textAlign: "right",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "8px",
-                      justifyContent: "flex-end",
-                      alignItems: "center",
-                    }}
-                  >
+            {visible.map((p) => {
+              const deal = dealOf(p.contract_id);
+              return (
+                <tr key={p.id}>
+                  <td>{p.invoice_number}</td>
+                  <td>
+                    {deal ? <Link href={`/deals/${deal.id}`}>{deal.campaign_name}</Link> : "—"}
+                  </td>
+                  <td>{deal ? (names[deal.creator_id] ?? "—") : "—"}</td>
+                  <td>{formatInr(Number(p.amount_inr))}</td>
+                  <td>{p.due_date ? new Date(p.due_date).toLocaleDateString() : "—"}</td>
+                  <td>
                     <StatusPill
-                      status={
-                        p.status === "paid"
-                          ? "Paid"
-                          : p.status === "overdue"
-                            ? "Overdue"
-                            : "Pending"
-                      }
+                      status={PAYMENT_LABEL[p.status] ?? p.status}
                       variant={paymentStatusVariant(p.status)}
                     />
-                    <select
-                      className="field"
-                      style={{
-                        display: "inline-block",
-                        margin: 0,
-                        width: "auto",
-                        minWidth: "120px",
-                        fontSize: "12.5px",
-                        padding: "6px 10px",
-                        cursor: "pointer",
-                        background: "var(--color-surface-sunken)",
-                        borderColor: "var(--color-border)",
-                        color: "var(--color-ink)",
-                        borderRadius: "var(--radius-sm)",
-                        fontWeight: 500,
-                      }}
-                      value={p.status}
-                      onChange={(e) =>
-                        handlePaymentStatusChange(
-                          p,
-                          e.target.value as "pending" | "paid" | "overdue",
-                        )
-                      }
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="paid">Paid</option>
-                      <option value="overdue">Overdue</option>
-                    </select>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-      )}
+        {visible.length === 0 && (
+          <p className={page.empty}>
+            {!payments.data
+              ? "Loading…"
+              : all.length
+                ? "No invoices match this filter."
+                : "No invoices yet — raise one from a deal."}
+          </p>
+        )}
+      </div>
     </>
   );
 }
