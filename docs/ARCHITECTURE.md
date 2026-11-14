@@ -107,7 +107,7 @@ A file belongs in `shared/` **only** when two or more features use it. Otherwise
 | Concern | Where it lives |
 |---|---|
 | Config / env vars | one root `.env` (see `/.env.example`): backend `shared/config.py` loads it by absolute path; `frontend/next.config.ts` loads it for Next (`NEXT_PUBLIC_*` only reach the browser) |
-| Authentication | backend `features/auth/dependencies.py` (`get_current_actor`, `get_current_brand`, `get_current_user_id`); frontend `shared/lib/session.ts` + bearer middleware in `api-client.ts` |
+| Authentication | backend `features/auth/dependencies.py` (`get_current_actor`, `get_current_brand`, `get_current_user_id`); frontend `shared/lib/session.ts` + bearer middleware in `api-client.ts` (keeps a request's own `Authorization`; refreshes via `shared/lib/session-refresh.ts` before expiry and once on a 401) |
 | Google sign-in | `GoogleButton` → Supabase `/auth/v1/authorize?provider=google&redirect_to=<origin>/auth/callback` → `OAuthCallbackPage` reads the tokens from the URL fragment → `POST /auth/creator/oauth` → same `AuthSession` as password login. Supabase **Redirect URLs** must list `<origin>/auth/callback` for every frontend origin |
 | Errors → HTTP | services raise `shared/errors.py` exceptions. Routers translate them with `with map_errors({ExceptionType: status}, by_message={...})`, so each route says exactly what it maps |
 | Database access | `supabase_repository.py` per feature, using `run_query()` / `first_or_none()` from `shared/supabase_query.py`. One shared client per key with pooled HTTP/1.1 sessions (`shared/supabase_client.py` — supabase-py's HTTP/2 sessions are not thread-safe); queries run in a 64-thread pool (`main.py`) |

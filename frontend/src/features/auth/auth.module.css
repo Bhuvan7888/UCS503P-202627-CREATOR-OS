@@ -261,3 +261,13 @@
   height: 1px;
   background: rgba(245, 244, 240, 0.14);
 }
+
+.notice {
+  font-size: 13px;
+  color: #f5f4f0;
+  background: rgba(245, 244, 240, 0.08);
+  border: 1px solid rgba(245, 244, 240, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+}

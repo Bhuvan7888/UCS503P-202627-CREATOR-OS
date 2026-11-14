@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import client from "@/shared/lib/api-client";
-import { saveSession } from "@/shared/lib/session";
+import { clearSession, saveSession } from "@/shared/lib/session";
 import { AuthPageFrame } from "./components/AuthPageFrame";
 import { NETWORK_ERROR_MESSAGE } from "./constants/auth-messages";
 import styles from "./auth.module.css";
@@ -20,6 +20,8 @@ export default function OAuthCallbackPage() {
     window.history.replaceState(null, "", window.location.pathname);
     const accessToken = params.get("access_token");
     const refreshToken = params.get("refresh_token");
+    // a new sign-in replaces whatever session this browser had before
+    clearSession();
     if (!accessToken || !refreshToken) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-off read of the redirect URL
       setError(

@@ -4,7 +4,14 @@ import type { NextConfig } from "next";
 
 // One environment file for the whole repo lives at the repo root (see /.env.example).
 // Next only reads env files from this folder by default, so load the root one explicitly.
-loadEnvConfig(path.resolve(process.cwd(), ".."));
+// forceReload: Next has already loaded this folder's env by now, and @next/env otherwise returns that cached
+// result and silently skips the root file.
+loadEnvConfig(
+  path.resolve(process.cwd(), ".."),
+  process.env.NODE_ENV !== "production",
+  console,
+  true,
+);
 
 // Sent with every page: no framing by other sites (clickjacking), no MIME sniffing, HTTPS only,
 // minimal referrers, and no camera/microphone/location access.

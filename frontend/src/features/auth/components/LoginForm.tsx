@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import client from "@/shared/lib/api-client";
+import client, { API_BASE_URL } from "@/shared/lib/api-client";
 import { saveSession } from "@/shared/lib/session";
 import { AuthPageFrame } from "./AuthPageFrame";
 import { GoogleButton } from "./GoogleButton";
@@ -54,6 +54,16 @@ export function LoginForm({ role }: { role: Role }) {
   const copy = COPY[role];
   const otherRole: Role = role === "brand" ? "creator" : "brand";
   const router = useRouter();
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    // The hosted API sleeps when idle; wake it while the person types, not after they press Sign in.
+    fetch(`${API_BASE_URL}/health`).catch(() => undefined);
+    if (new URLSearchParams(window.location.search).get("expired") === "1") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-off read of the URL after mount
+      setNotice("Your session expired — please sign in again.");
+    }
+  }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +124,11 @@ export function LoginForm({ role }: { role: Role }) {
         </div>
       </div>
 
+      {notice && !error && (
+        <div className={styles.notice} role="status">
+          {notice}
+        </div>
+      )}
       {error && <div className={styles.error}>{error}</div>}
 
       <form onSubmit={onSubmit}>

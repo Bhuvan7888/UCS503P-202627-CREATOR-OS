@@ -683,7 +683,9 @@ test("notifications, profile, preferences and support", async ({ page, request }
 
   // Notification preferences
   await page.goto(`${WEB}${base}/settings/notifications`);
-  await page.getByRole("switch", { name: /Do Not Disturb/ }).check();
+  // flip it from whatever an earlier run left, so Save always has a change to save
+  const dnd = page.getByRole("switch", { name: /Do Not Disturb/ });
+  await dnd.setChecked(!(await dnd.isChecked()));
   await page.getByRole("button", { name: "Save Changes" }).click();
   await expect(page.getByText("Preferences saved.")).toBeVisible();
 
@@ -710,6 +712,37 @@ test("notifications, profile, preferences and support", async ({ page, request }
   const memberId = members.find((m: { role: string }) => m.role === "brand_manager").user_id;
   await request.delete(`${API}/workspaces/${slug}/members/${memberId}`, { headers: owner });
 
+  expect(problems).toEqual([]);
+});
+
+test("sign-in callback works even when an old session is stored in the browser", async ({
+  page,
+  request,
+}) => {
+  // regression: the stored (expired) token used to replace the fresh one → "Invalid or expired session"
+  const problems = watchForProblems(page);
+  const fresh = await (
+    await request.post(`${API}/auth/creator/login`, {
+      data: { email: "demo.creator2@creatoros.dev", password: "DemoPass123!" },
+    })
+  ).json();
+  await page.goto(`${WEB}/creator/login`);
+  await page.evaluate(() =>
+    localStorage.setItem(
+      "creatoros_session",
+      JSON.stringify({
+        access_token: "expired.old.token",
+        refresh_token: "x",
+        user_id: "0",
+        role: "creator",
+      }),
+    ),
+  );
+  await page.goto(
+    `${WEB}/auth/callback#access_token=${fresh.access_token}&refresh_token=${fresh.refresh_token}`,
+  );
+  await page.waitForURL(/\/dashboard\/ws-[0-9a-f]{8}$/);
+  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
   expect(problems).toEqual([]);
 });
 

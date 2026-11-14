@@ -44,6 +44,16 @@ brand side stays as it is.
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | done (2026-11-14) |
 
+### Live sign-in fix (2026-11-14)
+"Sign-in failed — Invalid or expired session" on the live site. Causes and fixes:
+1. A stale stored session overrode the token the Google callback sent explicitly → the bearer middleware keeps a
+   request's own `Authorization` header, and `OAuthCallbackPage` clears the old session first.
+2. Sessions never refreshed (Supabase access tokens last ~1 h) → `shared/lib/session-refresh.ts` renews with the
+   refresh token before expiry and once on a 401 (single-flight); a dead session goes to `/<role>/login?expired=1`.
+3. Render free tier cold-starts → the login page pings `/health` on load to wake the backend.
+4. Local only: `next.config.ts` now force-reloads the root `.env` (`@next/env` returned its cached result).
+Verified against real Supabase (callback with old session, silent refresh, expired-session redirect); e2e 12/12.
+
 
 ### Phase 1 notes (done)
 1. ✅ (2026-11-13) Backend feature `features/workspaces/`: models (Workspace, WorkspaceMember, role Literal), repository port,
