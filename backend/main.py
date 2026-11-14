@@ -85,6 +85,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/health", tags=["ops"])
+async def health() -> dict[str, str]:
+    """For the hosting platform's health check: the process is up (no database call, no data)."""
+    return {"status": "ok"}
+
+
 app.include_router(auth_router)
 app.include_router(creators_router)
 app.include_router(deals_router)

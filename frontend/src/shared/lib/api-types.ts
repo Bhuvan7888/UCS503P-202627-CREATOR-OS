@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Health
+         * @description For the hosting platform's health check: the process is up (no database call, no data).
+         */
+        get: operations["health_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/brand/signup": {
         parameters: {
             query?: never;
@@ -580,7 +600,7 @@ export interface paths {
         };
         /**
          * Get Workspace
-         * @description The workspace shell calls this on load, which is what "Opened the workspace" records.
+         * @description The workspace shell calls this on load, which is what "Opened the workspace" records (after the response).
          */
         get: operations["get_workspace_workspaces__workspace__get"];
         put?: never;
@@ -3134,6 +3154,28 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    health_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
     brand_signup_auth_brand_signup_post: {
         parameters: {
             query?: never;

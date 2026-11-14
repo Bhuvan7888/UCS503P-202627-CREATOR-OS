@@ -6,8 +6,8 @@
 
 Routes marked "public" are NOT requested here (they would hit the real
 database). They are listed so that any change to the public surface shows up
-as a diff in this file. Only sign-up/login and the static sample contract PDF
-are public.
+as a diff in this file. Only sign-up/login, the static sample contract PDF and
+the health check are public.
 """
 
 import re
@@ -19,6 +19,7 @@ from main import app
 
 # (method, path, auth) — auth is "brand" | "actor" (brand or creator) | "user" (any signed-in user) | "public"
 API_CONTRACT: list[tuple[str, str, str]] = [
+    ("GET", "/health", "public"),
     ("POST", "/auth/brand/signup", "public"),
     ("POST", "/auth/brand/login", "public"),
     ("POST", "/auth/creator/signup", "public"),

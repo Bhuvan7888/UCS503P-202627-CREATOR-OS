@@ -42,7 +42,7 @@ brand side stays as it is.
 | 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | done (verified on live DB) |
 | 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | done (verified on live DB) |
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
-| 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | in progress — speed + concurrency fix done; load test next |
+| 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | done (2026-11-14) |
 
 
 ### Phase 1 notes (done)
@@ -259,7 +259,18 @@ Phase 7 notes
 - **Owner action for the biggest remaining win:** host the backend in the same region as the Supabase project
   (Supabase → Project Settings → General → Region). Each round trip drops from ~190 ms to ~2–5 ms.
 
-### Phase 8 plan — pick up here (Hardening)
+- ✅ Load test (`scripts/load_test.py`, live DB, backend on this machine): 100 concurrent users, realistic pace
+  (action every 4–8 s, 15 s ramp-up): 5,566 requests, **0 errors**, 60 req/s; median reads ~230 ms, card move
+  ~490 ms, autosave ~550 ms; p95 1.2 s reads / 2.6–3.8 s writes. Stress pace (an action every ~1 s, all users at
+  once): 0 errors, but the database caps at ~80 queries/s (seen as ~27 req/s with long queues) — the Supabase
+  compute tier, not the app. **Owner options:** same-region backend (biggest win) and/or a larger Supabase compute.
+- ✅ Security review: Next.js 16.3.1 → 16.4.6 (critical RCE advisories), sharp/source-map-js fixed (`npm audit
+  --omit=dev`: 0); pypdf 6.16 → 7.1 (parses uploaded contracts; 26 advisories), pyjwt, certifi, urllib3, multidict,
+  pyasn1 upgraded (`pip-audit`: 0). Remaining: 8 moderate advisories in lint tooling only (never shipped). Secrets scan
+  of tracked files and history: none. Security headers on every frontend page; `X-Powered-By` removed.
+- ✅ Ops: `GET /health`; README deploy checklist (env vars, migrations in order, region, email domain).
+
+### Phase 8 plan (kept for reference)
 1. Load test: 100 concurrent users against a staging backend (locust or k6 script in `backend/scripts/`), covering
    login, workspace shell, content list/create/move, scripts auto-save, CRM, notifications poll. Targets: p95 < 500 ms
    (non-AI), 0 errors. Fix hot spots (per-request Supabase clients, N+1 lookups such as `UserDirectory.describe` per
@@ -270,6 +281,9 @@ Phase 7 notes
    SUPPORT_EMAIL, GEMINI_MODEL_FALLBACK; migrations 001–008 in order).
 4. Final docs pass (README, ARCHITECTURE, FEATURES, PROGRESS) and a full e2e run.
 ### Phase log
+- **2026-11-14 — Phase 8 (hardening)**: 100-user load test (0 errors), cheaper workspace open + event emission,
+  dependency upgrades for all known vulnerabilities in shipped code, security headers, `/health`, deploy docs.
+  Checks: 225 backend tests, contracts kept, tsc/eslint/prettier, build, smoke 36/36, e2e 11/11 on Next 16.4.6.
 - **2026-11-14 — Delete my account + speed**: `DELETE /me` erases the person and everything theirs (verified live: no
   rows left, login gone, old session 401, other workspaces intact); Settings › Profile danger zone. Backend: membership
   cache + single-query lookup, parallel queries, background webhooks, 64 DB threads, thread-safe HTTP/1.1 sessions

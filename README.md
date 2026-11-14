@@ -96,7 +96,32 @@ cd frontend && npm run generate:api   # writes src/shared/lib/api-types.ts
 
 CI (`.github/workflows/ci.yml`) runs the backend tests, the frontend type check and the frontend lint on every PR.
 
+## Deploying
+
+1. **Database:** run every file in `supabase/migrations/` in the Supabase SQL Editor, in filename order (the
+   creator-workspace ones are `20261113000000_…` to `20261119000000_…`; all are safe to re-run). Run new migrations
+   **before** deploying a backend that needs them.
+2. **Backend environment** (see `/.env.example`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`,
+   `ENVIRONMENT=production`, `GEMINI_API_KEY`, `GEMINI_MODEL_FLASH`, `GEMINI_MODEL_FALLBACK` (optional),
+   `TRANSACTIONAL_EMAIL_API_KEY` (Resend), `APP_URL` (public frontend address, used in invitation emails),
+   `SUPPORT_EMAIL` (optional). Start command: `uv run uvicorn main:app --host 0.0.0.0 --port $PORT`;
+   health check: `GET /health`.
+3. **Frontend environment:** `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+   Supabase → Authentication → URL Configuration → Redirect URLs must include `<frontend>/auth/callback`.
+4. **Speed:** host the backend in the same region as the Supabase project. Every request makes 1–2 database round
+   trips; across regions each costs ~190 ms, in the same region ~2–5 ms.
+5. **Email:** Resend's test sender only delivers to the Resend account owner; verify a domain in Resend and set the
+   sender in `backend/shared/email/resend_adapter.py` for invitations and notifications to reach everyone.
+
+Performance tools (from `backend/`, real `.env`): `uv run python -m scripts.perf_check` (per-route latency) and
+`uv run python -m scripts.load_test --users 100 --duration 60 --think 4 8` against a running backend (concurrent
+users; temporary accounts are always deleted).
+
 ## Security notes
 
 - Demo accounts work only in offline demo mode and never when `ENVIRONMENT=production`; every endpoint except sign-up/login and the sample PDF needs a session, and deal/contract data is checked per tenant (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#access-control-read-before-adding-an-endpoint)).
 - Database tables have row-level security on with no policies: only the backend (service-role key) can read or write them.
+- Workspace routes check the caller's permissions server-side; API keys are scoped, hashed and audited; webhook URLs
+  must be public https (no internal addresses); invitation and API-key secrets are stored only as hashes.
+- Frontend pages send security headers (no framing, no MIME sniffing, HSTS, strict referrer, no camera/mic/location).
+- Dependency audits (2026-11-14): `npm audit --omit=dev` and `pip-audit` report no known vulnerabilities.
