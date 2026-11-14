@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     )
 
     @property
+    def ai_configured(self) -> bool:
+        """A real Gemini key is set (not empty or the .env.example placeholder)."""
+        key = self.GEMINI_API_KEY.strip()
+        return bool(key) and "dummy" not in key.lower() and not key.startswith("your-")
+
+    @property
     def is_production(self) -> bool:
         return self.ENVIRONMENT.lower() == "production"
 

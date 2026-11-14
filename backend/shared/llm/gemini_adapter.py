@@ -13,8 +13,6 @@ from shared.llm.llm_port import LLMPort
 
 logger = logging.getLogger(__name__)
 
-# Google answers 503/504 when a model is overloaded and 429 on short rate spikes.
-_TRANSIENT = {429, 500, 503, 504}
 _BACKOFF_SECONDS = 1.0
 _TIMEOUT_MS = 15_000
 
@@ -57,10 +55,10 @@ class GeminiAdapter(LLMPort):
     async def _generate(
         self, prompt: str, config: types.GenerateContentConfig | None = None
     ) -> Any:
-        """generate_content on the configured model; on the provider's temporary errors (overload,
-        rate limit, timeout) fall back to the lighter model, which usually still answers."""
+        """generate_content on the configured model; if it fails for any reason (overloaded, rate
+        limited, timed out, model name retired) try the lighter model, which usually still answers."""
         attempts = [self.model, self.fallback_model, self.fallback_model]
-        last: errors.APIError | None = None
+        last: Exception | None = None
         for n, model in enumerate(attempts):
             if n == len(attempts) - 1:
                 await asyncio.sleep(_BACKOFF_SECONDS)
@@ -68,10 +66,9 @@ class GeminiAdapter(LLMPort):
                 return await self.client.aio.models.generate_content(
                     model=model, contents=prompt, config=config
                 )
-            except errors.APIError as e:
-                if e.code not in _TRANSIENT:
-                    raise
-                logger.info("Gemini %s on %s, trying %s", e.code, model, "the fallback model")
+            except Exception as e:  # noqa: BLE001 — any failure should try the fallback model
+                code = e.code if isinstance(e, errors.APIError) else type(e).__name__
+                logger.warning("Gemini call on %s failed (%s): %s", model, code, str(e)[:200])
                 last = e
         assert last is not None
         raise last

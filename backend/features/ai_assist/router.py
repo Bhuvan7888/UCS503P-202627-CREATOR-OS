@@ -34,10 +34,7 @@ _AI_ERRORS = {
 
 
 def get_llm() -> LLMPort | None:
-    key = settings.GEMINI_API_KEY.strip()
-    if not key or "dummy" in key.lower() or key.startswith("your-"):
-        return None
-    return GeminiAdapter()
+    return GeminiAdapter() if settings.ai_configured else None
 
 
 def get_ai_service(llm: LLMPort | None = Depends(get_llm)) -> AiAssistService:

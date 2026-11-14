@@ -32,6 +32,7 @@ from features.support.router import router as support_router
 from features.workspaces.router import invites_router
 from features.workspaces.router import router as workspaces_router
 from features.workspaces.supabase_repository import SupabaseWorkspaceRepo
+from shared.config import settings
 from shared.supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)
@@ -88,8 +89,9 @@ app.add_middleware(
 
 @app.get("/health", tags=["ops"])
 async def health() -> dict[str, str]:
-    """For the hosting platform's health check: the process is up (no database call, no data)."""
-    return {"status": "ok"}
+    """For the hosting platform's health check: the process is up (no database call, no data).
+    `ai` says whether a Gemini key is configured, so a deploy missing it is visible at a glance."""
+    return {"status": "ok", "ai": "configured" if settings.ai_configured else "missing"}
 
 
 app.include_router(auth_router)
