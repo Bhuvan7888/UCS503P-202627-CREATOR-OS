@@ -28,7 +28,8 @@ class WorkspaceMember(BaseModel):
 class MyWorkspace(Workspace):
     """A workspace as seen by one of its members: the caller's role and what that role may do."""
 
-    role: WorkspaceRole
+    # "agent" = an API key acting in this workspace (never a member, never the owner)
+    role: WorkspaceRole | Literal["agent"]
     permissions: list[str] = []
 
 

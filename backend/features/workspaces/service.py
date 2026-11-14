@@ -106,14 +106,19 @@ class WorkspaceService:
         )
         return await self._mine(ws, "owner")
 
-    async def get_for_member(self, ref: str, user_id: UUID) -> MyWorkspace:
-        """Resolve a slug or id the caller is a member of. Raises NotFoundError / PermissionDeniedError."""
+    async def resolve(self, ref: str) -> Workspace:
+        """A workspace by slug or id. Raises NotFoundError."""
         ws_id = parse_workspace_ref(ref)
         ws = await (
             self.workspace_repo.get(ws_id) if ws_id else self.workspace_repo.get_by_slug(ref)
         )
         if ws is None:
             raise NotFoundError("Workspace not found")
+        return ws
+
+    async def get_for_member(self, ref: str, user_id: UUID) -> MyWorkspace:
+        """Resolve a slug or id the caller is a member of. Raises NotFoundError / PermissionDeniedError."""
+        ws = await self.resolve(ref)
         member = await self.workspace_repo.get_member(ws.id, user_id)
         if member is None:
             raise PermissionDeniedError("You are not a member of this workspace")
@@ -192,8 +197,14 @@ class TeamService:
         action: str,
         subject: str = "",
         outcome: str = "allowed",
+        label: str | None = None,
     ) -> None:
-        name, email = (await self.user_directory.describe([user_id])).get(user_id, ("Member", None))
+        """`label` names a non-person actor (an API key); people are looked up by id."""
+        name, email = (
+            (label, None)
+            if label
+            else (await self.user_directory.describe([user_id])).get(user_id, ("Member", None))
+        )
         await self.audit_repo.add(
             AuditEntry(
                 id=uuid4(),

@@ -13,6 +13,7 @@ from features.contract_intelligence import ClauseCardOut, EscalationOut
 from features.contracts import Contract
 from features.creators import Creator
 from features.crm.models import CrmDeal
+from features.integrations.models import ApiKey, WebhookDelivery, WebhookEndpoint
 from features.deals import Deal
 from features.deliverables import Deliverable
 from features.messages import Message
@@ -719,3 +720,79 @@ class DemoCrmDealRepo:
 
     async def delete(self, id: UUID) -> None:
         self.data.pop(id, None)
+
+
+class DemoApiKeyRepo:
+    def __init__(self):
+        self.data: dict[UUID, tuple[ApiKey, str]] = {}
+
+    async def create(self, key: ApiKey, key_hash: str) -> ApiKey:
+        self.data[key.id] = (key, key_hash)
+        return key
+
+    async def get_by_hash(self, key_hash: str) -> ApiKey | None:
+        return next((k for k, h in self.data.values() if h == key_hash), None)
+
+    async def list_for_workspace(self, workspace_id: UUID) -> list[ApiKey]:
+        return sorted(
+            (k for k, _ in self.data.values() if k.workspace_id == workspace_id),
+            key=lambda k: k.created_at,
+            reverse=True,
+        )
+
+    async def update(self, id: UUID, changes: dict[str, Any]) -> None:
+        key, h = self.data[id]
+        self.data[id] = (key.model_copy(update=changes), h)
+
+
+class DemoWebhookRepo:
+    def __init__(self):
+        self.endpoints: dict[UUID, tuple[WebhookEndpoint, str]] = {}
+        self.deliveries: dict[UUID, WebhookDelivery] = {}
+
+    async def create_endpoint(self, endpoint: WebhookEndpoint, secret: str) -> WebhookEndpoint:
+        self.endpoints[endpoint.id] = (endpoint, secret)
+        return endpoint
+
+    async def list_endpoints(self, workspace_id: UUID) -> list[WebhookEndpoint]:
+        return [e for e, _ in self.endpoints.values() if e.workspace_id == workspace_id]
+
+    async def get_endpoint(self, endpoint_id: UUID) -> WebhookEndpoint | None:
+        found = self.endpoints.get(endpoint_id)
+        return found[0] if found else None
+
+    async def get_secret(self, endpoint_id: UUID) -> str | None:
+        found = self.endpoints.get(endpoint_id)
+        return found[1] if found else None
+
+    async def delete_endpoint(self, endpoint_id: UUID) -> None:
+        self.endpoints.pop(endpoint_id, None)
+        self.deliveries = {k: d for k, d in self.deliveries.items() if d.endpoint_id != endpoint_id}
+
+    async def add_deliveries(self, deliveries: list[WebhookDelivery]) -> None:
+        self.deliveries |= {d.id: d for d in deliveries}
+
+    async def recent_deliveries(self, endpoint_id: UUID, limit: int) -> list[WebhookDelivery]:
+        mine = [d for d in self.deliveries.values() if d.endpoint_id == endpoint_id]
+        return sorted(mine, key=lambda d: d.created_at, reverse=True)[:limit]
+
+    async def claim_due(
+        self, now: datetime, lease_until: datetime, limit: int
+    ) -> list[WebhookDelivery]:
+        due = sorted(
+            (
+                d
+                for d in self.deliveries.values()
+                if d.status in ("pending", "sending") and d.next_attempt_at <= now
+            ),
+            key=lambda d: d.next_attempt_at,
+        )[:limit]
+        for d in due:
+            self.deliveries[d.id] = d.model_copy(
+                update={"status": "sending", "next_attempt_at": lease_until}
+            )
+        return [self.deliveries[d.id] for d in due]
+
+    async def update_delivery(self, id: UUID, changes: dict[str, Any]) -> None:
+        if id in self.deliveries:
+            self.deliveries[id] = self.deliveries[id].model_copy(update=changes)

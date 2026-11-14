@@ -1,3 +1,8 @@
+import asyncio
+import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager, suppress
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,12 +19,41 @@ from features.creators.router import router as creators_router
 from features.crm.router import router as crm_router
 from features.deals.router import router as deals_router
 from features.deliverables.router import router as deliverables_router
+from features.integrations.dependencies import get_integrations_service
+from features.integrations.router import router as integrations_router
 from features.messages.router import router as messages_router
 from features.payments.router import router as payments_router
 from features.workspaces.router import invites_router
 from features.workspaces.router import router as workspaces_router
 
-app = FastAPI(title="Creator OS")
+logger = logging.getLogger(__name__)
+WEBHOOK_RETRY_INTERVAL_SECONDS = 30
+
+
+async def _retry_webhooks_forever() -> None:
+    """Sends due webhook deliveries (first attempts happen right after the request; this does retries).
+
+    ponytail: runs in every API process; claims are atomic so several processes are safe, but a
+    dedicated worker is the upgrade if delivery volume grows.
+    """
+    while True:
+        try:
+            await get_integrations_service().process_due()
+        except Exception:
+            logger.exception("Webhook retry loop failed")
+        await asyncio.sleep(WEBHOOK_RETRY_INTERVAL_SECONDS)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    task = asyncio.create_task(_retry_webhooks_forever())
+    yield
+    task.cancel()
+    with suppress(asyncio.CancelledError):
+        await task
+
+
+app = FastAPI(title="Creator OS", lifespan=lifespan)
 
 # Auth uses JWT Bearer tokens (Authorization header), not cookies.
 # allow_origins="*" is safe here and avoids hardcoding Vercel preview URLs.
@@ -48,6 +82,7 @@ app.include_router(content_router)
 app.include_router(ai_assist_router)
 app.include_router(approvals_router)
 app.include_router(crm_router)
+app.include_router(integrations_router)
 
 
 def main():

@@ -32,6 +32,7 @@ containers =
     features.ai_assist
     features.approvals
     features.crm
+    features.integrations
     features.contracts
     features.creators
     features.deals

@@ -22,8 +22,13 @@ class ApprovalService:
         return await self.request_repo.list_for_workspace(workspace_id, MAX_REQUESTS_LISTED)
 
     async def request(
-        self, workspace_id: UUID, user_id: UUID, body: PublishRequestCreate
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        body: PublishRequestCreate,
+        agent_name: str | None = None,
     ) -> PublishRequest:
+        """A person's request, or an agent's (API key) when `agent_name` is given — never sent until approved."""
         item = await self.content.get(workspace_id, body.content_item_id)
         if item.stage == "published":
             raise ConflictError("This content is already published")
@@ -34,6 +39,8 @@ class ApprovalService:
                     workspace_id=workspace_id,
                     content_item_id=item.id,
                     requested_by=user_id,
+                    source="agent" if agent_name else "human",
+                    agent_name=agent_name,
                     note=(body.note or "").strip() or None,
                     created_at=datetime.now(UTC),
                 )

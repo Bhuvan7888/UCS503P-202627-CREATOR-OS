@@ -2,6 +2,7 @@ from features.demo_mode.in_memory_repositories import (
     ContractOwnerMap,
     DealOwnerMap,
     DemoActivityLogRepo,
+    DemoApiKeyRepo,
     DemoAuditRepo,
     DemoBrandMemberRepo,
     DemoBrandRepo,
@@ -20,6 +21,7 @@ from features.demo_mode.in_memory_repositories import (
     DemoScriptRepo,
     DemoSuggestionRepo,
     DemoTeamRepo,
+    DemoWebhookRepo,
     DemoUserDirectory,
     DemoWorkspaceRepo,
 )
@@ -47,6 +49,8 @@ class DemoStore:
         self.crm_deal_repo = DemoCrmDealRepo()
         self.team_repo = DemoTeamRepo()
         self.audit_repo = DemoAuditRepo()
+        self.api_key_repo = DemoApiKeyRepo()
+        self.webhook_repo = DemoWebhookRepo()
         self.user_directory = DemoUserDirectory()
         self.clause_card_repo = DemoClauseCardRepo()
         self.escalation_repo = DemoEscalationRepo()
