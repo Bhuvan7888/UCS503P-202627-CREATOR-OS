@@ -16,6 +16,7 @@ Creator OS has two sides, free for everyone:
 | `workspaces` | Creator workspace shell (switcher, sidebar, ⌘K), team: invites, roles and permissions, audit log | `/dashboard`, `/dashboard/[workspace]`, `/dashboard/[workspace]/settings/workspace`, `/invite/[token]` |
 | `content` | Home KPIs, Content Pipeline kanban, Add Content wizard, item editor, Scripts with auto-save, Calendar | `/dashboard/[workspace]`, `/dashboard/[workspace]/kanban`, `/dashboard/[workspace]/scripts` |
 | `contract-intelligence` (creator side) | Contracts from brand deals with the red-flag clause review | `/dashboard/[workspace]/contracts` |
+| `integrations` | API keys for agents (scoped, audited) and signed webhooks | `/dashboard/[workspace]/settings/api-keys`, `/dashboard/[workspace]/settings/webhooks` |
 | `crm` | Brand CRM: own deals, KPIs, New Deal wizard, Creator OS brand deals | `/dashboard/[workspace]/crm` |
 | `approvals` | Publish requests approved or rejected by a person | `/dashboard/[workspace]/approvals` |
 | `ai-assist` | AI knowledge, Generate Title/Description/Hook/outline, AI Content Suggestions | `/dashboard/[workspace]/ai-suggestions`, `/dashboard/[workspace]/settings/ai-knowledge` |

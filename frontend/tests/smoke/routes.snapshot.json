@@ -28,5 +28,7 @@
   "/dashboard/[workspace]/contracts",
   "/dashboard/[workspace]/contracts/[id]",
   "/invite/[token]",
-  "/dashboard/[workspace]/settings/workspace"
+  "/dashboard/[workspace]/settings/workspace",
+  "/dashboard/[workspace]/settings/api-keys",
+  "/dashboard/[workspace]/settings/webhooks"
 ]

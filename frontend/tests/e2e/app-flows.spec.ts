@@ -563,6 +563,77 @@ test("team: invite a script writer, permissions shape their workspace, owner see
   expect(writerProblems).toEqual([]);
 });
 
+test("integrations: an API key lets an agent prepare a publish; webhooks can be added", async ({
+  page,
+  request,
+}) => {
+  // the agent's own calls are made with the API key below; the 401 after revoking is expected
+  const problems = watchForProblems(page);
+  await loginWithDemo(page, "creator", "4. Kabir Anand (boAt)");
+  const base = new URL(page.url()).pathname;
+  const slug = base.split("/")[2];
+
+  // Owner creates a key (shown once)
+  await page.goto(`${WEB}${base}/settings/api-keys`);
+  await page.getByRole("button", { name: "New key" }).click();
+  const dialog = page.getByRole("dialog", { name: "New API key" });
+  await dialog.getByPlaceholder("Hermes agent").fill(`Agent ${RUN}`);
+  await dialog.getByRole("checkbox", { name: /content:write/ }).check();
+  await dialog.getByRole("checkbox", { name: /publish:write/ }).check();
+  await dialog.getByRole("button", { name: "Create key" }).click();
+  const key = (await dialog.locator("code", { hasText: "cos_" }).innerText()).trim();
+  await dialog.getByRole("button", { name: "I've saved it" }).click();
+  await expect(page.getByRole("list", { name: "API keys" })).toContainText(`Agent ${RUN}`);
+
+  // The agent uses it against the API
+  const auth = { Authorization: `Bearer ${key}` };
+  const item = await request.post(`${API}/workspaces/${slug}/content`, {
+    headers: auth,
+    data: { title: `Agent idea ${RUN}`, pillar: "Tech", hook: "Hook" },
+  });
+  expect(item.status()).toBe(201);
+  const asked = await request.post(`${API}/workspaces/${slug}/approvals`, {
+    headers: auth,
+    data: { content_item_id: (await item.json()).id },
+  });
+  expect((await asked.json()).source).toBe("agent");
+  expect(
+    (await request.get(`${API}/workspaces/${slug}/api-keys`, { headers: auth })).status(),
+  ).toBe(403);
+
+  // A person decides it in Approvals
+  await page.getByRole("link", { name: "Approvals", exact: true }).click();
+  await expect(page.getByRole("list", { name: "Waiting for approval" })).toContainText(
+    `requested by Agent ${RUN}`,
+  );
+
+  // Revoke ends access immediately
+  await page.goto(`${WEB}${base}/settings/api-keys`);
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "Revoke" }).first().click();
+  await expect(page.getByText("Revoked").first()).toBeVisible();
+  expect((await request.get(`${API}/workspaces/${slug}/content`, { headers: auth })).status()).toBe(
+    401,
+  );
+
+  // Webhooks: add an endpoint (secret shown once), then delete it
+  await page.getByRole("link", { name: "Webhooks" }).click();
+  await page.getByRole("button", { name: "Add endpoint" }).click();
+  const hook = page.getByRole("dialog", { name: "Add a webhook endpoint" });
+  await hook.getByPlaceholder(/your-n8n/).fill("https://example.com/creator-os-hook");
+  await hook.getByRole("checkbox", { name: /publish\.rejected/ }).check();
+  await hook.getByRole("button", { name: "Add endpoint" }).click();
+  await expect(hook.locator("code", { hasText: "whsec_" })).toBeVisible();
+  await hook.getByRole("button", { name: "Done" }).click();
+  const endpoints = page.getByRole("list", { name: "Webhook endpoints" });
+  await expect(endpoints).toContainText("https://example.com/creator-os-hook");
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "Delete https://example.com/creator-os-hook" }).click();
+  await expect(endpoints).toHaveCount(0);
+
+  expect(problems).toEqual([]);
+});
+
 test("unknown URLs show the 404 page", async ({ page }) => {
   await page.goto(`${WEB}/no-such-page-${RUN}`);
   await expect(page.getByRole("heading", { name: "We can't find that page" })).toBeVisible();

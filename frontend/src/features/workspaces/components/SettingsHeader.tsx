@@ -11,11 +11,13 @@ import styles from "../workspace-shell.module.css";
 const TABS = [
   { label: "Workspace", path: "/settings/workspace" },
   { label: "AI knowledge", path: "/settings/ai-knowledge" },
+  { label: "API keys", path: "/settings/api-keys", needs: "manage_workspace" },
+  { label: "Webhooks", path: "/settings/webhooks", needs: "manage_workspace" },
 ];
 
 /** Settings page header plus the tab bar; each tab is its own route. */
 export function SettingsHeader({ tab }: { tab: string }) {
-  const { base } = useWorkspace();
+  const { base, workspace } = useWorkspace();
   const pathname = usePathname();
   return (
     <>
@@ -27,7 +29,7 @@ export function SettingsHeader({ tab }: { tab: string }) {
         subtitle="Manage your workspace, team and preferences"
       />
       <nav className={styles.tabs} aria-label="Settings sections">
-        {TABS.map((t) => (
+        {TABS.filter((t) => !t.needs || workspace.permissions?.includes(t.needs)).map((t) => (
           <Link
             key={t.path}
             href={`${base}${t.path}`}

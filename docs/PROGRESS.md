@@ -40,8 +40,8 @@ brand side stays as it is.
 | 3 | Scripts + AI: Scripts editor, AI knowledge settings, AI Assistant suggestions, Generate Title/Description/Hook | done (verified on live DB + live Gemini) |
 | 4 | Calendar + Approvals (publish state machine without platform posting) | done (verified on live DB) |
 | 5 | Brand CRM (creator's own deals table, KPIs, New Deal wizard) | done (verified on live DB) |
-| 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | 6a done (team, permissions, audit) — owner: run migration 006, set `APP_URL`; 6b next (API keys, webhooks) |
-| 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | pending |
+| 6 | Workspace & team: members, invites, roles, permissions, audit log, API keys, webhooks | done (6a verified live) — owner: run migration 007 before deploying |
+| 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | next |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | pending |
 
 
@@ -208,20 +208,44 @@ Phase 6a notes
 - Contracts (creator workspace) are owner-only: they come from the owner's own creator profile.
 - Invited people sign in or sign up as a creator (email or Google); they also get their own primary workspace.
 
-Phase 6b plan — pick up here (API keys + webhooks)
-1. Migration 007: `api_keys` (workspace, name, prefix, sha256 hash, scopes text[], created_by, created_at, last_used_at,
+Phase 6b (done 2026-11-14)
+1. ✅ Migration 007: `api_keys` (workspace, name, prefix, sha256 hash, scopes text[], created_by, created_at, last_used_at,
    revoked_at), `webhook_endpoints` (workspace, https url, events text[] (empty = all), secret, active),
    `webhook_deliveries` (endpoint, event, payload, attempts, next_attempt_at, status) — RLS on.
-2. Key auth: `Authorization: Bearer cos_<prefix>_<secret>` resolves to a key (not a user) → a `WorkspaceContext` with
+2. ✅ Key auth: `Authorization: Bearer cos_<prefix>_<secret>` resolves to a key (not a user) → a `WorkspaceContext` with
    scope-derived permissions; scopes content:read/write, publish:write, channels:read, analytics:read,
    webhooks:write, owner. Keys can never approve, issue keys, invite members or delete the workspace. Audit every key
    call under the key's name. Agent publish requests → `publish_requests.source='agent'`, `agent_name`.
-3. Webhooks: events publish.pending_approval / approved / rejected, content.stage_changed (publish.succeeded/failed and
+3. ✅ Webhooks: events publish.pending_approval / approved / rejected, content.stage_changed (publish.succeeded/failed and
    batch.completed need platform posting — not applicable); HMAC-SHA256 signature header over the raw body;
    retries with backoff for ~15 h (a background loop in the API process; note the multi-instance caveat).
-4. Settings tabs: API keys (create → secret shown once, revoke) and Webhooks (add, send test, delete).
+4. ✅ Settings tabs: API keys (create → secret shown once, revoke) and Webhooks (add, send test, delete).
 Verify: scope matrix tests, signature test, retry schedule test, e2e for both tabs, live DB after migration 007.
+Phase 6b notes
+- **Owner action:** run `supabase/migrations/20261118000000_api_keys_and_webhooks.sql` BEFORE deploying this backend
+  (every workspace request now checks for API keys).
+- `publish.succeeded`, `publish.failed` and `batch.completed` from the spec are not emitted: there is no platform
+  posting. "Approve" marks the item Published.
+- The retry loop runs inside each API process (atomic claims). Move it to a worker if delivery volume grows (Phase 8).
+
+### Phase 7 plan — pick up here (Notifications, Support, Settings)
+Read spec §4.9 Notifications, §4.11 Support, §4.12 Profile / Notifications / Appearance first. No Billing (free app),
+no Connections (no platform integrations), light only (no Appearance theme toggle — owner decision).
+1. Migration 008: `notifications` (workspace, user, category, title, body, link, read_at, archived_at),
+   `notification_preferences` (user: dnd, quiet hours, per-category in-app/email), `support_tickets`
+   (workspace, user, subject, category, priority, description, status) — RLS on.
+2. Create notifications from existing events: publish requested/approved/rejected (to owner/requester), content
+   assigned, invite accepted, due tomorrow (daily sweep in the background loop).
+3. Bell popover in the top bar (unread count, filters, "View all"), Notifications page (list, read/archive,
+   filters), Settings › Profile (name, phone, location, timezone, bio, website; email read-only), Settings ›
+   Notifications (preferences), Support page (overview, my tickets, FAQ accordion, create-ticket dialog).
+Verify: unit/API tests, e2e for bell + notifications + support, live DB after migration 008.
 ### Phase log
+- **2026-11-14 — Phase 6b (API keys + webhooks)**: migration 007; `features/integrations` (scoped, hashed, audited
+  keys acting as role `agent`; agent publish requests; signed webhooks with public-https check, first try after the
+  response and ~15 h of retries via an atomic-claim loop); Settings › API keys and › Webhooks. Phase 6a verified live
+  (invite → accept → permissions → audit → removal; token stored hashed). Checks: 203 backend tests, contracts kept,
+  mypy 113, tsc/eslint/prettier, build, smoke 32/32, e2e 10/10 (twice).
 - **2026-11-17 — Phase 6a (team, permissions, audit)**: migration 006; invites (hashed tokens, seats, email-matched
   accept), 11 permissions enforced on every workspace route (refusals audited), owner-only role management, audit log
   ("Opened the workspace" throttled to 30 min); Settings › Workspace (General, Members, Roles, Audit log), invite page,

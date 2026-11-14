@@ -10,6 +10,7 @@ Every feature has the same name everywhere. The backend uses `snake_case` becaus
 | `creators` | `backend/features/creators/` | `frontend/src/features/creators/` | `backend/tests/features/creators/` |
 | `workspaces` | `backend/features/workspaces/` | `frontend/src/features/workspaces/` (creator shell) | `backend/tests/features/workspaces/`, e2e |
 | `content` | `backend/features/content/` | `frontend/src/features/content/` | `backend/tests/features/content/`, e2e |
+| `integrations` | `backend/features/integrations/` | `frontend/src/features/integrations/` | `backend/tests/features/integrations/`, e2e |
 | `crm` | `backend/features/crm/` | `frontend/src/features/crm/` | `backend/tests/features/crm/`, e2e |
 | `approvals` | `backend/features/approvals/` | `frontend/src/features/approvals/` | `backend/tests/features/approvals/`, e2e |
 | `ai-assist` | `backend/features/ai_assist/` | `frontend/src/features/ai-assist/` | `backend/tests/features/ai_assist/`, e2e |
@@ -165,6 +166,26 @@ Each item has one script (Scripts page, auto-saved; the first script moves an id
 - **Backend:** `router.py`, `service.py` (`ContentService`: assignee must be a member, other workspaces' items are 404, scripts), `rules.py` (KPIs with 30-day deltas; Scripted = has a script or moved past Idea; `apply_stage_rules`: scheduling moves an item to Scheduled, Published stamps `published_at`), `models.py`, `repository.py` (`ContentRepo`, `ScriptRepo`), `supabase_repository.py`
 - **Database:** `supabase/migrations/20261113010000_content_items.sql`, `20261114000000_scripts_and_ai.sql` (`content_scripts`), `20261115000000_calendar_and_approvals.sql` (`scheduled_at`, `published_at`)
 - **Depends on:** `workspaces`; frontend uses `ai-assist` (`GenerateButton`)
+
+## `integrations`
+API keys that let an agent or automation act inside one workspace, and signed outgoing webhooks.
+- **Keys:** `cos_<prefix>_<secret>`, shown once, SHA-256 hash stored. `Authorization: Bearer <key>` on any
+  `/workspaces/{workspace}/…` route resolves (in `workspaces.dependencies.require_workspace_member`) to role `agent` with
+  scope-derived permissions (`rules.SCOPE_PERMISSIONS`; `owner` = all scopes). Keys never get manage_workspace,
+  invite_members, view_brand_deals or view_settings, so they can't approve, manage keys/team/roles or open the CRM.
+  Every key call is audited as "API key · <name>"; agent publish requests are stored with `source='agent'`.
+- **Webhooks:** https URLs on public addresses only (checked at creation and before every send); body signed with
+  HMAC-SHA256 over `<X-CreatorOS-Timestamp>.<raw body>` (`X-CreatorOS-Signature: sha256=…`); events
+  `publish.pending_approval`, `publish.approved`, `publish.rejected`, `content.stage_changed` (emitted by the approvals and
+  content routers via `dependencies.emit_event`); first attempt right after the response, retries 1m→8h (~15 h) by the
+  loop started in `main.py` (atomic claims, safe with several processes).
+- **Pages:** `/dashboard/[workspace]/settings/api-keys` → `ApiKeysPage.tsx`; `/dashboard/[workspace]/settings/webhooks` → `WebhooksPage.tsx`
+- **API:** `GET/POST /workspaces/{workspace}/api-keys`, `DELETE …/api-keys/{key_id}` (people with manage_workspace only);
+  `GET/POST …/webhooks`, `DELETE …/webhooks/{endpoint_id}`, `GET …/webhooks/{endpoint_id}/deliveries`, `POST …/webhooks/{endpoint_id}/test`
+  (manage_workspace, or a key with webhooks:write)
+- **Backend:** `router.py`, `dependencies.py` (`get_integrations_service`, `emit_event`), `service.py` (`IntegrationsService`), `rules.py`, `models.py`, `repository.py`, `supabase_repository.py`
+- **Database:** `supabase/migrations/20261118000000_api_keys_and_webhooks.sql`
+- **Depends on:** used by `workspaces` (key auth), `approvals` and `content` (events)
 
 ## `crm`
 Brand CRM: the creator's own brand deals (prospect → paid, cancelled) with KPIs, filters, sorting, paging, CSV export
