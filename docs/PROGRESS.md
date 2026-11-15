@@ -50,11 +50,11 @@ dashboards stay current. Migrations 009 + 010 confirmed live (brand AI profile/b
 `stats_updated_at`, AI matching answers via Groq).
 | # | Step | Status |
 |---|---|---|
-| P1 | Migration 011: reuse the unused `growth_snapshots` table — add `platform`, `avg_views`; one row per creator, platform and day | written; waiting for the owner |
+| P1 | Migration 011: reuse the unused `growth_snapshots` table — add `platform`, `avg_views`; one row per creator, platform and day | done (run by the owner, confirmed live) |
 | P2 | Backend feature `platform_stats`: `GET/PUT /platform-stats/me`, `GET /platform-stats/creators/{id}`; saving syncs the creator's totals (followers, weighted engagement, weekly views, tier) used by the Creators table and AI matching | done |
 | P3 | Creator Settings → Platform analytics (update for today, change since last update); Home "Audience" card; "Your creator stats" keeps handle + niche only (one source for numbers) | done |
 | P4 | Brand: creator profile "Platform analytics" card (self-reported, as of date) | done |
-| P5 | Tests, docs, deploy, live check | done locally; live check after migration 011 |
+| P5 | Tests, docs, deploy, live check | done |
 
 Details:
 - Totals synced onto the creator on every save (`platform_stats.rules.creator_totals`): follower total, engagement
@@ -69,6 +69,11 @@ Details:
 - Verified: 261 backend tests (rules: change since last update, weighted totals, tiers; API: same-day save replaces,
   totals sync, one row per platform, brand access), e2e 13/13 (creator logs Instagram + YouTube → Home Audience
   80,000 → boAt sees 80,000 "Self-reported · today" and the per-platform card).
+- Live check (2026-11-15, read-only): `GET /platform-stats/me` 200; connected brand 200, unconnected brand 403; duplicate
+  platform 422; brand saving 403. Creator Home Audience card, Settings → Platform analytics (pre-filled, editable) and the
+  brand's creator profile card render with no API errors. The old `growth_snapshots` rows became Instagram history
+  (Ananya: 67,108, "+3,127 since 12 Aug"). The save path was verified locally (unit, API and e2e tests); a live save was
+  not run because the live check must not write to the production database without the owner's go-ahead.
 
 ### Better creator matching data (started 2026-11-15)
 No platform (Instagram) connection, so matching relied on unverified stats typed in once. Owner chose to build:
