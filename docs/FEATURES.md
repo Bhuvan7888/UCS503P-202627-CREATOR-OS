@@ -103,7 +103,7 @@ Contract upload by the brand per deal, the status lifecycle and the sample contr
   - `contract_pdf.py`: text extraction and the sample PDF
   - `contract_storage_adapter.py`: Supabase Storage
   - `repository.py`, `supabase_repository.py`
-- **Shared code used:** frontend `shared/lib/api-client.ts` (`postWithSession` for multipart uploads, `API_BASE_URL`); backend `shared/llm/gemini_adapter` (clause segmentation)
+- **Shared code used:** frontend `shared/lib/api-client.ts` (`postWithSession` for multipart uploads, `API_BASE_URL`); backend `shared/llm/factory.make_llm` (clause segmentation)
 - **Depends on:** `auth`, `deals`, `contract-intelligence` (each upload is scanned), `activity-log`
 
 ## `contract-intelligence`
@@ -301,7 +301,7 @@ Runs the whole backend on a seeded in-memory dataset when Supabase is unreachabl
 | `backend/shared/http_errors.py` (`map_errors`) | auth, contracts, creators, deals, deliverables, payments, workspaces, content routers |
 | `backend/shared/supabase_client.py`, `supabase_query.py` | every router (client) and every `supabase_repository.py` |
 | `backend/shared/pagination.py` | 7 list endpoints |
-| `backend/shared/llm/` (port + Gemini adapter) | contract-intelligence, contracts, ai-assist |
+| `backend/shared/llm/` (port, Gemini + Groq adapters, `factory.make_llm`) | contract-intelligence, contracts, ai-assist |
 | `frontend/src/shared/lib/api-client.ts` (+ generated `api-types.ts`) | every page |
 | `frontend/src/shared/lib/session.ts` | auth, app shell, most pages |
 | `frontend/src/shared/lib/format-currency.ts`, `status-variants.ts` | deals, creators, analytics, contracts, contract-intelligence, payments |

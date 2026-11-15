@@ -18,7 +18,7 @@ from features.workspaces.dependencies import (
 from shared.config import settings
 from shared.errors import NotFoundError, ValidationError
 from shared.http_errors import map_errors
-from shared.llm.gemini_adapter import GeminiAdapter
+from shared.llm.factory import make_llm
 from shared.llm.llm_port import LLMPort
 from shared.supabase_client import get_supabase_client
 
@@ -34,7 +34,7 @@ _AI_ERRORS = {
 
 
 def get_llm() -> LLMPort | None:
-    return GeminiAdapter() if settings.ai_configured else None
+    return make_llm() if settings.ai_configured else None
 
 
 def get_ai_service(llm: LLMPort | None = Depends(get_llm)) -> AiAssistService:

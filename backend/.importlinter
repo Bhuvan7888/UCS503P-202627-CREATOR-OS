@@ -15,6 +15,7 @@ forbidden_modules =
 ignore_imports =
     # The Gemini adapter uses ClauseInput as its structured-output schema (runtime use).
     shared.llm.gemini_adapter -> features.contract_intelligence
+    shared.llm.groq_adapter -> features.contract_intelligence
 
 # 2. Inside every feature: router > services > domain (models, rules, repository ports).
 #    Layers are optional because not every feature has all of them.

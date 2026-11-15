@@ -10,7 +10,7 @@ from features.contract_intelligence.supabase_repository import (
 )
 from features.contracts.supabase_repository import SupabaseContractRepo
 from shared.email.resend_adapter import ResendAdapter
-from shared.llm.gemini_adapter import GeminiAdapter
+from shared.llm.factory import make_llm
 from shared.supabase_client import get_supabase_client
 
 
@@ -21,7 +21,7 @@ def get_contract_intelligence_service() -> ContractIntelligenceService:
     contract_repo = SupabaseContractRepo(client)
 
     email_port = ResendAdapter()
-    llm_port = GeminiAdapter()
+    llm_port = make_llm()
     clause_explanation_service = ClauseExplanationService(llm_port, clause_card_repo)
 
     return ContractIntelligenceService(

@@ -2,7 +2,7 @@
 
 Creator OS is split into two apps and a database:
 
-- **`backend/`**: a FastAPI app (Python 3.13, managed with `uv`). It provides the HTTP API and talks to Supabase (Postgres, Auth and Storage), Gemini and Resend.
+- **`backend/`**: a FastAPI app (Python 3.13, managed with `uv`). It provides the HTTP API and talks to Supabase (Postgres, Auth and Storage), an LLM (Gemini, or Groq while `GROQ_API_KEY` is set) and Resend.
 - **`frontend/`**: a Next.js 16 App Router app (React 19, managed with `npm`). It talks only to the backend, through a typed client generated from the backend's OpenAPI schema.
 - **`supabase/migrations/`**: the SQL schema, applied by hand in the Supabase SQL editor.
 
@@ -27,7 +27,7 @@ backend/
 │   ├── config.py  errors.py  http_errors.py  pagination.py
 │   ├── email/              email port + Resend adapter (escalations, invitations)
 │   ├── supabase_client.py  supabase_query.py
-│   └── llm/                LLM port + Gemini adapter
+│   └── llm/                LLM port, Gemini + Groq adapters, factory.make_llm() picks one
 ├── scripts/                dev scripts: `uv run python -m scripts.<name>`
 └── tests/
     ├── features/<feature>/ unit and API tests per feature
@@ -92,7 +92,9 @@ import-linter enforces this order inside every feature (`backend/.importlinter`,
 
 `tests/architecture/test_layering.py` runs the linter as part of pytest. Layers are optional per feature. Wiring modules (`dependencies`, `supabase_repository`, `*_adapter`) are composition code and aren't part of the layer list.
 
-The one documented exception: `shared/llm/gemini_adapter.py` imports `ClauseInput` from contract-intelligence, because that model is Gemini's structured-output schema.
+The one documented exception: `shared/llm/gemini_adapter.py` and `shared/llm/groq_adapter.py` import `ClauseInput` from contract-intelligence, because that model is the LLM's structured-output schema.
+
+Every LLM user gets its adapter from `shared/llm/factory.py::make_llm()`: Groq (`GROQ_MODEL`, default `qwen/qwen3.8-27b`) while `GROQ_API_KEY` is set — a temporary switch made 2026-11-15 while the Gemini key was rejected — otherwise Gemini. Unset `GROQ_API_KEY` to go back to Gemini.
 
 ## Import rules
 

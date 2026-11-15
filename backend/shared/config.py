@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     GEMINI_MODEL_PRO: str
     # lighter model used when the main one is overloaded (see shared/llm/gemini_adapter.py)
     GEMINI_MODEL_FALLBACK: str = "gemini-flash-lite-latest"
+    # Temporary: while set, AI runs on Groq instead of Gemini (shared/llm/factory.py)
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "qwen/qwen3.8-27b"
     TRANSACTIONAL_EMAIL_API_KEY: str
     # public address of the frontend, used in links sent by email (workspace invitations)
     APP_URL: str = "http://localhost:3000"
@@ -30,9 +33,13 @@ class Settings(BaseSettings):
 
     @property
     def ai_configured(self) -> bool:
-        """A real Gemini key is set (not empty or the .env.example placeholder)."""
-        key = self.GEMINI_API_KEY.strip()
-        return bool(key) and "dummy" not in key.lower() and not key.startswith("your-")
+        """A real Groq or Gemini key is set (not empty or the .env.example placeholder)."""
+
+        def real(key: str) -> bool:
+            key = key.strip()
+            return bool(key) and "dummy" not in key.lower() and not key.startswith("your-")
+
+        return real(self.GROQ_API_KEY) or real(self.GEMINI_API_KEY)
 
     @property
     def is_production(self) -> bool:

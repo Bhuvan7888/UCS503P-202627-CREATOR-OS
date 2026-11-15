@@ -44,6 +44,15 @@ brand side stays as it is.
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | done (2026-11-14) |
 
+### AI provider: Groq (temporary, 2026-11-15)
+The Gemini key on Render is rejected by Google (401 `ACCESS_TOKEN_TYPE_UNSUPPORTED`). Owner asked to use Groq for now with
+model `qwen/qwen3.8-27b`. `shared/llm/groq_adapter.py` (OpenAI-compatible chat completions over httpx, JSON mode for
+structured output, Qwen's `<think>` reasoning hidden) and `shared/llm/factory.py::make_llm()` (Groq while
+`GROQ_API_KEY` is set, else Gemini) — used by ai-assist, contract upload segmentation and clause explanations.
+Verified on the real database: Generate hook 0.8 s, outline, AI suggestions (6) 3.3 s, clause segmentation and
+explanation; 225 backend tests pass. **Render needs `GROQ_API_KEY` set** (it doesn't read the repo's `.env`).
+To return to Gemini: remove `GROQ_API_KEY`.
+
 ### Brand side redesign (started 2026-11-14)
 Goal: the brand app gets the creator workspace's layout (same shell, page headers, cards, tables) and its features are
 cleaned up. Audit of the live brand app (all pages load, no API/console errors) found: the brand invite code could not

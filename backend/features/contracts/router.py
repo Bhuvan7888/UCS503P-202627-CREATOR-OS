@@ -26,7 +26,7 @@ from features.contracts.supabase_repository import SupabaseContractRepo
 from features.deals.dependencies import load_accessible_deal
 from shared.errors import InvalidStatusTransition
 from shared.http_errors import map_errors
-from shared.llm.gemini_adapter import GeminiAdapter
+from shared.llm.factory import make_llm
 from shared.pagination import clamp_page_size
 from shared.supabase_client import get_supabase_client
 
@@ -120,10 +120,10 @@ async def upload_contract(
             contract = await service.save_raw_text(contract.id, text)
             clauses = []
             try:
-                clauses = await GeminiAdapter().segment_clauses(text)
-            except Exception:
+                clauses = await make_llm().segment_clauses(text)
+            except Exception:  # noqa: BLE001 — any AI failure falls back to rule-based segmentation
                 logger.warning(
-                    "Gemini clause segmentation unavailable; using fallback segmentation"
+                    "AI clause segmentation unavailable; using fallback segmentation"
                 )
             if not clauses:
                 clauses = fallback_segment_clauses(text)
