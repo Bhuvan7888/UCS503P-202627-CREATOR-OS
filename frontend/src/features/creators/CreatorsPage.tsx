@@ -10,6 +10,7 @@ import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { useCreators, useDeals } from "@/shared/lib/brand-queries";
 import { loadSession } from "@/shared/lib/session";
 import page from "@/shared/components/shell/page.module.css";
+import { CreatorMatchCard } from "./components/CreatorMatchCard";
 
 const FOLLOWER_TIERS = [
   { value: "nano", label: "Nano (1K – 10K followers)" },
@@ -86,6 +87,8 @@ export default function CreatorsPage() {
           </button>
         }
       />
+
+      <CreatorMatchCard />
 
       <section className={`${page.card} ${page.spaced}`}>
         <h2>Invite code</h2>

@@ -24,6 +24,8 @@ Creator OS has two sides, free for everyone:
 | `approvals` | Publish requests approved or rejected by a person | `/dashboard/[workspace]/approvals` |
 | `ai-assist` | AI knowledge, Generate Title/Description/Hook/outline, AI Content Suggestions | `/dashboard/[workspace]/ai-suggestions`, `/dashboard/[workspace]/settings/ai-knowledge` |
 | `brand-shell` | Brand app shell: sidebar, ⌘K search, account menu | `(brand)` layout |
+| `brand-settings` | Brand Settings: profile, AI knowledge, account | `/settings`, `/settings/ai`, `/settings/account` |
+| `brand_ai` | AI campaign briefs, AI creator matching, AI chat reply drafts for brands | deal Brief tab, `/creators`, `/chat` |
 | `deals` | Brand deal list and the deal page (contract, deliverables, invoices) | `/deals`, `/deals/[id]` |
 | `creators` | Creator roster with invite code, profiles, creator Settings → Brands | `/creators`, `/creators/[id]`, `/dashboard/[workspace]/settings/brands` |
 | `contracts` | Contract upload, status lifecycle, sample contract PDF | `/contracts` |

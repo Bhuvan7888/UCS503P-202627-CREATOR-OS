@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import client from "@/shared/lib/api-client";
 import type { components } from "@/shared/lib/api-types";
 import { MESSAGES_POLL_INTERVAL_MS } from "../constants/messages-polling";
@@ -21,18 +21,21 @@ interface Props {
   /** Thread to open first (e.g. from a "Message" button); give the component a matching `key`. */
   initialId?: string | null;
   emptyText: React.ReactNode;
+  /** When given, a "Draft with AI" button fills the composer (resolves to the text, or throws a message). */
+  onDraft?: (contactId: string) => Promise<string>;
 }
 
 // ponytail: polls every 4s while a thread is open instead of a Supabase Realtime subscription — no
 // client-side infra or RLS policy needed. Upgrade to Realtime if 4s latency ever matters.
 /** Two-way brand ↔ creator chat: contact list, thread and composer. Used by both apps. */
-export function ChatView({ contacts, self, initialId, emptyText }: Props) {
+export function ChatView({ contacts, self, initialId, emptyText, onDraft }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(initialId ?? null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [unread, setUnread] = useState<Record<string, number>>({});
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [drafting, setDrafting] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const fetchUnread = useCallback(() => {
@@ -83,6 +86,18 @@ export function ChatView({ contacts, self, initialId, emptyText }: Props) {
     if (error || !data) return setSendError("Couldn't send that — try again.");
     setMessages((prev) => [...prev, data]);
     setDraft("");
+  }
+
+  async function draftWithAi() {
+    if (!onDraft || !selectedId) return;
+    setDrafting(true);
+    setSendError(null);
+    try {
+      setDraft(await onDraft(selectedId));
+    } catch (e) {
+      setSendError(e instanceof Error ? e.message : "Couldn't draft a reply.");
+    }
+    setDrafting(false);
   }
 
   if (contacts === null) return <p className={styles.placeholder}>Loading…</p>;
@@ -146,6 +161,16 @@ export function ChatView({ contacts, self, initialId, emptyText }: Props) {
                 onChange={(e) => setDraft(e.target.value)}
                 aria-label="Message"
               />
+              {onDraft && (
+                <button
+                  className="btn btn-outline btn-row"
+                  type="button"
+                  onClick={draftWithAi}
+                  disabled={drafting}
+                >
+                  <Sparkles size={14} /> {drafting ? "Drafting…" : "Draft with AI"}
+                </button>
+              )}
               <button className="btn btn-row" type="submit" disabled={busy || !draft.trim()}>
                 <Send size={14} /> Send
               </button>

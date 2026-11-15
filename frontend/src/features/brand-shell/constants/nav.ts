@@ -6,6 +6,7 @@ import {
   MessageCircle,
   Package,
   Receipt,
+  Settings,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -37,7 +38,13 @@ export const BRAND_NAV: { label: string; items: BrandNavItem[] }[] = [
       { label: "Payments", href: "/payments", icon: Receipt },
     ],
   },
-  { label: "Account", items: [{ label: "Activity", href: "/activity", icon: Activity }] },
+  {
+    label: "Account",
+    items: [
+      { label: "Activity", href: "/activity", icon: Activity },
+      { label: "Settings", href: "/settings", icon: Settings, prefix: true },
+    ],
+  },
 ];
 
 export const BRAND_HOME = "/brand";

@@ -58,9 +58,23 @@ Brand and creator sign-up and login, the stored session, and the request identit
 - **Depends on:** `brands`, `creators`, `demo-mode`
 
 ## `brands`
-Brand accounts and brand membership. Data only; it has no endpoints of its own.
-- **Backend:** `models.py` (`Brand`, `BrandMember`), `repository.py` (ports), `supabase_repository.py`
-- **Used by:** `auth` (signup and identity), `creators` (linking a creator to a brand)
+Brand accounts, brand membership and the brand's own profile.
+- **API:** `GET /brands/me`, `PATCH /brands/me` (name, description, industry, website, GST, PAN — GST/PAN format-checked)
+- **Backend:** `models.py` (`Brand`, `BrandMember`, `BrandProfileUpdate`), `service.py` (`BrandService`), `router.py`, `repository.py` (ports), `supabase_repository.py`
+- **Used by:** `auth` (signup and identity), `creators` (linking a creator to a brand), `brand_ai` (prompts)
+
+## `brand-settings` (frontend)
+Brand Settings, the same tabbed layout as the creator Settings.
+- **Pages:** `/settings` → `BrandProfilePage.tsx`; `/settings/ai` → `BrandAiKnowledgePage.tsx`; `/settings/account` → `BrandAccountPage.tsx` (invite code, sign out); `components/BrandSettingsHeader.tsx` (header + tabs)
+- **API:** `GET/PATCH /brands/me`, `GET/PUT /brand-ai/profile`
+
+## `brand_ai`
+AI help for brands, driven by the brand's AI knowledge (Settings → AI knowledge).
+- **Features:** AI campaign brief per deal (deal page → Brief tab: draft, edit, save, send to the creator in Chat); AI creator matching (Creators page: ranks the roster with a fit score and reason; "Start deal" pre-selects the creator); AI chat reply drafts (Chat → "Draft with AI")
+- **API:** `GET/PUT /brand-ai/profile`; `GET/PUT /brand-ai/deals/{deal_id}/brief`, `POST /brand-ai/deals/{deal_id}/brief/generate`; `POST /brand-ai/match`; `POST /brand-ai/chat/{creator_id}/draft`
+- **Backend:** `models.py`, `rules.py` (prompts, plain-text clean-up, `valid_matches` keeps only roster creators), `service.py` (`BrandAiService`), `repository.py`, `supabase_repository.py` (tables `brand_ai_profiles`, `deal_briefs`), `router.py`
+- **Frontend:** `deals/components/BriefTab.tsx`, `creators/components/CreatorMatchCard.tsx`, `messages/ChatPage.tsx` (`onDraft`)
+- **Depends on:** `ai_assist` (rate limiter, AI errors), `brands`, `creators`, `deals`, `messages`; `shared/llm/factory.make_llm`
 
 ## `brand-shell`
 The brand app's frame — same structure as the creator workspace shell.
@@ -270,7 +284,7 @@ Two-way brand ↔ creator chat and the unread badges in both sidebars.
   - `hooks/useUnreadMessages.ts`: used by the app shell
   - `constants/messages-polling.ts`: `MESSAGES_POLL_INTERVAL_MS`
   - both exported via `index.ts`
-- **API:** `GET /messages`, `POST /messages`, `GET /messages/unread`, `POST /messages/read`
+- **API:** `GET /messages`, `POST /messages` (body 1–20,000 chars), `GET /messages/unread`, `POST /messages/read`
 - **Backend:** `router.py`, `service.py`, `models.py`, `repository.py`, `supabase_repository.py`
 - **Depends on:** `auth`, `creators`
 

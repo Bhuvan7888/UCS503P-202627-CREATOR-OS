@@ -8,6 +8,7 @@ from features.account.models import NotificationPreferences
 from features.activity_log import ActivityLog
 from features.ai_assist.models import AiKnowledge, SuggestionSet
 from features.approvals.models import PublishRequest
+from features.brand_ai.models import BrandAiProfile, DealBrief
 from features.brands import Brand, BrandMember
 from features.content.models import ContentItem, ContentScript
 from features.contract_intelligence import ClauseCardOut, EscalationOut
@@ -36,6 +37,10 @@ class DemoBrandRepo:
 
     async def get(self, id: UUID) -> Brand | None:
         return self.data.get(id)
+
+    async def update(self, id: UUID, fields: dict) -> Brand:
+        self.data[id] = self.data[id].model_copy(update=fields)
+        return self.data[id]
 
 
 class DemoBrandMemberRepo:
@@ -906,3 +911,27 @@ class DemoTicketRepo:
     async def update(self, id: UUID, changes: dict[str, Any]) -> Ticket:
         self.data[id] = self.data[id].model_copy(update=changes)
         return self.data[id]
+
+
+class DemoBrandAiProfileRepo:
+    def __init__(self):
+        self.data: dict[UUID, BrandAiProfile] = {}
+
+    async def get(self, brand_id: UUID) -> BrandAiProfile | None:
+        return self.data.get(brand_id)
+
+    async def upsert(self, profile: BrandAiProfile) -> BrandAiProfile:
+        self.data[profile.brand_id] = profile
+        return profile
+
+
+class DemoDealBriefRepo:
+    def __init__(self):
+        self.data: dict[UUID, DealBrief] = {}
+
+    async def get(self, deal_id: UUID) -> DealBrief | None:
+        return self.data.get(deal_id)
+
+    async def save(self, brief: DealBrief) -> DealBrief:
+        self.data[brief.deal_id] = brief
+        return brief

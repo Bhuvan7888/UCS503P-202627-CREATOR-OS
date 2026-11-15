@@ -22,6 +22,10 @@ class FakeBrandRepo:
     async def get(self, id: UUID) -> Brand | None:
         return self.data.get(id)
 
+    async def update(self, id: UUID, fields: dict) -> Brand:
+        self.data[id] = self.data[id].model_copy(update=fields)
+        return self.data[id]
+
 
 class FakeBrandMemberRepo:
     def __init__(self):
@@ -264,6 +268,7 @@ class FakeLLMPort:
     def __init__(self, should_fail: bool = False, explanation: str = "This is a fake explanation."):
         self.should_fail = should_fail
         self.explanation = explanation
+        self.structured: list | None = None  # what write_structured returns, when a test sets it
 
     async def explain_clause(self, clause_text: str, flag_reason: str | None) -> str:
         if self.should_fail:
@@ -289,6 +294,8 @@ class FakeLLMPort:
         from features.ai_assist.models import SuggestionDraft
 
         self.last_prompt = prompt
+        if self.structured is not None:
+            return self.structured
         return [
             SuggestionDraft(title=f"Idea {n}", description="d", pillar="Edu", hook="h", type="reel")
             for n in range(8)

@@ -23,7 +23,7 @@ from features.ai_assist.rules import (
 )
 from features.content import ContentRepo
 from shared.errors import NotFoundError, ValidationError
-from shared.llm.llm_port import LLMPort
+from shared.llm.llm_port import LLMPort, LLMRateLimitError
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +78,8 @@ class AiAssistService:
         )
         try:
             text = await llm.write(prompt)
+        except LLMRateLimitError as e:
+            raise RateLimitedError(str(e)) from e
         except Exception as e:
             logger.warning("AI generate failed: %s", e)
             raise AIUnavailableError from e
@@ -97,6 +99,8 @@ class AiAssistService:
         )
         try:
             drafts = await llm.write_structured(prompt, list[SuggestionDraft])
+        except LLMRateLimitError as e:
+            raise RateLimitedError(str(e)) from e
         except Exception as e:
             logger.warning("AI suggestions failed: %s", e)
             raise AIUnavailableError from e

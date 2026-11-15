@@ -63,7 +63,8 @@ test("landing page links to both roles", async ({ page }) => {
 
 test("brand: every page loads and every main action works", async ({ page }) => {
   test.setTimeout(180_000); // the contract upload waits for the AI clause scan
-  const problems = watchForProblems(page);
+  // the e2e backend has no AI key: the brand AI buttons must answer 503 and say so politely
+  const problems = watchForProblems(page, [/^503 POST \/brand-ai\//]);
   await loginWithDemo(page, "brand", "1. Mamaearth");
   await expectSettled(page);
   // Home (formerly Analytics) shows KPIs and the pipeline
@@ -89,7 +90,23 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   await page.waitForURL(/\/deals\/[0-9a-f-]{36}$/);
   await expect(page.getByRole("heading", { name: `E2E Campaign ${RUN}` })).toBeVisible();
 
+  // Deal page → Brief (first tab): AI drafting reports the outage; a written brief saves and goes to chat
+  await page.getByRole("button", { name: "Draft with AI" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: /temporarily unavailable/ }),
+  ).toBeVisible();
+  await page.getByLabel("Campaign brief").fill(`Brief for ${RUN}: two reels and a story.`);
+  await page.getByRole("button", { name: "Save brief" }).click();
+  await expect(page.getByText("Brief saved.")).toBeVisible();
+  await page.getByRole("button", { name: /^Send to / }).click();
+  await expect(page.getByText(/Saved and sent to .* in Chat\./)).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Campaign brief")).toHaveValue(
+    `Brief for ${RUN}: two reels and a story.`,
+  );
+
   // Deal page → Contract: upload the sample PDF, accept it
+  await page.getByRole("button", { name: "Contract", exact: true }).click();
   const pdf = await (await page.request.get(`${API}/contracts/sample-contract-pdf`)).body();
   await page
     .locator('input[name="file"]')
@@ -126,7 +143,7 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   await expect(page.getByText(/^Couldn't/)).toHaveCount(0);
 
   // Clause review (red-flag scan) for the uploaded contract
-  await page.getByRole("button", { name: "Contract" }).click();
+  await page.getByRole("button", { name: "Contract", exact: true }).click();
   await page.getByRole("link", { name: "Review clauses" }).click();
   await page.waitForURL(/\/clauses$/);
   await expectSettled(page);
@@ -139,8 +156,13 @@ test("brand: every page loads and every main action works", async ({ page }) => 
     await expect(page.getByRole("link", { name: `E2E Campaign ${RUN}` }).first()).toBeVisible();
   }
 
-  // Creators: invite code + onboard a creator
+  // Creators: AI matching reports the outage politely; invite code + onboard a creator
   await visit(page, "/creators");
+  await page.getByLabel("Campaign idea").fill("Winter skincare launch with reels for 18-25s");
+  await page.getByRole("button", { name: "Find matches" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: /temporarily unavailable/ }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Invite code" })).toBeVisible();
   await page.getByRole("button", { name: "Onboard creator" }).click();
   await page.locator('input[name="display_name"]').fill(`E2E Creator ${RUN}`);
@@ -158,6 +180,25 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   await page.getByPlaceholder("Message Ananya Sharma…").fill(`Hello from E2E ${RUN}`);
   await page.getByRole("button", { name: "Send" }).click();
   await expect(page.getByText(`Hello from E2E ${RUN}`)).toBeVisible();
+  // the brief sent from the deal page arrived in the same thread
+  await expect(page.getByText(new RegExp(`Brief for ${RUN}`))).toBeVisible();
+  await page.getByRole("button", { name: "Draft with AI" }).click();
+  await expect(page.getByText(/temporarily unavailable/)).toBeVisible();
+
+  // Settings: brand profile, AI knowledge and account
+  await visit(page, "/settings");
+  await page.getByLabel("Industry").fill(`Beauty ${RUN}`);
+  await page.getByRole("button", { name: "Save profile" }).click();
+  await expect(page.getByText("Brand profile saved.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Industry")).toHaveValue(`Beauty ${RUN}`);
+  await page.getByRole("link", { name: "AI knowledge" }).click();
+  await expect(page.getByLabel("Brand voice")).toBeEditable();
+  await page.getByLabel("Brand voice").fill(`Warm and expert ${RUN}`);
+  await page.getByRole("button", { name: "Save AI knowledge" }).click();
+  await expect(page.getByText(/now use this/)).toBeVisible();
+  await page.getByRole("link", { name: "Account", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Invite code" })).toBeVisible();
 
   // Activity log: add a manual note; its text is shown in the list (also after a reload)
   await visit(page, "/activity");

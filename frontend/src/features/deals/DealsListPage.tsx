@@ -25,12 +25,16 @@ export default function DealsListPage() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [preselected, setPreselected] = useState("");
 
   useEffect(() => {
-    // Home and ⌘K link here with ?new=1
-    if (new URLSearchParams(window.location.search).get("new") === "1") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-off read of the URL after mount
+    // Home and ⌘K link here with ?new=1; AI creator matching adds &creator=<id>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("new") === "1") {
+      /* eslint-disable react-hooks/set-state-in-effect -- one-off read of the URL after mount */
+      setPreselected(params.get("creator") ?? "");
       setOpen(true);
+      /* eslint-enable react-hooks/set-state-in-effect */
       window.history.replaceState(null, "", window.location.pathname);
     }
   }, []);
@@ -166,7 +170,13 @@ export default function DealsListPage() {
           <form className={page.form} onSubmit={createDeal}>
             <label>
               Creator
-              <select name="creator_id" required className="field" defaultValue="">
+              <select
+                key={preselected}
+                name="creator_id"
+                required
+                className="field"
+                defaultValue={preselected}
+              >
                 <option value="" disabled>
                   Select a creator…
                 </option>

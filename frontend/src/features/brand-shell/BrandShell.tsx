@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronsUpDown, LogOut, PanelLeft, Search } from "lucide-react";
+import { ChevronsUpDown, LogOut, PanelLeft, Search, Settings } from "lucide-react";
 import { clearSession, loadSession } from "@/shared/lib/session";
 import { useUnreadMessages } from "@/features/messages";
 import styles from "@/shared/components/shell/shell.module.css";
@@ -33,6 +33,13 @@ export default function BrandShell({ children }: { children: React.ReactNode }) 
     setCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1");
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [router]);
+
+  useEffect(() => {
+    // brand Settings renames the brand
+    const onSession = () => setBrandName(loadSession()?.brand_name ?? "Brand");
+    window.addEventListener("sessionUpdated", onSession);
+    return () => window.removeEventListener("sessionUpdated", onSession);
+  }, []);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -108,6 +115,15 @@ export default function BrandShell({ children }: { children: React.ReactNode }) 
                   <small>Brand</small>
                 </span>
               </div>
+              <Link
+                href="/settings"
+                className={styles.popItem}
+                role="menuitem"
+                onClick={() => setMenuOpen(false)}
+              >
+                <Settings size={14} />
+                <span className={styles.grow}>Settings</span>
+              </Link>
               <button type="button" className={styles.popItem} onClick={signOut} role="menuitem">
                 <LogOut size={14} />
                 <span className={styles.grow}>Sign out</span>

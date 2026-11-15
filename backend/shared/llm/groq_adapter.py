@@ -11,14 +11,23 @@ from pydantic import TypeAdapter
 
 from features.contract_intelligence import ClauseInput
 from shared.config import settings
-from shared.llm.llm_port import LLMPort
+from shared.llm.llm_port import LLMPort, LLMRateLimitError
 
 logger = logging.getLogger(__name__)
 
 _URL = "https://api.groq.com/openai/v1/chat/completions"
 _TIMEOUT_SECONDS = 60
 _TRANSIENT = {429, 500, 502, 503, 504}
+_RETRIES = 2
+_MAX_WAIT_SECONDS = 20.0  # longer waits fail fast instead of holding the request open
 _THINK = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+
+def _retry_after(r: httpx.Response) -> float:
+    try:
+        return max(float(r.headers.get("retry-after", "1")), 0.5)
+    except ValueError:
+        return 1.0
 
 
 class GroqAdapter(LLMPort):
@@ -39,12 +48,16 @@ class GroqAdapter(LLMPort):
         if as_json:
             body["response_format"] = {"type": "json_object"}
         async with httpx.AsyncClient(timeout=_TIMEOUT_SECONDS) as client:
-            for attempt in range(2):
+            for attempt in range(_RETRIES + 1):
                 r = await client.post(_URL, headers=self.headers, json=body)
-                if r.status_code in _TRANSIENT and attempt == 0:
-                    logger.warning("Groq %s, retrying once", r.status_code)
-                    await asyncio.sleep(1)
+                # 429 = per-minute token/request limit, 503 = model over capacity: wait as told, retry
+                wait = _retry_after(r)
+                if r.status_code in _TRANSIENT and attempt < _RETRIES and wait <= _MAX_WAIT_SECONDS:
+                    logger.warning("Groq %s, retrying in %.1fs", r.status_code, wait)
+                    await asyncio.sleep(wait)
                     continue
+                if r.status_code == 429:
+                    raise LLMRateLimitError(wait)
                 if r.status_code >= 400:
                     raise RuntimeError(f"Groq call failed ({r.status_code}): {r.text[:200]}")
                 text = r.json()["choices"][0]["message"]["content"] or ""

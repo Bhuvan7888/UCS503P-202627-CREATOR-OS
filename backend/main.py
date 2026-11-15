@@ -13,6 +13,8 @@ from features.ai_assist.router import router as ai_assist_router
 from features.analytics.router import router as analytics_router
 from features.approvals.router import router as approvals_router
 from features.auth.router import router as auth_router
+from features.brand_ai.router import router as brand_ai_router
+from features.brands.router import router as brands_router
 from features.content.router import router as content_router
 from features.content.supabase_repository import SupabaseContentRepo
 from features.contract_intelligence.router import escalations_router
@@ -115,6 +117,8 @@ app.include_router(integrations_router)
 app.include_router(notifications_router)
 app.include_router(support_router)
 app.include_router(account_router)
+app.include_router(brands_router)
+app.include_router(brand_ai_router)
 
 
 def main():

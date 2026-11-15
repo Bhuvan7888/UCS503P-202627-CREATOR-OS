@@ -1309,6 +1309,111 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/brands/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Brand */
+        get: operations["get_my_brand_brands_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update My Brand */
+        patch: operations["update_my_brand_brands_me_patch"];
+        trace?: never;
+    };
+    "/brand-ai/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Profile */
+        get: operations["get_profile_brand_ai_profile_get"];
+        /** Save Profile */
+        put: operations["save_profile_brand_ai_profile_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/brand-ai/deals/{deal_id}/brief": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Brief */
+        get: operations["get_brief_brand_ai_deals__deal_id__brief_get"];
+        /** Save Brief */
+        put: operations["save_brief_brand_ai_deals__deal_id__brief_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/brand-ai/deals/{deal_id}/brief/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Brief */
+        post: operations["generate_brief_brand_ai_deals__deal_id__brief_generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/brand-ai/match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Match Creators */
+        post: operations["match_creators_brand_ai_match_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/brand-ai/chat/{creator_id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Draft Reply */
+        post: operations["draft_reply_brand_ai_chat__creator_id__draft_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1542,6 +1647,10 @@ export interface components {
             name: string;
             /** Description */
             description?: string | null;
+            /** Industry */
+            industry?: string | null;
+            /** Website */
+            website?: string | null;
             /** Gst Number */
             gst_number?: string | null;
             /** Pan Number */
@@ -1551,6 +1660,72 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** BrandAiProfile */
+        BrandAiProfile: {
+            /**
+             * Products
+             * @default
+             */
+            products: string;
+            /**
+             * Audience
+             * @default
+             */
+            audience: string;
+            /**
+             * Voice
+             * @default
+             */
+            voice: string;
+            /**
+             * Goals
+             * @default
+             */
+            goals: string;
+            /**
+             * Guidelines
+             * @default
+             */
+            guidelines: string;
+            /**
+             * Brand Id
+             * Format: uuid
+             */
+            brand_id: string;
+            /** Updated At */
+            updated_at?: string | null;
+        };
+        /**
+         * BrandAiProfileSave
+         * @description Brand Settings → AI knowledge: what every brand AI feature is told about the brand.
+         */
+        BrandAiProfileSave: {
+            /**
+             * Products
+             * @default
+             */
+            products: string;
+            /**
+             * Audience
+             * @default
+             */
+            audience: string;
+            /**
+             * Voice
+             * @default
+             */
+            voice: string;
+            /**
+             * Goals
+             * @default
+             */
+            goals: string;
+            /**
+             * Guidelines
+             * @default
+             */
+            guidelines: string;
         };
         /** BrandAnalytics */
         BrandAnalytics: {
@@ -1589,6 +1764,24 @@ export interface components {
             /** Password */
             password: string;
         };
+        /**
+         * BrandProfileUpdate
+         * @description Brand Settings → Brand profile. Empty optional fields are stored as null.
+         */
+        BrandProfileUpdate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Industry */
+            industry?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Gst Number */
+            gst_number?: string | null;
+            /** Pan Number */
+            pan_number?: string | null;
+        };
         /** BrandSignupRequest */
         BrandSignupRequest: {
             /** Brand Name */
@@ -1599,6 +1792,11 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** BriefSave */
+        BriefSave: {
+            /** Content */
+            content: string;
         };
         /** CategoryPreference */
         CategoryPreference: {
@@ -1921,6 +2119,20 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** CreatorMatch */
+        CreatorMatch: {
+            /**
+             * Creator Id
+             * Format: uuid
+             */
+            creator_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Score */
+            score: number;
+            /** Reason */
+            reason: string;
+        };
         /** CreatorOnboardRequest */
         CreatorOnboardRequest: {
             /** Display Name */
@@ -2173,6 +2385,26 @@ export interface components {
              */
             updated_at: string;
         };
+        /** DealBrief */
+        DealBrief: {
+            /** Content */
+            content: string;
+            /**
+             * Deal Id
+             * Format: uuid
+             */
+            deal_id: string;
+            /**
+             * Brand Id
+             * Format: uuid
+             */
+            brand_id: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** DealCreateRequest */
         DealCreateRequest: {
             /**
@@ -2314,6 +2546,11 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** GeneratedText */
+        GeneratedText: {
+            /** Text */
+            text: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -2406,6 +2643,16 @@ export interface components {
         MarkRead: {
             /** Ids */
             ids?: string[] | null;
+        };
+        /** MatchRequest */
+        MatchRequest: {
+            /** Campaign */
+            campaign: string;
+        };
+        /** MatchResult */
+        MatchResult: {
+            /** Matches */
+            matches: components["schemas"]["CreatorMatch"][];
         };
         /** MemberOut */
         MemberOut: {
@@ -6394,6 +6641,309 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_brand_brands_me_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Brand"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_my_brand_brands_me_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrandProfileUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Brand"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_profile_brand_ai_profile_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandAiProfile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_profile_brand_ai_profile_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrandAiProfileSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandAiProfile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_brief_brand_ai_deals__deal_id__brief_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealBrief"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_brief_brand_ai_deals__deal_id__brief_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BriefSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealBrief"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_brief_brand_ai_deals__deal_id__brief_generate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeneratedText"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    match_creators_brand_ai_match_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatchResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    draft_reply_brand_ai_chat__creator_id__draft_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                creator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeneratedText"];
+                };
             };
             /** @description Validation Error */
             422: {

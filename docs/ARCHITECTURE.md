@@ -64,7 +64,7 @@ export { default } from "@/features/deals/DealDetailPage";
 
 | Who | Routes | Shell |
 |---|---|---|
-| Brands | `src/app/(brand)/…` (`/brand`, `/deals`, `/deals/[id]`, `/creators`, `/contracts`, …) | `features/brand-shell/BrandShell.tsx`: the same sidebar groups, top bar, ⌘K (`BrandCommandPalette`) and account menu as the creator shell; renders only for brand sessions (creators are sent to `/dashboard`) |
+| Brands | `src/app/(brand)/…` (`/brand`, `/deals`, `/deals/[id]`, `/creators`, `/contracts`, `/settings`, …) | `features/brand-shell/BrandShell.tsx`: the same sidebar groups, top bar, ⌘K (`BrandCommandPalette`) and account menu as the creator shell; renders only for brand sessions (creators are sent to `/dashboard`) |
 | Creators (and, from Phase 6, invited team members) | `src/app/dashboard/[workspace]/…` | `features/workspaces/WorkspaceShell.tsx`: sidebar, ⌘K, workspace context (`useWorkspace()`) |
 
 Both shells and every page use the shared look in `shared/components/shell/` (`shell.module.css` for the frame and
@@ -94,7 +94,7 @@ import-linter enforces this order inside every feature (`backend/.importlinter`,
 
 The one documented exception: `shared/llm/gemini_adapter.py` and `shared/llm/groq_adapter.py` import `ClauseInput` from contract-intelligence, because that model is the LLM's structured-output schema.
 
-Every LLM user gets its adapter from `shared/llm/factory.py::make_llm()`: Groq (`GROQ_MODEL`, default `qwen/qwen3.8-27b`) while `GROQ_API_KEY` is set — a temporary switch made 2026-11-15 while the Gemini key was rejected — otherwise Gemini. Unset `GROQ_API_KEY` to go back to Gemini.
+Every LLM user gets its adapter from `shared/llm/factory.py::make_llm()`: Groq (`GROQ_MODEL`, default `qwen/qwen3.8-27b`) while `GROQ_API_KEY` is set — a temporary switch made 2026-11-15 while the Gemini key was rejected — otherwise Gemini. Unset `GROQ_API_KEY` to go back to Gemini. When the provider's per-minute limit is used up, the adapter waits for a short `retry-after` (≤20 s) and otherwise raises `LLMRateLimitError`; the AI services turn it into a 429 that tells the user how long to wait.
 
 ## Import rules
 

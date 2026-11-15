@@ -5,6 +5,7 @@ from features.demo_mode.in_memory_repositories import (
     DemoActivityLogRepo,
     DemoApiKeyRepo,
     DemoAuditRepo,
+    DemoBrandAiProfileRepo,
     DemoBrandMemberRepo,
     DemoBrandRepo,
     DemoClauseCardRepo,
@@ -12,6 +13,7 @@ from features.demo_mode.in_memory_repositories import (
     DemoContractRepo,
     DemoCreatorRepo,
     DemoCrmDealRepo,
+    DemoDealBriefRepo,
     DemoDealRepo,
     DemoDeliverableRepo,
     DemoEscalationRepo,
@@ -57,6 +59,8 @@ class DemoStore:
         self.account_repo = DemoAccountRepo()
         self.notification_repo = DemoNotificationRepo()
         self.ticket_repo = DemoTicketRepo()
+        self.brand_ai_profile_repo = DemoBrandAiProfileRepo()
+        self.deal_brief_repo = DemoDealBriefRepo()
         self.user_directory = DemoUserDirectory()
         self.clause_card_repo = DemoClauseCardRepo()
         self.escalation_repo = DemoEscalationRepo()

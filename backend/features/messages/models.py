@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Message(BaseModel):
@@ -17,4 +17,5 @@ class Message(BaseModel):
 
 
 class MessageCreateRequest(BaseModel):
-    body: str
+    # long enough for a campaign brief sent from the deal page
+    body: str = Field(min_length=1, max_length=20000)

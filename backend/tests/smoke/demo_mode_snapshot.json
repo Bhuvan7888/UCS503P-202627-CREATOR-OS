@@ -275,8 +275,10 @@
       "description",
       "gst_number",
       "id",
+      "industry",
       "name",
-      "pan_number"
+      "pan_number",
+      "website"
     ],
     "status": 200
   },

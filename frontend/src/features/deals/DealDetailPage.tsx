@@ -27,6 +27,7 @@ import {
   getBrandAvailableStatuses,
 } from "@/features/deliverables";
 import page from "@/shared/components/shell/page.module.css";
+import { BriefTab } from "./components/BriefTab";
 import shell from "@/shared/components/shell/shell.module.css";
 
 type ContractStatus = components["schemas"]["ContractStatusUpdateRequest"]["status"];
@@ -34,7 +35,7 @@ type DeliverableStatus = components["schemas"]["DeliverableStatusUpdateRequest"]
 type DealStatus = components["schemas"]["DealStatusUpdateRequest"]["status"];
 type PaymentStatus = "pending" | "paid" | "overdue";
 
-const TABS = ["Contract", "Deliverables", "Payments"] as const;
+const TABS = ["Brief", "Contract", "Deliverables", "Payments"] as const;
 type Tab = (typeof TABS)[number];
 const PAYMENT_LABEL: Record<string, string> = {
   pending: "Pending",
@@ -50,7 +51,8 @@ function stageAfterContract(deal: Deal, from: string, to: string): DealStatus | 
   return null;
 }
 
-/** Brand: one deal and everything on it — the only place contracts, deliverables and invoices are changed. */
+/** Brand: one deal and everything on it — the brief, and the only place contracts, deliverables and invoices
+ * are changed. */
 export default function DealDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const deals = useDeals();
@@ -58,7 +60,7 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
   const deliverablesQ = useDeliverables();
   const paymentsQ = usePayments();
   const names = nameById(useCreators().data);
-  const [tab, setTab] = useState<Tab>("Contract");
+  const [tab, setTab] = useState<Tab>("Brief");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -304,6 +306,10 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
         <p className={page.errorBox} role="alert">
           {error}
         </p>
+      )}
+
+      {tab === "Brief" && (
+        <BriefTab dealId={id} creatorId={deal.creator_id} creatorName={creatorName} />
       )}
 
       {tab === "Contract" && (

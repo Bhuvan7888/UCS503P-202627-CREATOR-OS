@@ -4,6 +4,14 @@ Public API of this feature. Other packages import from here, never from submodul
 """
 
 from features.ai_assist.models import AiKnowledge, SuggestionSet
-from features.ai_assist.service import AiAssistService
+from features.ai_assist.rules import RateLimiter
+from features.ai_assist.service import AiAssistService, AIUnavailableError, RateLimitedError
 
-__all__ = ["AiAssistService", "AiKnowledge", "SuggestionSet"]
+__all__ = [
+    "AIUnavailableError",
+    "AiAssistService",
+    "AiKnowledge",
+    "RateLimitedError",
+    "RateLimiter",
+    "SuggestionSet",
+]

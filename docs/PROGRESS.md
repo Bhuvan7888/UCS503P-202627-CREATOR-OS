@@ -44,6 +44,22 @@ brand side stays as it is.
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | done (2026-11-14) |
 
+### Brand Settings + brand AI features (started 2026-11-15)
+Owner asked for a brand Settings page (like the creator side) and AI features that help brands. Plan:
+| # | Step | Status |
+|---|---|---|
+| S1 | Migration 009 `20261120000000_brand_settings_and_ai.sql`: `brands.website`, `brands.industry`; `brand_ai_profiles`; `deal_briefs` (RLS on, no policies) — **owner runs it** | written; waiting for the owner |
+| S2 | Backend: `brands` gets `GET/PATCH /brands/me`; new feature `brand_ai` (AI knowledge, campaign brief, creator matching, chat reply drafts) | done |
+| S3 | Frontend: brand Settings (Brand profile · AI knowledge · Account), deal Brief tab, AI creator matching on Creators, "Draft with AI" in Chat | done |
+| S4 | Tests (unit + API + e2e), docs, deploy, live check after the migration | done locally; live check after the migration |
+
+Verified (2026-11-15): 244 backend tests (new: brand profile API, brand AI API incl. access rules and rate limits,
+match/clean-up rules), e2e 13/13 (Settings save + reload, Brief save + send to chat, AI buttons degrade politely),
+and the three AI features for real on Groq/Qwen in the browser: brief 1.8 s, matching 0.8 s, reply draft 0.3 s.
+Also fixed on the way: chat messages had no length limit (now 1–20,000 chars); AI rate limits now say how long to wait.
+**Groq limit:** this key's plan allows 1,000 output tokens per minute across the whole app — one AI brief uses ~700 —
+so AI features queue up under real use. A paid Groq tier (or the Gemini key, once fixed) removes this.
+
 ### Brand Home: Revenue by month redesigned (2026-11-15)
 The old chart showed only months that had invoices (one month = one bar stretched across the card), no amounts, no
 axis and a bare "09" label, and hid overdue invoices inside "pending". Now:

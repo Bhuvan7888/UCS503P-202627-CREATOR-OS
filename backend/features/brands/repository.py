@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 from uuid import UUID
 
 from features.brands.models import Brand, BrandMember
@@ -12,6 +12,7 @@ from features.brands.models import Brand, BrandMember
 class BrandRepo(Protocol):
     async def create(self, brand: Brand) -> Brand: ...
     async def get(self, id: UUID) -> Brand | None: ...
+    async def update(self, id: UUID, fields: dict[str, Any]) -> Brand: ...
 
 
 @runtime_checkable

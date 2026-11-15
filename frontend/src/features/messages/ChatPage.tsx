@@ -4,8 +4,19 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { PageHeader } from "@/shared/components/shell/PageHeader";
+import client from "@/shared/lib/api-client";
+import { errorText } from "@/shared/lib/api-error";
 import { useCreators } from "@/shared/lib/brand-queries";
 import { ChatView } from "./components/ChatView";
+
+/** AI reply draft from the conversation and the brand's AI knowledge. */
+async function draftReply(creatorId: string): Promise<string> {
+  const { data, error } = await client.POST("/brand-ai/chat/{creator_id}/draft", {
+    params: { path: { creator_id: creatorId } },
+  });
+  if (!data) throw new Error(errorText(error, "Couldn't draft a reply."));
+  return data.text;
+}
 
 /** Brand: chat with your creators (deal pages link here with ?creator=<id>). */
 export default function ChatPage() {
@@ -28,6 +39,7 @@ export default function ChatPage() {
       <ChatView
         key={initialId ?? "none"}
         self="brand"
+        onDraft={draftReply}
         initialId={initialId}
         contacts={creators?.map((c) => ({ id: c.id, label: c.display_name })) ?? null}
         emptyText={

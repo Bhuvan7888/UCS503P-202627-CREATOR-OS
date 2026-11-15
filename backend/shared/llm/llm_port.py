@@ -7,6 +7,16 @@ if TYPE_CHECKING:
     from features.contract_intelligence import ClauseInput
 
 
+class LLMRateLimitError(Exception):
+    """The provider's per-minute limit is used up; `retry_after` is how long it asked us to wait."""
+
+    def __init__(self, retry_after: float):
+        self.retry_after = retry_after
+        super().__init__(
+            f"AI is at its per-minute limit — try again in about {max(1, round(retry_after))} seconds."
+        )
+
+
 @runtime_checkable
 class LLMPort(Protocol):
     async def explain_clause(self, clause_text: str, flag_reason: str | None) -> str: ...

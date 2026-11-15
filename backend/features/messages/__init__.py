@@ -4,7 +4,9 @@ Public API of this feature. Other packages import from here, never from submodul
 """
 
 from features.messages.models import Message
+from features.messages.repository import MessageRepo
 
 __all__ = [
     "Message",
+    "MessageRepo",
 ]
