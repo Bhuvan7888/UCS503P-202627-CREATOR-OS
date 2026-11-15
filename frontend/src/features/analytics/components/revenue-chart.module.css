@@ -1,0 +1,182 @@
+.figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.figure span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-ink-soft);
+}
+
+.figure strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.paid {
+  background: var(--color-success);
+}
+
+.pending {
+  background: var(--color-warning);
+}
+
+.overdue {
+  background: var(--color-danger);
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  grid-template-rows: 180px auto;
+}
+
+.axis {
+  position: relative;
+}
+
+.axis span {
+  position: absolute;
+  right: 8px;
+  transform: translateY(50%);
+  font-size: 11px;
+  color: var(--color-ink-soft);
+}
+
+.plot {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: end;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.grid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--color-border);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.col {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.col:hover {
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-sm);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  width: 24px;
+}
+
+.stack > span:last-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.months {
+  grid-column: 2;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding-top: 6px;
+  font-size: 12px;
+  color: var(--color-ink-soft);
+  text-align: center;
+}
+
+.now {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.tip {
+  position: absolute;
+  top: 8px;
+  left: calc(50% + 18px);
+  z-index: 2;
+  min-width: 170px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  font-size: 12px;
+  color: var(--color-ink);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tipLeft {
+  left: auto;
+  right: calc(50% + 18px);
+}
+
+.tip p {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.tip div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.tip b {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.emptyNote {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

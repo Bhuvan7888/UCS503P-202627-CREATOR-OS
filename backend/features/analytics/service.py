@@ -1,6 +1,6 @@
 import asyncio
 from collections import Counter
-from datetime import date
+from datetime import UTC, datetime
 from uuid import UUID
 
 from features.analytics.models import BrandAnalytics
@@ -46,13 +46,14 @@ class AnalyticsService:
         )
 
         campaign_value, creator_value = payment_totals(payments, deals, contracts)
-        overdue = overdue_payments(payments, date.today())
+        today = datetime.now(UTC).date()
+        overdue = overdue_payments(payments, today)
 
         return BrandAnalytics(
             total_creators=len(creators),
             total_deals=len(deals),
             deals_by_status=dict(Counter(d.status for d in deals)),
-            revenue_by_month=revenue_by_month(payments),
+            revenue_by_month=revenue_by_month(payments, today),
             top_brands=top_campaigns(deals, campaign_value),
             creator_performance=creator_performance(deals, creators, creator_value),
             overdue_payments_count=len(overdue),

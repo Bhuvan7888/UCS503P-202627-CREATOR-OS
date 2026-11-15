@@ -69,6 +69,14 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   // Home (formerly Analytics) shows KPIs and the pipeline
   await expect(page.getByRole("heading", { name: /Welcome back/ })).toBeVisible();
   await expect(page.getByRole("region", { name: "Active deals" })).toBeVisible();
+  // Revenue by month: 6-month totals by status, plus a table of the same numbers for screen readers
+  await expect(page.getByText("Invoiced · 6 months")).toBeVisible();
+  await expect(
+    page.getByRole("table", { name: "Invoices by month and payment status" }),
+  ).toBeAttached();
+  await expect(
+    page.getByRole("table", { name: "Invoices by month and payment status" }).getByRole("row"),
+  ).toHaveCount(7);
 
   // Deals: create a deal — it opens on its deal page (the hub)
   await visit(page, "/deals");
@@ -111,7 +119,10 @@ test("brand: every page loads and every main action works", async ({ page }) => 
   await page.locator('input[name="due_date"]').fill("2026-12-31");
   await page.getByRole("button", { name: "Create invoice" }).click();
   await expect(page.getByText(/12,345/).first()).toBeVisible();
-  await page.getByRole("combobox", { name: /^Status of INV-/ }).first().selectOption("paid");
+  await page
+    .getByRole("combobox", { name: /^Status of INV-/ })
+    .first()
+    .selectOption("paid");
   await expect(page.getByText(/^Couldn't/)).toHaveCount(0);
 
   // Clause review (red-flag scan) for the uploaded contract

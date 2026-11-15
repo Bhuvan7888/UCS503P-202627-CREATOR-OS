@@ -111,7 +111,7 @@ async def test_brand_analytics_aggregates_across_the_board():
     assert analytics.top_brands[0].total_value == 100000.0
     assert analytics.creator_performance[0].display_name == "Test Creator"
     assert analytics.overdue_payments_count == 0  # paid, so not overdue despite past due_date
-    assert len(analytics.revenue_by_month) == 1
-    assert analytics.revenue_by_month[0].paid == 100000.0
+    assert len(analytics.revenue_by_month) == 6  # last 6 months, empty ones included
+    assert analytics.revenue_by_month[-1].paid == 100000.0  # this month
     assert len(analytics.roster_by_niche) == 1
     assert analytics.roster_by_niche[0].avg_engagement_rate == 4.0

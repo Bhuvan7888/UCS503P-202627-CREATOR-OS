@@ -14,6 +14,7 @@ export interface paths {
         /**
          * Health
          * @description For the hosting platform's health check: the process is up (no database call, no data).
+         *     `ai` says whether a Gemini key is configured, so a deploy missing it is visible at a glance.
          */
         get: operations["health_health_get"];
         put?: never;
@@ -2843,6 +2844,11 @@ export interface components {
             paid: number;
             /** Pending */
             pending: number;
+            /**
+             * Overdue
+             * @default 0
+             */
+            overdue: number;
         };
         /** RolePermissions */
         RolePermissions: {

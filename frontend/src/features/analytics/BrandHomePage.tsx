@@ -93,7 +93,7 @@ export default function BrandHomePage() {
         <div className={page.twoUp}>
           <section className={page.card}>
             <h2>Revenue by month</h2>
-            <p className={page.cardSub}>Paid and pending invoices</p>
+            <p className={page.cardSub}>Invoices raised each month, by payment status</p>
             {data ? (
               <RevenueChart data={data.revenue_by_month} />
             ) : (

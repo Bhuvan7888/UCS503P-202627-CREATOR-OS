@@ -4,9 +4,10 @@ from pydantic import BaseModel
 
 
 class RevenueMonth(BaseModel):
-    month: str
+    month: str  # YYYY-MM
     paid: float
-    pending: float
+    pending: float  # unpaid, not yet due
+    overdue: float = 0.0  # unpaid and past its due date (same rule as overdue_payments)
 
 
 class TopBrand(BaseModel):

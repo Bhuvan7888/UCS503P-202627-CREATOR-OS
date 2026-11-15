@@ -44,6 +44,18 @@ brand side stays as it is.
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | done (2026-11-14) |
 
+### Brand Home: Revenue by month redesigned (2026-11-15)
+The old chart showed only months that had invoices (one month = one bar stretched across the card), no amounts, no
+axis and a bare "09" label, and hid overdue invoices inside "pending". Now:
+- backend `analytics.rules.revenue_by_month(payments, today)` returns the **last 6 months, empty ones included**, split
+  into paid / pending / **overdue** (unpaid and past due — the same rule as the Overdue payments KPI); new
+  `RevenueMonth.overdue` field (default 0); unit test `tests/features/analytics/test_revenue_by_month.py`.
+- frontend `RevenueChart`: summary row (Invoiced · 6 months, Paid, Pending, Overdue — the swatches are the legend),
+  stacked columns (24px, 2px gaps, rounded tops) on a ₹ axis with round ticks, month names (current month bold),
+  hover tooltip with the month's breakdown, and a screen-reader table with the same numbers. Status colours checked
+  with the dataviz palette validator (all pass; amber's low contrast is covered by the visible amounts).
+Verified: 226 backend tests, e2e 13/13 (asserts the 6-month table), screenshots for boAt and Mamaearth.
+
 ### AI provider: Groq (temporary, 2026-11-15)
 The Gemini key on Render is rejected by Google (401 `ACCESS_TOKEN_TYPE_UNSUPPORTED`). Owner asked to use Groq for now with
 model `qwen/qwen3.8-27b`. `shared/llm/groq_adapter.py` (OpenAI-compatible chat completions over httpx, JSON mode for

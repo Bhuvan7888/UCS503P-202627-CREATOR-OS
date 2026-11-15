@@ -17,19 +17,31 @@ from features.deals import Deal
 from features.payments import Payment
 
 TOP_CAMPAIGNS_LIMIT = 10
+REVENUE_MONTHS = 6
 
 
-def revenue_by_month(payments: list[Payment]) -> list[RevenueMonth]:
-    """Paid vs. not-yet-paid invoice totals per calendar month of invoice creation, oldest first."""
-    revenue: dict[str, dict[str, float]] = defaultdict(lambda: {"paid": 0.0, "pending": 0.0})
+def revenue_by_month(
+    payments: list[Payment], today: date, months: int = REVENUE_MONTHS
+) -> list[RevenueMonth]:
+    """Invoice totals per calendar month of invoice creation for the last `months` months (empty months
+    included, oldest first), split into paid / pending (not yet due) / overdue."""
+    keys = []
+    year, month = today.year, today.month
+    for _ in range(months):
+        keys.append(f"{year:04d}-{month:02d}")
+        year, month = (year - 1, 12) if month == 1 else (year, month - 1)
+    totals = {k: {"paid": 0.0, "pending": 0.0, "overdue": 0.0} for k in reversed(keys)}
     for p in payments:
-        month = p.created_at.strftime("%Y-%m")
-        key = "paid" if p.status == "paid" else "pending"
-        revenue[month][key] += float(p.amount_inr)
-    return [
-        RevenueMonth(month=m, paid=v["paid"], pending=v["pending"])
-        for m, v in sorted(revenue.items())
-    ]
+        bucket = totals.get(p.created_at.strftime("%Y-%m"))
+        if bucket is None:
+            continue
+        if p.status == "paid":
+            bucket["paid"] += float(p.amount_inr)
+        elif p.due_date and p.due_date < today:
+            bucket["overdue"] += float(p.amount_inr)
+        else:
+            bucket["pending"] += float(p.amount_inr)
+    return [RevenueMonth(month=m, **v) for m, v in totals.items()]
 
 
 def payment_totals(
