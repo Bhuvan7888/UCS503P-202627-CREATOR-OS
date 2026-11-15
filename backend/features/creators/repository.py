@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 from uuid import UUID
 
 from features.brands import Brand
@@ -13,6 +13,7 @@ from features.creators.models import Creator
 class CreatorRepo(Protocol):
     async def create(self, creator: Creator) -> Creator: ...
     async def get(self, id: UUID) -> Creator | None: ...
+    async def update(self, id: UUID, fields: dict[str, Any]) -> Creator: ...
     async def list_for_brand(
         self, brand_id: UUID, limit: int = 50, offset: int = 0
     ) -> list[Creator]: ...

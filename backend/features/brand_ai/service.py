@@ -20,11 +20,13 @@ from features.brand_ai.rules import (
     clean_text,
     match_prompt,
     reply_prompt,
+    track_record,
     valid_matches,
 )
 from features.brands import Brand, BrandRepo
 from features.creators import Creator, CreatorRepo
 from features.deals import Deal, DealRepo
+from features.deliverables import DeliverableRepo
 from features.messages import MessageRepo
 from shared.errors import NotFoundError, ValidationError
 from shared.llm.llm_port import LLMPort, LLMRateLimitError
@@ -45,6 +47,7 @@ class BrandAiService:
         brand_repo: BrandRepo,
         creator_repo: CreatorRepo,
         deal_repo: DealRepo,
+        deliverable_repo: DeliverableRepo,
         message_repo: MessageRepo,
         llm: LLMPort | None,
         limiter: RateLimiter,
@@ -54,6 +57,7 @@ class BrandAiService:
         self.brand_repo = brand_repo
         self.creator_repo = creator_repo
         self.deal_repo = deal_repo
+        self.deliverable_repo = deliverable_repo
         self.message_repo = message_repo
         self.llm = llm
         self.limiter = limiter
@@ -93,10 +97,14 @@ class BrandAiService:
         llm = self._take_call(brand_id)
         brand, profile = await self._brand(brand_id)
         deals = await self.deal_repo.list_for_brand(brand_id, ROSTER_SCAN_LIMIT, 0)
-        counts = {c.id: sum(1 for d in deals if d.creator_id == c.id) for c in roster}
-        prompt = match_prompt(brand, profile, request.campaign, [(c, counts[c.id]) for c in roster])
+        work = await self.deliverable_repo.list_for_brand(brand_id, ROSTER_SCAN_LIMIT, 0)
+        records = {c.id: track_record(c, deals, work) for c in roster}
+        now = datetime.now(UTC)
+        prompt = match_prompt(
+            brand, profile, request.campaign, [(c, records[c.id]) for c in roster], now
+        )
         drafts = await self._ask(llm.write_structured, prompt, list[CreatorMatchDraft])
-        return MatchResult(matches=valid_matches(drafts, roster))
+        return MatchResult(matches=valid_matches(drafts, roster, records, now))
 
     async def draft_reply(self, brand_id: UUID, creator_id: UUID) -> GeneratedText:
         if not await self.creator_repo.is_linked_to_brand(creator_id, brand_id):

@@ -6,9 +6,10 @@ from features.brands import Brand, BrandRepo
 from features.creators.models import (
     Creator,
     CreatorOnboardRequest,
+    CreatorStatsUpdate,
 )
 from features.creators.repository import CreatorRepo
-from shared.errors import ValidationError
+from shared.errors import NotFoundError, ValidationError
 
 
 class CreatorService:
@@ -53,6 +54,20 @@ class CreatorService:
         await self.activity_log_repo.create(log)
 
         return created
+
+    async def get_mine(self, creator_id: UUID) -> Creator:
+        creator = await self.creator_repo.get(creator_id)
+        if creator is None:
+            raise NotFoundError("Creator not found")
+        return creator
+
+    async def update_my_stats(self, creator_id: UUID, request: CreatorStatsUpdate) -> Creator:
+        await self.get_mine(creator_id)
+        fields = request.model_dump()
+        fields["instagram_handle"] = fields["instagram_handle"].strip().lstrip("@")
+        fields["niche"] = fields["niche"].strip()
+        fields["stats_updated_at"] = datetime.now(UTC).isoformat()
+        return await self.creator_repo.update(creator_id, fields)
 
     async def list_for_brand(
         self, brand_id: UUID, limit: int = 50, offset: int = 0

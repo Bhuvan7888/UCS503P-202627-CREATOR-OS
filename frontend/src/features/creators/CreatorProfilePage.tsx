@@ -10,6 +10,7 @@ import { useContracts, useCreators, useDeals, usePayments } from "@/shared/lib/b
 import { formatInr } from "@/shared/lib/format-currency";
 import { dealStatusVariant } from "@/shared/lib/status-variants";
 import page from "@/shared/components/shell/page.module.css";
+import { statsSource } from "./utils/stats-source";
 
 /** Brand: one creator's profile and their deals with you (work on a deal happens on its page). */
 export default function CreatorProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -49,6 +50,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
     `${creator.niche} · ${creator.follower_tier}`,
     creator.followers_count != null && `${creator.followers_count.toLocaleString()} followers`,
     creator.engagement_rate != null && `${creator.engagement_rate}% engagement`,
+    `stats: ${statsSource(creator).toLowerCase()}`,
   ].filter(Boolean);
 
   return (

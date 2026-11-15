@@ -1,5 +1,6 @@
 """Supabase implementations of the creator and growth-snapshot repositories."""
 
+from typing import Any
 from uuid import UUID
 
 from supabase import Client
@@ -18,13 +19,20 @@ class SupabaseCreatorRepo(DemoFallbackMixin):
 
     async def create(self, creator: Creator) -> Creator:
         res = await run_query(
-            self.client.table("creators").insert(creator.model_dump(mode="json", exclude={"id"}))
+            # exclude_none: optional columns (e.g. stats_updated_at) are left to their defaults
+            self.client.table("creators").insert(
+                creator.model_dump(mode="json", exclude={"id"}, exclude_none=True)
+            )
         )
         return Creator.model_validate(res.data[0])
 
     async def get(self, id: UUID) -> Creator | None:
         res = await run_query(self.client.table("creators").select("*").eq("id", str(id)))
         return first_or_none(Creator, res)
+
+    async def update(self, id: UUID, fields: dict[str, Any]) -> Creator:
+        res = await run_query(self.client.table("creators").update(fields).eq("id", str(id)))
+        return Creator.model_validate(res.data[0])
 
     async def list_for_brand(
         self, brand_id: UUID, limit: int = 50, offset: int = 0

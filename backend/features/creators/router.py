@@ -14,10 +14,11 @@ from features.brands.supabase_repository import SupabaseBrandRepo
 from features.creators.models import (
     Creator,
     CreatorOnboardRequest,
+    CreatorStatsUpdate,
 )
 from features.creators.service import CreatorService
 from features.creators.supabase_repository import SupabaseCreatorRepo
-from shared.errors import ValidationError
+from shared.errors import NotFoundError, ValidationError
 from shared.http_errors import map_errors
 from shared.pagination import clamp_page_size
 from shared.supabase_client import get_supabase_client
@@ -73,6 +74,30 @@ async def link_brand(
         raise HTTPException(status_code=403, detail="This action requires a creator account")
     with map_errors({ValidationError: 400}):
         return await service.link_brand(actor.creator_id, request.invite_code)
+
+
+@router.get("/me", response_model=Creator)
+async def get_my_creator_profile(
+    actor: ActorContext = Depends(get_current_actor),
+    service: CreatorService = Depends(get_creator_service),
+):
+    if not actor.creator_id:
+        raise HTTPException(status_code=403, detail="This action requires a creator account")
+    with map_errors({NotFoundError: 404}):
+        return await service.get_mine(actor.creator_id)
+
+
+@router.patch("/me", response_model=Creator)
+async def update_my_stats(
+    request: CreatorStatsUpdate,
+    actor: ActorContext = Depends(get_current_actor),
+    service: CreatorService = Depends(get_creator_service),
+):
+    """The creator keeps the stats brands see up to date (stamps `stats_updated_at`)."""
+    if not actor.creator_id:
+        raise HTTPException(status_code=403, detail="This action requires a creator account")
+    with map_errors({NotFoundError: 404}):
+        return await service.update_my_stats(actor.creator_id, request)
 
 
 @router.get("/{id}", response_model=Creator)

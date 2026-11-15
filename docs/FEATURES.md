@@ -70,11 +70,11 @@ Brand Settings, the same tabbed layout as the creator Settings.
 
 ## `brand_ai`
 AI help for brands, driven by the brand's AI knowledge (Settings → AI knowledge).
-- **Features:** AI campaign brief per deal (deal page → Brief tab: draft, edit, save, send to the creator in Chat); AI creator matching (Creators page: ranks the roster with a fit score and reason; "Start deal" pre-selects the creator); AI chat reply drafts (Chat → "Draft with AI")
+- **Features:** AI campaign brief per deal (deal page → Brief tab: draft, edit, save, send to the creator in Chat); AI creator matching (Creators page: ranks the roster with a fit score and reason, the creator's real track record on Creator OS and a rule-based Low/High data confidence; "Start deal" pre-selects the creator); AI chat reply drafts (Chat → "Draft with AI")
 - **API:** `GET/PUT /brand-ai/profile`; `GET/PUT /brand-ai/deals/{deal_id}/brief`, `POST /brand-ai/deals/{deal_id}/brief/generate`; `POST /brand-ai/match`; `POST /brand-ai/chat/{creator_id}/draft`
 - **Backend:** `models.py`, `rules.py` (prompts, plain-text clean-up, `valid_matches` keeps only roster creators), `service.py` (`BrandAiService`), `repository.py`, `supabase_repository.py` (tables `brand_ai_profiles`, `deal_briefs`), `router.py`
 - **Frontend:** `deals/components/BriefTab.tsx`, `creators/components/CreatorMatchCard.tsx`, `messages/ChatPage.tsx` (`onDraft`)
-- **Depends on:** `ai_assist` (rate limiter, AI errors), `brands`, `creators`, `deals`, `messages`; `shared/llm/factory.make_llm`
+- **Depends on:** `ai_assist` (rate limiter, AI errors), `brands`, `creators` (`stats_confidence`), `deals`, `deliverables`, `messages`; `shared/llm/factory.make_llm`
 
 ## `brand-shell`
 The brand app's frame — same structure as the creator workspace shell.
@@ -86,11 +86,13 @@ The brand's creator roster, the creator profile view, and brand linking via invi
 - **Pages:**
   - `/creators` → `CreatorsPage.tsx` (roster, invite code, Onboard creator dialog)
   - `/creators/[id]` → `CreatorProfilePage.tsx` (profile, KPIs, their deals, Message button)
-  - `/dashboard/[workspace]/settings/brands` → `ConnectedBrandsPage.tsx` (creator enters a brand's invite code; owner only)
+  - `/dashboard/[workspace]/settings/brands` → `ConnectedBrandsPage.tsx` (owner only): "Your creator stats" (`components/CreatorStatsCard.tsx`), enter a brand's invite code, connected brands
 - **API:**
   - `POST /creators`, `GET /creators`, `GET /creators/{id}`
+  - `GET /creators/me`, `PATCH /creators/me` (creator updates the stats brands see; stamps `stats_updated_at`)
   - `GET /creators/me/brands`, `POST /creators/me/link-brand`
-- **Backend:** `router.py`, `service.py` (`CreatorService`), `models.py` (`Creator`), `repository.py`, `supabase_repository.py`
+- **Backend:** `router.py`, `service.py` (`CreatorService`), `models.py` (`Creator`, `CreatorStatsUpdate`), `rules.py` (`stats_confidence`: how far the self-reported stats can be trusted), `repository.py`, `supabase_repository.py`
+- **Frontend utils:** `utils/stats-source.ts` ("Self-reported · 3 months ago" / "Added by you" / "No numbers on file")
 - **Depends on:** `auth`, `brands`, `activity-log`; frontend uses `workspaces` (`SettingsHeader`)
 
 ## `deals`

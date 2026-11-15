@@ -55,6 +55,10 @@ class FakeCreatorRepo:
     async def get(self, id: UUID) -> Creator | None:
         return self.data.get(id)
 
+    async def update(self, id: UUID, fields: dict) -> Creator:
+        self.data[id] = self.data[id].model_copy(update=fields)
+        return self.data[id]
+
     async def get_by_user_id(self, user_id: UUID) -> Creator | None:
         return next((c for c in self.data.values() if c.user_id == user_id), None)
 

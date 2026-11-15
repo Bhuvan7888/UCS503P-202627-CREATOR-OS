@@ -44,6 +44,27 @@ brand side stays as it is.
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | done (2026-11-14) |
 
+### Better creator matching data (started 2026-11-15)
+No platform (Instagram) connection, so matching relied on unverified stats typed in once. Owner chose to build:
+| # | Step | Status |
+|---|---|---|
+| M1 | Track record from Creator OS's own data (deals completed/cancelled, deliverables approved / needed revisions) fed to matching and shown with each match | done |
+| M2 | Creators keep their stats current (creator Settings → Brands → "Your creator stats", `GET/PATCH /creators/me`, `creators.stats_updated_at` — migration 010, owner runs it); brands see the source and age of each creator's stats | done (migration 010 written; waiting for the owner) |
+| M3 | Weak data flagged by a fixed rule (missing stats or older than 90 days → "Low confidence" with the reason); the AI is told to weigh track record above unverified numbers | done |
+| M4 | Tests, docs, deploy, live check | done locally; live check after migrations 009 + 010 |
+
+Details:
+- Track record (`brand_ai.rules.track_record` / `track_record_text`): deals completed / in progress / cancelled and
+  deliverables approved / in progress / needed revisions, between this brand and the creator. Work still under way
+  reads "in progress" (the first real run called a creator with only open deals "unreliable"; wording and prompt
+  fixed). Deliverables have no due dates, so on-time delivery is not measured.
+- Confidence (`creators.rules.stats_confidence`, a fixed rule, not the AI): low when there are no follower numbers
+  (incl. Google sign-ups' unset tier) or the stats are over 90 days old; the note says who entered them and when.
+- Creator Settings → Brands → "Your creator stats" (`CreatorStatsCard`, `PATCH /creators/me` stamps
+  `stats_updated_at`); brand Creators table gets a "Stats" column and the creator profile a "stats: …" note.
+- Verified: 252 backend tests, e2e 13/13 (creator saves stats → boAt sees "Self-reported · today"), and a real Groq run:
+  Ananya 85 (proven record), a no-numbers creator 45 with "Low confidence", Rohan 30 (wrong niche, work in progress).
+
 ### Brand Settings + brand AI features (started 2026-11-15)
 Owner asked for a brand Settings page (like the creator side) and AI features that help brands. Plan:
 | # | Step | Status |

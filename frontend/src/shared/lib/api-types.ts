@@ -162,6 +162,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/creators/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Creator Profile */
+        get: operations["get_my_creator_profile_creators_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update My Stats
+         * @description The creator keeps the stats brands see up to date (stamps `stats_updated_at`).
+         */
+        patch: operations["update_my_stats_creators_me_patch"];
+        trace?: never;
+    };
     "/creators/{id}": {
         parameters: {
             query?: never;
@@ -2111,6 +2132,8 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Stats Updated At */
+            stats_updated_at?: string | null;
         };
         /** CreatorLoginRequest */
         CreatorLoginRequest: {
@@ -2132,6 +2155,15 @@ export interface components {
             score: number;
             /** Reason */
             reason: string;
+            /** Track Record */
+            track_record: string;
+            /**
+             * Confidence
+             * @enum {string}
+             */
+            confidence: "high" | "low";
+            /** Data Note */
+            data_note: string;
         };
         /** CreatorOnboardRequest */
         CreatorOnboardRequest: {
@@ -2186,6 +2218,27 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /**
+         * CreatorStatsUpdate
+         * @description Creator Settings → Brands → "Your creator stats": what brands (and AI matching) see.
+         */
+        CreatorStatsUpdate: {
+            /** Instagram Handle */
+            instagram_handle: string;
+            /** Niche */
+            niche: string;
+            /**
+             * Follower Tier
+             * @enum {string}
+             */
+            follower_tier: "nano" | "micro" | "mid" | "macro" | "mega";
+            /** Followers Count */
+            followers_count: number;
+            /** Engagement Rate */
+            engagement_rate?: number | null;
+            /** Avg Views Per Week */
+            avg_views_per_week?: number | null;
         };
         /** CrmDeal */
         CrmDeal: {
@@ -3718,6 +3771,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Brand"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_creator_profile_creators_me_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Creator"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_my_stats_creators_me_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatorStatsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Creator"];
                 };
             };
             /** @description Validation Error */

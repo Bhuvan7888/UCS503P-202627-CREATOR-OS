@@ -33,8 +33,9 @@ export function CreatorMatchCard() {
     <section className={`${page.card} ${page.spaced}`}>
       <h2>Find the right creator with AI</h2>
       <p className={page.cardSub}>
-        Describe the campaign. AI ranks your creators by fit — audience, niche, reach, engagement
-        and past work with you — using your AI knowledge from Settings.
+        Describe the campaign. AI ranks your creators by fit using your AI knowledge from Settings,
+        their real track record with you on Creator OS, and their stats — which creators report
+        themselves, so matches on missing or old numbers are marked low confidence.
       </p>
       <form className={page.inlineForm} onSubmit={find}>
         <label>
@@ -70,8 +71,18 @@ export function CreatorMatchCard() {
                 {m.score}
               </span>
               <span className={page.grow}>
-                <Link href={`/creators/${m.creator_id}`}>{m.display_name}</Link>
+                <span className={page.row}>
+                  <Link href={`/creators/${m.creator_id}`}>{m.display_name}</Link>
+                  {m.confidence === "low" && (
+                    <span className="pill pill-warn" title={m.data_note}>
+                      Low confidence
+                    </span>
+                  )}
+                </span>
                 <small>{m.reason}</small>
+                <small>
+                  On Creator OS: {m.track_record} · {m.data_note}
+                </small>
               </span>
               <Link href={`/deals?new=1&creator=${m.creator_id}`} className="btn btn-text btn-row">
                 <Plus size={14} /> Start deal

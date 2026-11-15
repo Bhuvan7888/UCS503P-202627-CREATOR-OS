@@ -15,6 +15,7 @@
       "id",
       "instagram_handle",
       "niche",
+      "stats_updated_at",
       "user_id"
     ],
     "status": 200
@@ -129,6 +130,7 @@
       "id",
       "instagram_handle",
       "niche",
+      "stats_updated_at",
       "user_id"
     ],
     "status": 200

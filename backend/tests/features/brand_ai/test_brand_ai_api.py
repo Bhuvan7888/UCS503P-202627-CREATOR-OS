@@ -61,6 +61,10 @@ def test_matching_ranks_only_roster_creators(llm: FakeLLMPort) -> None:
     assert r.status_code == 200
     matches = r.json()["matches"]
     assert [m["score"] for m in matches] == [100, 72]  # clamped, sorted, invented id dropped
+    # every match carries its real track record and a rule-based (not AI) data confidence
+    assert all(m["confidence"] in ("high", "low") and m["data_note"] for m in matches)
+    assert all(m["track_record"] for m in matches)
+    assert "Track record on Creator OS" in llm.last_prompt and "never verified" in llm.last_prompt
     assert "Winter skincare" in llm.last_prompt
     short = client.post("/brand-ai/match", headers=h, json={"campaign": "short"})
     assert short.status_code == 422

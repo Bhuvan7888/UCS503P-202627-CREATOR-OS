@@ -242,6 +242,11 @@ test("creator ↔ brand: connect with the brand's invite code, then chat both wa
   await page.getByRole("button", { name: "Connect" }).click();
   await expect(page.getByText(/Connected to boAt/)).toBeVisible();
   await expect(page.getByRole("listitem").filter({ hasText: "boAt" })).toBeVisible();
+  // …and keeps the stats brands see up to date
+  await page.getByLabel("Followers").fill("71000");
+  await page.getByLabel("Engagement rate % (optional)").fill("5.4");
+  await page.getByRole("button", { name: "Save stats" }).click();
+  await expect(page.getByText(/brands now see these numbers/)).toBeVisible();
 
   // …and messages boAt from the workspace
   await page.getByRole("link", { name: "Messages" }).click();
@@ -256,6 +261,11 @@ test("creator ↔ brand: connect with the brand's invite code, then chat both wa
 
   // boAt now has Ananya as a creator, sees the message and replies
   await loginWithDemo(page, "brand", "2. boAt");
+  // the roster shows where Ananya's numbers came from and how fresh they are
+  await visit(page, "/creators");
+  const row = page.getByRole("row").filter({ hasText: "Ananya Sharma" });
+  await expect(row).toContainText("71,000");
+  await expect(row).toContainText("Self-reported · today");
   await visit(page, "/chat");
   await page.getByRole("button", { name: /Ananya Sharma/ }).click();
   await expect(page.getByText(`Hi boAt ${RUN}`)).toBeVisible();

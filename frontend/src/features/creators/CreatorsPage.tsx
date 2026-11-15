@@ -11,6 +11,7 @@ import { useCreators, useDeals } from "@/shared/lib/brand-queries";
 import { loadSession } from "@/shared/lib/session";
 import page from "@/shared/components/shell/page.module.css";
 import { CreatorMatchCard } from "./components/CreatorMatchCard";
+import { statsSource } from "./utils/stats-source";
 
 const FOLLOWER_TIERS = [
   { value: "nano", label: "Nano (1K – 10K followers)" },
@@ -119,6 +120,7 @@ export default function CreatorsPage() {
               <th>Engagement</th>
               <th>Deals</th>
               <th>Account</th>
+              <th>Stats</th>
             </tr>
           </thead>
           <tbody>
@@ -143,6 +145,7 @@ export default function CreatorsPage() {
                     <StatusPill status="Added by you" variant="neutral" />
                   )}
                 </td>
+                <td className={page.muted}>{statsSource(c)}</td>
               </tr>
             ))}
           </tbody>

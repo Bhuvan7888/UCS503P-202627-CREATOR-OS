@@ -19,6 +19,7 @@ from features.brands.supabase_repository import SupabaseBrandRepo
 from features.creators.supabase_repository import SupabaseCreatorRepo
 from features.deals.dependencies import load_accessible_deal
 from features.deals.supabase_repository import SupabaseDealRepo
+from features.deliverables.supabase_repository import SupabaseDeliverableRepo
 from features.messages.supabase_repository import SupabaseMessageRepo
 from shared.config import settings
 from shared.errors import NotFoundError, ValidationError
@@ -50,6 +51,7 @@ def get_brand_ai_service(llm: LLMPort | None = Depends(get_brand_llm)) -> BrandA
         brand_repo=SupabaseBrandRepo(client),
         creator_repo=SupabaseCreatorRepo(client),
         deal_repo=SupabaseDealRepo(client),
+        deliverable_repo=SupabaseDeliverableRepo(client),
         message_repo=SupabaseMessageRepo(client),
         llm=llm,
         limiter=_limiter,

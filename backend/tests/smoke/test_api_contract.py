@@ -27,6 +27,8 @@ API_CONTRACT: list[tuple[str, str, str]] = [
     ("POST", "/auth/creator/oauth", "user"),
     ("POST", "/creators", "brand"),
     ("GET", "/creators", "brand"),
+    ("GET", "/creators/me", "actor"),
+    ("PATCH", "/creators/me", "actor"),
     ("GET", "/creators/me/brands", "actor"),
     ("POST", "/creators/me/link-brand", "actor"),
     ("GET", "/creators/{id}", "actor"),

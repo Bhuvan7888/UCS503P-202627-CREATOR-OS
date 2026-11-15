@@ -75,7 +75,9 @@ instant. **The deal page (`/deals/[id]`) is the only place a brand creates or ch
 invoices**; Contracts / Deliverables / Payments are filterable read-only lists that link to the deal. Brand ↔ creator
 chat is one component (`features/messages/components/ChatView.tsx`) used by the brand `/chat` page and the creator
 `/dashboard/[workspace]/messages` page; a creator connects to a brand by entering the brand's invite code in
-Settings → Brands (`POST /creators/me/link-brand`).
+Settings → Brands (`POST /creators/me/link-brand`) and keeps the stats brands see current there (`PATCH /creators/me`).
+Creator stats are never verified (no platform connection): AI creator matching combines them with the real track
+record on Creator OS and a fixed confidence rule (`creators.rules.stats_confidence`) rather than trusting them.
 
 Creator pages live in their feature (e.g. `features/content/HomePage.tsx`), read the active workspace with
 `useWorkspace()` from `@/features/workspaces`, and call `/workspaces/{workspace}/…` endpoints with `workspace.slug`.

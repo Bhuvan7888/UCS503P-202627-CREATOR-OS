@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -45,11 +46,27 @@ class CreatorMatchDraft(BaseModel):
     reason: str
 
 
+class TrackRecord(BaseModel):
+    """What actually happened on Creator OS between this brand and the creator (real data, not self-reported)."""
+
+    deals: int = 0
+    completed: int = 0
+    cancelled: int = 0
+    deliverables: int = 0
+    approved: int = 0
+    rejected: int = 0
+    needed_revisions: int = 0  # revision requested or rejected at some point
+
+
 class CreatorMatch(BaseModel):
     creator_id: UUID
     display_name: str
     score: int = Field(ge=0, le=100)
     reason: str
+    track_record: str  # e.g. "2 deals (1 completed) · 3 deliverables, 2 approved"
+    # set by a fixed rule from the stats on file — not by the AI
+    confidence: Literal["high", "low"]
+    data_note: str
 
 
 class MatchResult(BaseModel):
