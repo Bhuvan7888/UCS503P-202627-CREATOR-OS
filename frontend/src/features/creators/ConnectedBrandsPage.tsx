@@ -6,9 +6,9 @@ import client from "@/shared/lib/api-client";
 import { useQuery } from "@/shared/lib/query-cache";
 import { SettingsHeader, useWorkspace } from "@/features/workspaces";
 import page from "@/shared/components/shell/page.module.css";
-import { CreatorStatsCard } from "./components/CreatorStatsCard";
+import { CreatorProfileCard } from "./components/CreatorProfileCard";
 
-/** Creator Settings → Brands: your stats as brands see them, connecting to a brand with its invite code, and
+/** Creator Settings → Brands: your profile as brands see it, connecting to a brand with its invite code, and
  * the brands you're connected to. */
 export default function ConnectedBrandsPage() {
   const { base } = useWorkspace();
@@ -44,7 +44,7 @@ export default function ConnectedBrandsPage() {
     <>
       <SettingsHeader tab="Brands" />
       <div className={page.stack}>
-        <CreatorStatsCard />
+        <CreatorProfileCard analyticsHref={`${base}/settings/platform-analytics`} />
         <section className={page.card}>
           <h2>Connect a brand</h2>
           <p className={page.cardSub}>

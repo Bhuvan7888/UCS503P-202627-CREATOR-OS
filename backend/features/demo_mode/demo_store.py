@@ -21,6 +21,7 @@ from features.demo_mode.in_memory_repositories import (
     DemoMessageRepo,
     DemoNotificationRepo,
     DemoPaymentRepo,
+    DemoPlatformSnapshotRepo,
     DemoPublishRequestRepo,
     DemoScriptRepo,
     DemoSuggestionRepo,
@@ -61,6 +62,7 @@ class DemoStore:
         self.ticket_repo = DemoTicketRepo()
         self.brand_ai_profile_repo = DemoBrandAiProfileRepo()
         self.deal_brief_repo = DemoDealBriefRepo()
+        self.platform_snapshot_repo = DemoPlatformSnapshotRepo()
         self.user_directory = DemoUserDirectory()
         self.clause_card_repo = DemoClauseCardRepo()
         self.escalation_repo = DemoEscalationRepo()

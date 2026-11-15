@@ -30,6 +30,7 @@ from features.messages.router import router as messages_router
 from features.notifications.dependencies import get_notification_service
 from features.notifications.router import router as notifications_router
 from features.payments.router import router as payments_router
+from features.platform_stats.router import router as platform_stats_router
 from features.support.router import router as support_router
 from features.workspaces.router import invites_router
 from features.workspaces.router import router as workspaces_router
@@ -119,6 +120,7 @@ app.include_router(support_router)
 app.include_router(account_router)
 app.include_router(brands_router)
 app.include_router(brand_ai_router)
+app.include_router(platform_stats_router)
 
 
 def main():

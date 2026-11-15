@@ -63,6 +63,13 @@ Brand accounts, brand membership and the brand's own profile.
 - **Backend:** `models.py` (`Brand`, `BrandMember`, `BrandProfileUpdate`), `service.py` (`BrandService`), `router.py`, `repository.py` (ports), `supabase_repository.py`
 - **Used by:** `auth` (signup and identity), `creators` (linking a creator to a brand), `brand_ai` (prompts)
 
+## `platform_stats` (backend) / `platform-stats` (frontend)
+Per-platform analytics the creator updates by hand, dated, until Instagram and other platform APIs are connected.
+- **Pages:** `/dashboard/[workspace]/settings/platform-analytics` → `PlatformAnalyticsPage.tsx` (owner only: one row per platform, "Update analytics for today"); `components/AudienceCard.tsx` (creator Home via `MyAudienceCard`, brand creator profile)
+- **API:** `GET /platform-stats/me`, `PUT /platform-stats/me` (today's numbers; a second save the same day replaces them), `GET /platform-stats/creators/{creator_id}` (the creator, or a brand they're connected to)
+- **Backend:** `models.py`, `rules.py` (`summarize`: latest per platform + change since the previous update; `creator_totals`; `tier_for`), `service.py` (`PlatformStatsService`: saving syncs the creator's followers/engagement/views/tier and `stats_updated_at`), `repository.py`, `supabase_repository.py` (table `growth_snapshots`, unique per creator + platform + day — migration 011), `router.py`
+- **Depends on:** `content` (`Platform`), `creators` (repository); frontend `shared/constants/platforms.ts`
+
 ## `brand-settings` (frontend)
 Brand Settings, the same tabbed layout as the creator Settings.
 - **Pages:** `/settings` → `BrandProfilePage.tsx`; `/settings/ai` → `BrandAiKnowledgePage.tsx`; `/settings/account` → `BrandAccountPage.tsx` (invite code, sign out); `components/BrandSettingsHeader.tsx` (header + tabs)
@@ -86,12 +93,12 @@ The brand's creator roster, the creator profile view, and brand linking via invi
 - **Pages:**
   - `/creators` → `CreatorsPage.tsx` (roster, invite code, Onboard creator dialog)
   - `/creators/[id]` → `CreatorProfilePage.tsx` (profile, KPIs, their deals, Message button)
-  - `/dashboard/[workspace]/settings/brands` → `ConnectedBrandsPage.tsx` (owner only): "Your creator stats" (`components/CreatorStatsCard.tsx`), enter a brand's invite code, connected brands
+  - `/dashboard/[workspace]/settings/brands` → `ConnectedBrandsPage.tsx` (owner only): "Your creator profile" (`components/CreatorProfileCard.tsx`: handle + niche), enter a brand's invite code, connected brands
 - **API:**
   - `POST /creators`, `GET /creators`, `GET /creators/{id}`
-  - `GET /creators/me`, `PATCH /creators/me` (creator updates the stats brands see; stamps `stats_updated_at`)
+  - `GET /creators/me`, `PATCH /creators/me` (handle + niche; the numbers come from `platform_stats`)
   - `GET /creators/me/brands`, `POST /creators/me/link-brand`
-- **Backend:** `router.py`, `service.py` (`CreatorService`), `models.py` (`Creator`, `CreatorStatsUpdate`), `rules.py` (`stats_confidence`: how far the self-reported stats can be trusted), `repository.py`, `supabase_repository.py`
+- **Backend:** `router.py`, `service.py` (`CreatorService`), `models.py` (`Creator`, `CreatorProfileUpdate`, `FOLLOWER_TIERS`), `rules.py` (`stats_confidence`: how far the self-reported stats can be trusted), `repository.py`, `supabase_repository.py`
 - **Frontend utils:** `utils/stats-source.ts` ("Self-reported · 3 months ago" / "Added by you" / "No numbers on file")
 - **Depends on:** `auth`, `brands`, `activity-log`; frontend uses `workspaces` (`SettingsHeader`)
 

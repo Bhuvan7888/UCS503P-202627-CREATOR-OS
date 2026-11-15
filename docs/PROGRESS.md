@@ -44,6 +44,32 @@ brand side stays as it is.
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | done (2026-11-14) |
 
+### Platform analytics, updated by hand (started 2026-11-15)
+Until the Instagram (and other) APIs are connected, creators log each platform's numbers themselves, dated, so both
+dashboards stay current. Migrations 009 + 010 confirmed live (brand AI profile/brief 200, creators carry
+`stats_updated_at`, AI matching answers via Groq).
+| # | Step | Status |
+|---|---|---|
+| P1 | Migration 011: reuse the unused `growth_snapshots` table — add `platform`, `avg_views`; one row per creator, platform and day | written; waiting for the owner |
+| P2 | Backend feature `platform_stats`: `GET/PUT /platform-stats/me`, `GET /platform-stats/creators/{id}`; saving syncs the creator's totals (followers, weighted engagement, weekly views, tier) used by the Creators table and AI matching | done |
+| P3 | Creator Settings → Platform analytics (update for today, change since last update); Home "Audience" card; "Your creator stats" keeps handle + niche only (one source for numbers) | done |
+| P4 | Brand: creator profile "Platform analytics" card (self-reported, as of date) | done |
+| P5 | Tests, docs, deploy, live check | done locally; live check after migration 011 |
+
+Details:
+- Totals synced onto the creator on every save (`platform_stats.rules.creator_totals`): follower total, engagement
+  weighted by followers, summed weekly views, tier from the total (nano <10K, micro <50K, mid <200K, macro <1M, mega).
+  The Creators table, creator profile header, stats age ("Self-reported · today") and AI matching all read these.
+- "Your creator stats" became "Your creator profile" (`CreatorProfileCard`: handle + niche only; `PATCH /creators/me`
+  takes `CreatorProfileUpdate`) so numbers are entered in one place.
+- `PLATFORMS` moved to `frontend/src/shared/constants/platforms.ts` (content + platform-stats use it).
+- Bug found by the new e2e and fixed: the new settings forms reloaded saved values in the background over what the user
+  had typed. Brand profile, brand AI knowledge, creator profile and platform analytics now load once and keep their
+  fields disabled until then (`page.fieldset`).
+- Verified: 261 backend tests (rules: change since last update, weighted totals, tiers; API: same-day save replaces,
+  totals sync, one row per platform, brand access), e2e 13/13 (creator logs Instagram + YouTube → Home Audience
+  80,000 → boAt sees 80,000 "Self-reported · today" and the per-platform card).
+
 ### Better creator matching data (started 2026-11-15)
 No platform (Instagram) connection, so matching relied on unverified stats typed in once. Owner chose to build:
 | # | Step | Status |

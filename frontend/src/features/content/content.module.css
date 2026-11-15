@@ -101,6 +101,10 @@
   color: var(--color-ink-faint);
 }
 
+.spaced {
+  margin-bottom: 16px;
+}
+
 .twoUp {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

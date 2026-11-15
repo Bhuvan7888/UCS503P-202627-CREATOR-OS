@@ -201,6 +201,11 @@
   margin: 0;
 }
 
+/* wraps a form's fields so they can be disabled together; adds no box of its own */
+.fieldset {
+  display: contents;
+}
+
 .full {
   grid-column: 1 / -1;
 }
@@ -242,6 +247,19 @@
   font-family: var(--font-mono, monospace);
   font-size: 13px;
   overflow-wrap: anywhere;
+}
+
+.swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.end {
+  flex: none;
+  align-items: flex-end;
+  text-align: right;
 }
 
 .row {

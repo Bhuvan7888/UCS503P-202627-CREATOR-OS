@@ -25,6 +25,7 @@ Creator OS has two sides, free for everyone:
 | `ai-assist` | AI knowledge, Generate Title/Description/Hook/outline, AI Content Suggestions | `/dashboard/[workspace]/ai-suggestions`, `/dashboard/[workspace]/settings/ai-knowledge` |
 | `brand-shell` | Brand app shell: sidebar, ⌘K search, account menu | `(brand)` layout |
 | `brand-settings` | Brand Settings: profile, AI knowledge, account | `/settings`, `/settings/ai`, `/settings/account` |
+| `platform_stats` | Per-platform analytics creators update by hand (dated) until platform APIs are connected; shown on creator Home and to brands | `/dashboard/[workspace]/settings/platform-analytics` |
 | `brand_ai` | AI campaign briefs, AI creator matching, AI chat reply drafts for brands | deal Brief tab, `/creators`, `/chat` |
 | `deals` | Brand deal list and the deal page (contract, deliverables, invoices) | `/deals`, `/deals/[id]` |
 | `creators` | Creator roster with invite code, profiles, creator Settings → Brands | `/creators`, `/creators/[id]`, `/dashboard/[workspace]/settings/brands` |

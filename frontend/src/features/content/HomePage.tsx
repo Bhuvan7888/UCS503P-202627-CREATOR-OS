@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/shared/components/shell/PageHeader";
 import { useWorkspace } from "@/features/workspaces";
+import { MyAudienceCard } from "@/features/platform-stats";
 import { AddContentWizard } from "./components/AddContentWizard";
 import { CONTENT_TYPE_LABEL, PLATFORMS, STAGE_LABEL, type ContentStats } from "./constants/content";
 import { useContent } from "./hooks/useContent";
@@ -115,6 +116,12 @@ export default function HomePage() {
           );
         })}
       </div>
+
+      {workspace.role === "owner" && (
+        <div className={styles.spaced}>
+          <MyAudienceCard settingsHref={`${base}/settings/platform-analytics`} />
+        </div>
+      )}
 
       <div className={styles.twoUp}>
         <section className={styles.panelCard}>

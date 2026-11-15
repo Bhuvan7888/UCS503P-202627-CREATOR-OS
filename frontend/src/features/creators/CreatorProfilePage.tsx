@@ -6,7 +6,10 @@ import { MessageCircle, Users } from "lucide-react";
 import { PageHeader } from "@/shared/components/shell/PageHeader";
 import { StatusPill } from "@/shared/components/ui/StatusPill";
 import { DEAL_STAGE_LABEL } from "@/shared/constants/deal-stages";
+import client from "@/shared/lib/api-client";
 import { useContracts, useCreators, useDeals, usePayments } from "@/shared/lib/brand-queries";
+import { useQuery } from "@/shared/lib/query-cache";
+import { AudienceCard } from "@/features/platform-stats";
 import { formatInr } from "@/shared/lib/format-currency";
 import { dealStatusVariant } from "@/shared/lib/status-variants";
 import page from "@/shared/components/shell/page.module.css";
@@ -20,6 +23,15 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
   const contracts = useContracts().data ?? [];
   const payments = usePayments().data ?? [];
   const creator = creators.data?.find((c) => c.id === id);
+  const audience = useQuery(
+    `brand:audience:${id}`,
+    async () =>
+      (
+        await client.GET("/platform-stats/creators/{creator_id}", {
+          params: { path: { creator_id: id } },
+        })
+      ).data,
+  );
 
   if (!creator) {
     return (
@@ -84,6 +96,18 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ id: s
           <span>Outstanding</span>
           <strong>{formatInr(sum(false))}</strong>
         </section>
+      </div>
+      <div className={page.spaced}>
+        <AudienceCard
+          audience={audience.data}
+          title="Platform analytics"
+          subtitle="Self-reported by the creator until platforms are connected"
+          emptyText={
+            creator.user_id
+              ? "Not shared yet — the creator adds these in their Settings → Platform analytics."
+              : "Added by you, so only the numbers from onboarding are on file."
+          }
+        />
       </div>
       <section className={page.card}>
         <div className={page.cardHead}>

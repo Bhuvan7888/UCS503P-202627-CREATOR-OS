@@ -177,10 +177,10 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Update My Stats
-         * @description The creator keeps the stats brands see up to date (stamps `stats_updated_at`).
+         * Update My Profile
+         * @description Handle and niche brands see; the numbers are kept in /platform-stats/me.
          */
-        patch: operations["update_my_stats_creators_me_patch"];
+        patch: operations["update_my_profile_creators_me_patch"];
         trace?: never;
     };
     "/creators/{id}": {
@@ -1435,6 +1435,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/platform-stats/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Audience */
+        get: operations["my_audience_platform_stats_me_get"];
+        /**
+         * Update My Platform Stats
+         * @description Save today's numbers for the platforms given (a second save on the same day replaces them).
+         */
+        put: operations["update_my_platform_stats_platform_stats_me_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-stats/creators/{creator_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Creator Audience */
+        get: operations["creator_audience_platform_stats_creators__creator_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2135,6 +2173,20 @@ export interface components {
             /** Stats Updated At */
             stats_updated_at?: string | null;
         };
+        /** CreatorAudience */
+        CreatorAudience: {
+            /**
+             * Creator Id
+             * Format: uuid
+             */
+            creator_id: string;
+            /** Platforms */
+            platforms: components["schemas"]["PlatformSummary"][];
+            /** Total Followers */
+            total_followers: number;
+            /** As Of */
+            as_of: string | null;
+        };
         /** CreatorLoginRequest */
         CreatorLoginRequest: {
             /** Email */
@@ -2200,6 +2252,17 @@ export interface components {
             /** Total Value */
             total_value: number;
         };
+        /**
+         * CreatorProfileUpdate
+         * @description Creator Settings → Brands → "Your creator profile". Numbers (followers, engagement, views, tier) come from
+         *     Settings → Platform analytics, so there is one place to keep them current.
+         */
+        CreatorProfileUpdate: {
+            /** Instagram Handle */
+            instagram_handle: string;
+            /** Niche */
+            niche: string;
+        };
         /** CreatorSignupRequest */
         CreatorSignupRequest: {
             /** Display Name */
@@ -2218,27 +2281,6 @@ export interface components {
             email: string;
             /** Password */
             password: string;
-        };
-        /**
-         * CreatorStatsUpdate
-         * @description Creator Settings → Brands → "Your creator stats": what brands (and AI matching) see.
-         */
-        CreatorStatsUpdate: {
-            /** Instagram Handle */
-            instagram_handle: string;
-            /** Niche */
-            niche: string;
-            /**
-             * Follower Tier
-             * @enum {string}
-             */
-            follower_tier: "nano" | "micro" | "mid" | "macro" | "mega";
-            /** Followers Count */
-            followers_count: number;
-            /** Engagement Rate */
-            engagement_rate?: number | null;
-            /** Avg Views Per Week */
-            avg_views_per_week?: number | null;
         };
         /** CrmDeal */
         CrmDeal: {
@@ -3013,6 +3055,51 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /**
+         * PlatformEntry
+         * @description Today's numbers for one platform, typed in by the creator (no platform API yet).
+         */
+        PlatformEntry: {
+            /**
+             * Platform
+             * @enum {string}
+             */
+            platform: "youtube" | "instagram" | "x" | "linkedin" | "facebook";
+            /** Followers Count */
+            followers_count: number;
+            /** Engagement Rate */
+            engagement_rate?: number | null;
+            /** Avg Views */
+            avg_views?: number | null;
+        };
+        /** PlatformStatsSave */
+        PlatformStatsSave: {
+            /** Entries */
+            entries: components["schemas"]["PlatformEntry"][];
+        };
+        /** PlatformSummary */
+        PlatformSummary: {
+            /**
+             * Platform
+             * @enum {string}
+             */
+            platform: "youtube" | "instagram" | "x" | "linkedin" | "facebook";
+            /** Followers Count */
+            followers_count: number;
+            /** Engagement Rate */
+            engagement_rate: number | null;
+            /** Avg Views */
+            avg_views: number | null;
+            /**
+             * Recorded At
+             * Format: date
+             */
+            recorded_at: string;
+            /** Change */
+            change: number | null;
+            /** Previous Recorded At */
+            previous_recorded_at: string | null;
         };
         /** Profile */
         Profile: {
@@ -3815,7 +3902,7 @@ export interface operations {
             };
         };
     };
-    update_my_stats_creators_me_patch: {
+    update_my_profile_creators_me_patch: {
         parameters: {
             query?: never;
             header?: {
@@ -3826,7 +3913,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreatorStatsUpdate"];
+                "application/json": components["schemas"]["CreatorProfileUpdate"];
             };
         };
         responses: {
@@ -7062,6 +7149,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GeneratedText"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_audience_platform_stats_me_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatorAudience"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_my_platform_stats_platform_stats_me_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformStatsSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatorAudience"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    creator_audience_platform_stats_creators__creator_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                creator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatorAudience"];
                 };
             };
             /** @description Validation Error */

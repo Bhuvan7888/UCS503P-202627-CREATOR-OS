@@ -19,6 +19,7 @@ const TABS: { label: string; path: string; anyOf?: string[]; ownerOnly?: boolean
   },
   { label: "AI knowledge", path: "/settings/ai-knowledge", anyOf: ["view_settings"] },
   { label: "Brands", path: "/settings/brands", ownerOnly: true },
+  { label: "Platform analytics", path: "/settings/platform-analytics", ownerOnly: true },
   { label: "Notifications", path: "/settings/notifications" },
   { label: "API keys", path: "/settings/api-keys", anyOf: ["manage_workspace"] },
   { label: "Webhooks", path: "/settings/webhooks", anyOf: ["manage_workspace"] },

@@ -28,6 +28,7 @@
   "/dashboard/[workspace]/settings/api-keys",
   "/dashboard/[workspace]/settings/brands",
   "/dashboard/[workspace]/settings/notifications",
+  "/dashboard/[workspace]/settings/platform-analytics",
   "/dashboard/[workspace]/settings/profile",
   "/dashboard/[workspace]/settings/webhooks",
   "/dashboard/[workspace]/settings/workspace",

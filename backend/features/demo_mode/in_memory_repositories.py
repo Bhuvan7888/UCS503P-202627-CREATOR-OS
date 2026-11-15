@@ -9,6 +9,7 @@ from features.activity_log import ActivityLog
 from features.ai_assist.models import AiKnowledge, SuggestionSet
 from features.approvals.models import PublishRequest
 from features.brand_ai.models import BrandAiProfile, DealBrief
+from features.platform_stats.models import PlatformSnapshot
 from features.brands import Brand, BrandMember
 from features.content.models import ContentItem, ContentScript
 from features.contract_intelligence import ClauseCardOut, EscalationOut
@@ -939,3 +940,16 @@ class DemoDealBriefRepo:
     async def save(self, brief: DealBrief) -> DealBrief:
         self.data[brief.deal_id] = brief
         return brief
+
+
+class DemoPlatformSnapshotRepo:
+    def __init__(self):
+        self.data: dict[tuple[UUID, str, date], PlatformSnapshot] = {}
+
+    async def list_for_creator(self, creator_id: UUID) -> list[PlatformSnapshot]:
+        rows = [s for s in self.data.values() if s.creator_id == creator_id]
+        return sorted(rows, key=lambda s: s.recorded_at, reverse=True)
+
+    async def upsert_many(self, snapshots: list[PlatformSnapshot]) -> None:
+        for s in snapshots:
+            self.data[(s.creator_id, s.platform, s.recorded_at)] = s

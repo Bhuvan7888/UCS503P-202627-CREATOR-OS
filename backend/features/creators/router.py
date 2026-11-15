@@ -14,7 +14,7 @@ from features.brands.supabase_repository import SupabaseBrandRepo
 from features.creators.models import (
     Creator,
     CreatorOnboardRequest,
-    CreatorStatsUpdate,
+    CreatorProfileUpdate,
 )
 from features.creators.service import CreatorService
 from features.creators.supabase_repository import SupabaseCreatorRepo
@@ -88,16 +88,16 @@ async def get_my_creator_profile(
 
 
 @router.patch("/me", response_model=Creator)
-async def update_my_stats(
-    request: CreatorStatsUpdate,
+async def update_my_profile(
+    request: CreatorProfileUpdate,
     actor: ActorContext = Depends(get_current_actor),
     service: CreatorService = Depends(get_creator_service),
 ):
-    """The creator keeps the stats brands see up to date (stamps `stats_updated_at`)."""
+    """Handle and niche brands see; the numbers are kept in /platform-stats/me."""
     if not actor.creator_id:
         raise HTTPException(status_code=403, detail="This action requires a creator account")
     with map_errors({NotFoundError: 404}):
-        return await service.update_my_stats(actor.creator_id, request)
+        return await service.update_my_profile(actor.creator_id, request)
 
 
 @router.get("/{id}", response_model=Creator)

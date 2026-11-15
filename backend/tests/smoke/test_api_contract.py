@@ -126,6 +126,10 @@ API_CONTRACT: list[tuple[str, str, str]] = [
     ("POST", "/brand-ai/deals/{deal_id}/brief/generate", "brand"),
     ("POST", "/brand-ai/match", "brand"),
     ("POST", "/brand-ai/chat/{creator_id}/draft", "brand"),
+    # platform analytics, updated by hand (2026-11-15)
+    ("GET", "/platform-stats/me", "actor"),
+    ("PUT", "/platform-stats/me", "actor"),
+    ("GET", "/platform-stats/creators/{creator_id}", "actor"),
 ]
 
 _PLACEHOLDER_ID = "00000000-0000-0000-0000-000000000001"

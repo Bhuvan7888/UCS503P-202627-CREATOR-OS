@@ -242,11 +242,20 @@ test("creator ↔ brand: connect with the brand's invite code, then chat both wa
   await page.getByRole("button", { name: "Connect" }).click();
   await expect(page.getByText(/Connected to boAt/)).toBeVisible();
   await expect(page.getByRole("listitem").filter({ hasText: "boAt" })).toBeVisible();
-  // …and keeps the stats brands see up to date
-  await page.getByLabel("Followers").fill("71000");
-  await page.getByLabel("Engagement rate % (optional)").fill("5.4");
-  await page.getByRole("button", { name: "Save stats" }).click();
-  await expect(page.getByText(/brands now see these numbers/)).toBeVisible();
+  // …keeps today's platform analytics current (no Instagram API yet)…
+  await page
+    .getByRole("navigation", { name: "Settings sections" })
+    .getByRole("link", { name: "Platform analytics" })
+    .click();
+  await page.getByLabel("Instagram followers").fill("71000");
+  await page.getByLabel("Instagram engagement rate").fill("5.4");
+  await page.getByLabel("YouTube followers").fill("9000");
+  await page.getByRole("button", { name: "Update analytics for today" }).click();
+  await expect(page.getByText(/Updated for .*brands and AI creator matching/)).toBeVisible();
+  // …which shows on Home
+  await visit(page, base);
+  await expect(page.getByRole("heading", { name: "Audience" })).toBeVisible();
+  await expect(page.getByText("80,000")).toBeVisible();
 
   // …and messages boAt from the workspace
   await page.getByRole("link", { name: "Messages" }).click();
@@ -264,8 +273,12 @@ test("creator ↔ brand: connect with the brand's invite code, then chat both wa
   // the roster shows where Ananya's numbers came from and how fresh they are
   await visit(page, "/creators");
   const row = page.getByRole("row").filter({ hasText: "Ananya Sharma" });
-  await expect(row).toContainText("71,000");
+  await expect(row).toContainText("80,000"); // follower total across platforms
   await expect(row).toContainText("Self-reported · today");
+  await row.getByRole("link", { name: "Ananya Sharma" }).click();
+  const analytics = page.getByRole("list", { name: "Platform analytics" });
+  await expect(analytics).toContainText("Instagram");
+  await expect(analytics).toContainText("71,000");
   await visit(page, "/chat");
   await page.getByRole("button", { name: /Ananya Sharma/ }).click();
   await expect(page.getByText(`Hi boAt ${RUN}`)).toBeVisible();

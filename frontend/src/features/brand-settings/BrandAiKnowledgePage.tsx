@@ -43,12 +43,13 @@ export default function BrandAiKnowledgePage() {
     async () => (await client.GET("/brand-ai/profile")).data,
   );
   const [form, setForm] = useState<Form>(EMPTY);
+  const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!profile.data) return;
+    if (!profile.data || ready) return; // load the saved values once, never over the user's typing
     const p = profile.data;
     // the form starts from the saved knowledge once it arrives
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -59,7 +60,8 @@ export default function BrandAiKnowledgePage() {
       goals: p.goals ?? "",
       guidelines: p.guidelines ?? "",
     });
-  }, [profile.data]);
+    setReady(true);
+  }, [profile.data, ready]);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -98,24 +100,26 @@ export default function BrandAiKnowledgePage() {
           </p>
         )}
         <form className={page.form} onSubmit={save}>
-          {FIELDS.map((f) => (
-            <label key={f.key} className={page.full}>
-              {f.label}
-              <textarea
-                className="field"
-                rows={3}
-                maxLength={4000}
-                placeholder={f.hint}
-                value={form[f.key]}
-                onChange={(e) => setForm((cur) => ({ ...cur, [f.key]: e.target.value }))}
-              />
-            </label>
-          ))}
-          <div className={page.full}>
-            <button className="btn" type="submit" disabled={saving || !profile.data}>
-              {saving ? "Saving…" : "Save AI knowledge"}
-            </button>
-          </div>
+          <fieldset className={page.fieldset} disabled={!ready}>
+            {FIELDS.map((f) => (
+              <label key={f.key} className={page.full}>
+                {f.label}
+                <textarea
+                  className="field"
+                  rows={3}
+                  maxLength={4000}
+                  placeholder={f.hint}
+                  value={form[f.key]}
+                  onChange={(e) => setForm((cur) => ({ ...cur, [f.key]: e.target.value }))}
+                />
+              </label>
+            ))}
+            <div className={page.full}>
+              <button className="btn" type="submit" disabled={saving || !profile.data}>
+                {saving ? "Saving…" : "Save AI knowledge"}
+              </button>
+            </div>
+          </fieldset>
         </form>
       </section>
     </>
