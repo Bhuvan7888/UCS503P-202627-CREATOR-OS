@@ -37,6 +37,23 @@ export function toLocalInput(iso: string | null | undefined): string {
   return `${localIsoDate(d)}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+/** Allowed range for due / go-live dates: last year to five years ahead (catches typos like 2006 for 2026). */
+export function dateBounds(now = new Date()): { min: string; max: string } {
+  const y = now.getFullYear();
+  return { min: `${y - 1}-01-01`, max: `${y + 5}-12-31` };
+}
+
+/** A YYYY-MM-DD or datetime-local value outside dateBounds (empty counts as fine). */
+export function outOfBounds(value: string | null | undefined, now = new Date()): boolean {
+  if (!value) return false;
+  const { min, max } = dateBounds(now);
+  const day = value.slice(0, 10);
+  return day < min || day > max;
+}
+
+export const DATE_RANGE_ERROR =
+  "Check the dates: they must be between last year and five years from now.";
+
 export function shift(view: CalendarView, anchor: Date, step: number): Date {
   return view === "week"
     ? addDays(anchor, 7 * step)

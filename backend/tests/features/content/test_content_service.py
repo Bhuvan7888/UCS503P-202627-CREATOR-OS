@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -39,6 +40,14 @@ async def test_create_starts_as_an_idea_and_moves_through_stages():
         and moved.title == NEW.title
         and moved.updated_at >= item.updated_at
     )
+
+
+@pytest.mark.asyncio
+async def test_create_with_a_go_live_time_is_scheduled():
+    service, ws, owner = await _setup()
+    when = datetime(2026, 12, 1, 10, 0, tzinfo=UTC)
+    item = await service.create(ws.id, owner, NEW.model_copy(update={"scheduled_at": when}))
+    assert (item.stage, item.scheduled_at) == ("scheduled", when)
 
 
 @pytest.mark.asyncio

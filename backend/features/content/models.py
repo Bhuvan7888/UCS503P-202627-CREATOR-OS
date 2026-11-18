@@ -49,6 +49,8 @@ class ContentItemCreate(_ContentFields):
     due_date: date | None = None
     assignee_user_id: UUID | None = None
     crm_deal_id: UUID | None = None
+    # "Schedule Post": a go-live time puts the new item straight into the Scheduled stage
+    scheduled_at: datetime | None = None
 
 
 class ContentItemUpdate(_ContentFields):

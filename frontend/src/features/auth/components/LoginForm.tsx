@@ -68,6 +68,17 @@ export function LoginForm({ role }: { role: Role }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [slow, setSlow] = useState(false);
+
+  useEffect(() => {
+    if (!pending) return;
+    // A first sign-in after a quiet spell can wait on the hosted API waking up; say so.
+    const timer = setTimeout(() => setSlow(true), 4000);
+    return () => {
+      clearTimeout(timer);
+      setSlow(false);
+    };
+  }, [pending]);
 
   function fillDemo(demoEmail: string) {
     setEmail(demoEmail);
@@ -86,13 +97,14 @@ export function LoginForm({ role }: { role: Role }) {
           : await client.POST("/auth/creator/login", { body });
       if (apiError || !data) {
         setError(copy.wrongCredentials);
+        setPending(false);
       } else {
+        // Stay in the "signing in" state until the next page takes over.
         saveSession(data);
         router.push(role === "brand" ? "/brand" : "/dashboard");
       }
     } catch {
       setError(NETWORK_ERROR_MESSAGE);
-    } finally {
       setPending(false);
     }
   }
@@ -116,6 +128,7 @@ export function LoginForm({ role }: { role: Role }) {
               key={account.email}
               type="button"
               className={styles.demoBtn}
+              disabled={pending}
               onClick={() => fillDemo(account.email)}
             >
               {account.label}
@@ -131,7 +144,20 @@ export function LoginForm({ role }: { role: Role }) {
       )}
       {error && <div className={styles.error}>{error}</div>}
 
-      <form onSubmit={onSubmit}>
+      {pending && (
+        <div className={styles.signingIn} role="status" aria-live="polite" aria-busy="true">
+          <span className={`${styles.skeletonBar} ${styles.skeletonLabel}`} />
+          <span className={styles.skeletonBar} />
+          <span className={`${styles.skeletonBar} ${styles.skeletonLabel}`} />
+          <span className={styles.skeletonBar} />
+          <p className={styles.signingInText}>
+            {slow
+              ? "Still working: the server is waking up after a quiet spell. This can take up to a minute the first time."
+              : `Signing you in as ${email}…`}
+          </p>
+        </div>
+      )}
+      <form onSubmit={onSubmit} hidden={pending}>
         <div className={styles.field}>
           <label htmlFor="email">Email address</label>
           <input

@@ -7,7 +7,7 @@ import client from "@/shared/lib/api-client";
 import { Dialog } from "@/shared/components/ui/Dialog";
 import { GenerateButton } from "@/features/ai-assist";
 import { CONTENT_TYPES, STAGES, type ContentItem } from "../constants/content";
-import { toLocalInput } from "../utils/calendar-dates";
+import { DATE_RANGE_ERROR, dateBounds, outOfBounds, toLocalInput } from "../utils/calendar-dates";
 import styles from "../content.module.css";
 
 interface Props {
@@ -20,6 +20,7 @@ interface Props {
 
 /** Edit one content item (opened from a board card), with inline AI generation. */
 export function ContentItemDialog({ item, workspace, base, onClose, onSaved }: Props) {
+  const bounds = dateBounds();
   const [form, setForm] = useState({
     title: item.title,
     description: item.description ?? "",
@@ -37,6 +38,10 @@ export function ContentItemDialog({ item, workspace, base, onClose, onSaved }: P
   const valid = form.title.trim() && form.pillar.trim() && form.hook.trim();
 
   async function save() {
+    if (outOfBounds(form.due_date) || outOfBounds(form.scheduled_at)) {
+      setError(DATE_RANGE_ERROR);
+      return;
+    }
     setSaving(true);
     setError(null);
     const { data, error: apiError } = await client.PATCH(
@@ -202,6 +207,8 @@ export function ContentItemDialog({ item, workspace, base, onClose, onSaved }: P
             <input
               className="field"
               type="date"
+              min={bounds.min}
+              max={bounds.max}
               value={form.due_date}
               onChange={(e) => set("due_date", e.target.value)}
             />
@@ -211,6 +218,8 @@ export function ContentItemDialog({ item, workspace, base, onClose, onSaved }: P
             <input
               className="field"
               type="datetime-local"
+              min={`${bounds.min}T00:00`}
+              max={`${bounds.max}T23:59`}
               value={form.scheduled_at}
               onChange={(e) => set("scheduled_at", e.target.value)}
             />

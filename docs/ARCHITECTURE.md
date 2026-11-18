@@ -129,6 +129,7 @@ A file belongs in `shared/` **only** when two or more features use it. Otherwise
 | Errors → HTTP | services raise `shared/errors.py` exceptions. Routers translate them with `with map_errors({ExceptionType: status}, by_message={...})`, so each route says exactly what it maps |
 | Database access | `supabase_repository.py` per feature, using `run_query()` / `first_or_none()` from `shared/supabase_query.py`. One shared client per key with pooled HTTP/1.1 sessions (`shared/supabase_client.py` — supabase-py's HTTP/2 sessions are not thread-safe); queries run in a 64-thread pool (`main.py`) |
 | Speed | Each database round trip is the cost (~190 ms from far away, ~5 ms in the same region). Keep requests to 1–2 sequential queries: membership comes from `workspaces.service.membership_cache` (15 s, invalidated on team changes); run independent queries with `asyncio.gather`; side effects go to background tasks. Frontend pages read through `shared/lib/query-cache.ts` (`useQuery`: cached value first, refresh in the background); sign-out clears it. Measure with `uv run python -m scripts.perf_check` |
+| Hosting / cold starts | frontend on Vercel, backend on Render's free plan (both deploy from `main`). Render stops the API after 15 idle minutes and the next request waits ~30–60 s for it to boot; `.github/workflows/keep-backend-awake.yml` pings `/health` every 10 minutes so it stays up (one always-on free service ≈ 744 of the 750 free hours a month). The sign-in page also pings `/health` when it opens and, while a sign-in is in flight, shows a skeleton and, after 4 s, a "server is waking up" note (`features/auth/components/LoginForm.tsx`) |
 | Demo mode | every Supabase repository inherits `DemoFallbackMixin`; see `features/demo_mode/` |
 | Logging | standard `logging.getLogger(__name__)` per module (backend) |
 | Formatting / lint | backend: `ruff format`, `ruff check` (config in `pyproject.toml`), `mypy`, `lint-imports`. Frontend: `npm run format` (Prettier), `npm run lint` (ESLint), `npx tsc --noEmit` |
@@ -217,9 +218,10 @@ npm run lint
 npm run format:check
 npm run build && npm run test:smoke
 
-# end-to-end (browser): backend in demo mode on :8000, production frontend on :3100
+# end-to-end (browser): backend in demo mode on :8000 with AI switched off (one test expects
+# "AI unavailable"), production frontend on :3100
 cd backend && SUPABASE_URL=http://dummy.invalid SUPABASE_SERVICE_ROLE_KEY=dummy SUPABASE_ANON_KEY=dummy \
-  uv run uvicorn main:app --port 8000
+  GEMINI_API_KEY=dummy GROQ_API_KEY=dummy uv run uvicorn main:app --port 8000
 cd frontend && npm run build && npx next start -p 3100
 npx playwright install chromium   # once
 E2E_BASE_URL=http://127.0.0.1:3100 npm run test:e2e

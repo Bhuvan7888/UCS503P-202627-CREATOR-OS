@@ -452,6 +452,22 @@ test("creator: item editor, scripts with auto-save, AI pages and AI knowledge", 
   expect(problems).toEqual([]);
 });
 
+test("sign-in shows a skeleton while the request is in flight", async ({ page }) => {
+  const problems = watchForProblems(page);
+  // Hold the login response for a moment so the in-flight state can be seen
+  await page.route(`${API}/auth/creator/login`, async (route) => {
+    await new Promise((r) => setTimeout(r, 1500));
+    await route.continue();
+  });
+  await page.goto(`${WEB}/creator/login`);
+  await page.getByRole("button", { name: "3. Zara Khan (Nykaa)" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Signing you in" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeHidden();
+  await page.waitForURL(/\/dashboard\/ws-[0-9a-f]{8}$/);
+  expect(problems).toEqual([]);
+});
+
 test("creator: calendar scheduling and approvals", async ({ page }) => {
   const problems = watchForProblems(page);
   await loginWithDemo(page, "creator", "3. Zara Khan (Nykaa)");
@@ -486,15 +502,49 @@ test("creator: calendar scheduling and approvals", async ({ page }) => {
   await expect(wizard).toBeHidden();
   const dueChip = page.getByRole("button", { name: `Due · ${title}` });
   await expect(dueChip).toBeVisible();
+  // Items with only a due date are listed under the calendar too
+  const feed = page.getByRole("region", { name: "Feed" });
+  await expect(feed.locator("li", { hasText: title })).toContainText("Due");
 
-  // Schedule it from the chip's editor; it shows in the feed as Scheduled
+  // Period navigation reads "Next month"; "This month" appears once you leave it
+  const monthTitle = now.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  await expect(page.getByRole("button", { name: "This month" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Next month" }).click();
+  await expect(page.getByText(monthTitle, { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "This month" }).click();
+  await expect(page.getByText(monthTitle, { exact: true })).toBeVisible();
+
+  // A typo year (2006 for 2026) cannot be saved
   await dueChip.click();
   const editor = page.getByRole("dialog", { name: "Edit content" });
+  await editor.getByLabel("Due Date").fill("2006-12-05");
+  await editor.getByRole("button", { name: "Save changes" }).click();
+  await expect(editor.getByText(/Check the dates/)).toBeVisible();
+  await editor.getByLabel("Due Date").fill(todayIso);
+
+  // Schedule it from the chip's editor; it shows in the feed as Scheduled
   await editor.getByLabel("Scheduled for").fill(`${todayIso}T18:30`);
   await editor.getByRole("button", { name: "Save changes" }).click();
   await expect(editor).toBeHidden();
-  const feed = page.getByRole("region", { name: "Feed" });
   await expect(feed.locator("li", { hasText: title })).toContainText("Scheduled");
+
+  // "Schedule Post" needs a go-live time and lands on the calendar as Scheduled
+  const postTitle = `Post ${RUN}`;
+  await page.getByRole("button", { name: "Schedule Post" }).click();
+  const scheduler = page.getByRole("dialog", { name: "Schedule Post" });
+  await scheduler.getByRole("button", { name: "Next" }).click();
+  await scheduler.getByPlaceholder("Enter content title...").fill(postTitle);
+  await scheduler.getByRole("button", { name: "Next" }).click();
+  await scheduler.getByPlaceholder("e.g., Education, Entertainment...").fill("Beauty");
+  await scheduler.getByPlaceholder("Engaging opening line...").fill("Hook");
+  await scheduler.getByRole("button", { name: "Next" }).click();
+  await expect(scheduler.getByRole("button", { name: "Next" })).toBeDisabled();
+  await scheduler.getByLabel("Go Live").fill(`${todayIso}T20:00`);
+  await scheduler.getByRole("button", { name: "Next" }).click();
+  await scheduler.getByRole("button", { name: "Save Content" }).click();
+  await expect(scheduler).toBeHidden();
+  await expect(page.getByRole("button", { name: postTitle, exact: true })).toBeVisible();
+  await expect(feed.locator("li", { hasText: postTitle })).toContainText("Scheduled");
 
   // Request approval, reject with a reason, request again, approve → Published
   await dueChip.click();

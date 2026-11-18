@@ -38,6 +38,16 @@ function airTime(item: ContentItem): string | null {
   return item.scheduled_at ?? item.published_at ?? null;
 }
 
+/** Where the item sits in the feed: its air time, else its due date. */
+function feedTime(item: ContentItem): string | null {
+  return airTime(item) ?? item.due_date ?? null;
+}
+
+function feedStatus(item: ContentItem): string {
+  if (item.stage === "published") return "Published";
+  return item.scheduled_at ? "Scheduled" : "Due";
+}
+
 /** Schedule: week/month calendar of scheduled and due content, plus a feed of what is planned and published. */
 export default function CalendarPage() {
   const { workspace, base } = useWorkspace();
@@ -45,6 +55,7 @@ export default function CalendarPage() {
   const [view, setView] = useState<CalendarView>("week");
   const [anchor, setAnchor] = useState(() => new Date());
   const [wizardDate, setWizardDate] = useState<string | null>(null);
+  const [scheduling, setScheduling] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [platform, setPlatform] = useState<Platform | "all">("all");
   const [range, setRange] = useState(30);
@@ -52,13 +63,15 @@ export default function CalendarPage() {
 
   const days = gridDays(view, anchor);
   const today = localIsoDate(new Date());
+  const onCurrentPeriod = periodTitle(view, anchor) === periodTitle(view, new Date());
 
   const byDay = useMemo(() => {
     const map = new Map<string, { item: ContentItem; due: boolean }[]>();
     const add = (key: string, entry: { item: ContentItem; due: boolean }) =>
       map.set(key, [...(map.get(key) ?? []), entry]);
     for (const item of items ?? []) {
-      if (item.scheduled_at) add(localIsoDate(new Date(item.scheduled_at)), { item, due: false });
+      const air = airTime(item);
+      if (air) add(localIsoDate(new Date(air)), { item, due: false });
       if (item.due_date) add(item.due_date, { item, due: true });
     }
     return map;
@@ -69,11 +82,11 @@ export default function CalendarPage() {
     const now = Date.now();
     const q = query.trim().toLowerCase();
     return (items ?? [])
-      .filter((i) => airTime(i))
+      .filter((i) => feedTime(i))
       .filter((i) => platform === "all" || i.target_platforms.includes(platform))
-      .filter((i) => Math.abs(new Date(airTime(i)!).getTime() - now) <= range * DAY_MS)
+      .filter((i) => Math.abs(new Date(feedTime(i)!).getTime() - now) <= range * DAY_MS)
       .filter((i) => !q || i.title.toLowerCase().includes(q))
-      .sort((a, b) => airTime(b)!.localeCompare(airTime(a)!));
+      .sort((a, b) => feedTime(b)!.localeCompare(feedTime(a)!));
   }, [items, platform, range, query]);
 
   const editing = items?.find((i) => i.id === editingId) ?? null;
@@ -86,7 +99,14 @@ export default function CalendarPage() {
         title="Schedule"
         subtitle="What is planned, and what has already gone out"
         actions={
-          <button type="button" className="btn btn-row" onClick={() => setWizardDate("")}>
+          <button
+            type="button"
+            className="btn btn-row"
+            onClick={() => {
+              setScheduling(true);
+              setWizardDate("");
+            }}
+          >
             <Send size={14} /> Schedule Post
           </button>
         }
@@ -108,21 +128,28 @@ export default function CalendarPage() {
             <button
               type="button"
               className="btn btn-outline"
-              aria-label="Previous"
+              aria-label={`Previous ${view}`}
               onClick={() => setAnchor(shift(view, anchor, -1))}
             >
               <ChevronLeft size={14} />
             </button>
-            <button type="button" className="btn btn-outline" onClick={() => setAnchor(new Date())}>
-              Today
-            </button>
+            {!onCurrentPeriod && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ whiteSpace: "nowrap" }}
+                onClick={() => setAnchor(new Date())}
+              >
+                This {view}
+              </button>
+            )}
             <button
               type="button"
-              className="btn btn-outline"
-              aria-label="Next"
+              className="btn btn-outline btn-row"
+              style={{ whiteSpace: "nowrap" }}
               onClick={() => setAnchor(shift(view, anchor, 1))}
             >
-              <ChevronRight size={14} />
+              Next {view} <ChevronRight size={14} />
             </button>
           </div>
         </div>
@@ -239,14 +266,16 @@ export default function CalendarPage() {
                     {item.target_platforms.map((p) => PLATFORM_LABEL[p]).join(", ") ||
                       "No platforms"}{" "}
                     ·{" "}
-                    {new Date(airTime(item)!).toLocaleString("en-GB", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {airTime(item)
+                      ? new Date(airTime(item)!).toLocaleString("en-GB", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })
+                      : `Due ${new Date(`${item.due_date}T00:00`).toLocaleDateString("en-GB", { dateStyle: "medium" })}`}
                   </small>
                 </span>
                 <span className={`pill ${item.stage === "published" ? "pill-ok" : "pill-neu"}`}>
-                  {item.stage === "published" ? "Published" : "Scheduled"}
+                  {feedStatus(item)}
                 </span>
               </li>
             ))}
@@ -270,7 +299,11 @@ export default function CalendarPage() {
         workspace={workspace.slug}
         base={base}
         initialDueDate={wizardDate || undefined}
-        onClose={() => setWizardDate(null)}
+        schedule={scheduling}
+        onClose={() => {
+          setWizardDate(null);
+          setScheduling(false);
+        }}
         onSaved={(item) => setItems((list) => [item, ...(list ?? [])])}
       />
     </>

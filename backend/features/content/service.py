@@ -54,7 +54,7 @@ class ContentService:
                 id=uuid4(),
                 workspace_id=workspace_id,
                 **request.model_dump(),
-                stage="idea",
+                stage="scheduled" if request.scheduled_at else "idea",
                 created_by=user_id,
                 created_at=now,
                 updated_at=now,

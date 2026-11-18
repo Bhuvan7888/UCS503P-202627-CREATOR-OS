@@ -2024,6 +2024,8 @@ export interface components {
             assignee_user_id?: string | null;
             /** Crm Deal Id */
             crm_deal_id?: string | null;
+            /** Scheduled At */
+            scheduled_at?: string | null;
         };
         /**
          * ContentItemUpdate

@@ -271,3 +271,46 @@
   padding: 10px 12px;
   margin-bottom: 18px;
 }
+
+/* Shown in place of the form while a sign-in request is in flight. */
+.signingIn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeletonBar {
+  height: 44px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    rgba(245, 244, 240, 0.06),
+    rgba(245, 244, 240, 0.16),
+    rgba(245, 244, 240, 0.06)
+  );
+  background-size: 200% 100%;
+  animation: authShimmer 1.2s linear infinite;
+}
+
+.skeletonLabel {
+  height: 12px;
+  width: 30%;
+}
+
+.signingInText {
+  font-size: 13px;
+  color: rgba(245, 244, 240, 0.75);
+  margin: 4px 0 0;
+}
+
+@keyframes authShimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBar {
+    animation: none;
+  }
+}

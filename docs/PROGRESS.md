@@ -44,6 +44,33 @@ brand side stays as it is.
 | 7 | Notifications, Support, remaining Settings tabs (no Billing — the app is free) | done (verified on live DB) |
 | 8 | Hardening: 100-concurrent-user load test, full e2e, security review, docs | done (2026-11-14) |
 
+### Calendar fixes, fast first sign-in, sign-in skeleton (2026-11-18)
+Owner reported: no schedules visible on the calendar; "Today" should read next month / next week; demo sign-in very
+slow after a long gap; no sign that Sign in was pressed.
+- **Why the calendar looked empty (live data, read-only check):** the 3 live items had only due dates — 5 Dec 2026
+  (next month) and 5 Dec **2006** (a year typo the date box accepted). The list under the calendar only showed items
+  with a go-live/publish time, so it said "No items found", and "Schedule Post" opened the idea wizard, which had no
+  go-live field, so nothing could be scheduled from that page. Fixes:
+  - The list under the calendar now includes due-dated items (pill "Due", "Due 5 Dec 2026"); published items are
+    plotted on their publish day even without a go-live time.
+  - "Schedule Post" opens the wizard as **Schedule Post** with a required **Go Live** time (optional when adding an
+    idea); `POST /workspaces/{w}/content` accepts `scheduled_at` and then creates the item in the Scheduled stage.
+  - Due / go-live dates must be between last year and five years ahead (`dateBounds` / `outOfBounds` in
+    `content/utils/calendar-dates.ts`; wizard blocks Next, the item editor refuses to save with a clear message).
+    The two live items dated 2006 will ask for a corrected date the next time they're edited.
+  - Navigation: `‹` · **Next month** / **Next week** · and **This month** / **This week** (shown only after moving
+    away) replaces "Today".
+- **Slow first sign-in:** Render's free plan sleeps after 15 idle minutes, so the first request waits ~30–60 s for a
+  cold boot (warm sign-in is ~2 s; health ~0.5 s). New `.github/workflows/keep-backend-awake.yml` pings `/health`
+  every 10 minutes (public repo, so Actions minutes are free). GitHub pauses scheduled workflows after 60 days with no
+  repo activity — re-enable from the Actions tab if sign-ins get slow again.
+- **Sign-in skeleton:** pressing Sign in swaps the form for a shimmering skeleton and "Signing you in as …"; after 4 s
+  it explains the server is waking up. It stays until the dashboard takes over (no flash back to the form); demo
+  buttons are disabled meanwhile. Respects reduced motion.
+- Verified: 262 backend tests (new: create with a go-live time is Scheduled), e2e 14/14 (new: sign-in skeleton while
+  the request is held; calendar shows a due-only item in the list, Next month / This month, typo year refused,
+  Schedule Post lands on the calendar as Scheduled), tsc/eslint/prettier clean.
+
 ### Platform analytics, updated by hand (started 2026-11-15)
 Until the Instagram (and other) APIs are connected, creators log each platform's numbers themselves, dated, so both
 dashboards stay current. Migrations 009 + 010 confirmed live (brand AI profile/brief 200, creators carry

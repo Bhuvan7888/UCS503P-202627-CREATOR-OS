@@ -16,6 +16,7 @@ import {
   type ContentType,
   type Platform,
 } from "../constants/content";
+import { DATE_RANGE_ERROR, dateBounds, outOfBounds } from "../utils/calendar-dates";
 import styles from "../content.module.css";
 
 type Member = components["schemas"]["MemberOut"];
@@ -50,6 +51,8 @@ interface Props {
   base: string;
   /** Pre-filled due date (YYYY-MM-DD), e.g. from a calendar day. */
   initialDueDate?: string;
+  /** Opened from "Schedule Post": the go-live time is required and the item starts as Scheduled. */
+  schedule?: boolean;
   onClose: () => void;
   onSaved: (item: ContentItem) => void;
 }
@@ -60,9 +63,11 @@ export function AddContentWizard({
   workspace,
   base,
   initialDueDate,
+  schedule = false,
   onClose,
   onSaved,
 }: Props) {
+  const bounds = dateBounds();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [members, setMembers] = useState<Member[]>([]);
@@ -89,9 +94,11 @@ export function AddContentWizard({
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
 
+  const datesBad = outOfBounds(draft.due_date) || outOfBounds(draft.scheduled_at);
   const canNext =
     (step !== 1 || draft.title.trim() !== "") &&
-    (step !== 2 || (draft.pillar.trim() !== "" && draft.hook.trim() !== ""));
+    (step !== 2 || (draft.pillar.trim() !== "" && draft.hook.trim() !== "")) &&
+    (step !== 3 || (!datesBad && (!schedule || !!draft.scheduled_at)));
 
   function close() {
     setStep(0);
@@ -114,6 +121,8 @@ export function AddContentWizard({
       pillar: draft.pillar.trim(),
       hook: draft.hook.trim(),
       description: draft.description?.trim() || null,
+      // datetime-local is in the viewer's time zone; the API stores an absolute time
+      scheduled_at: draft.scheduled_at ? new Date(draft.scheduled_at).toISOString() : null,
     };
     const { data, error: apiError } = await client.POST("/workspaces/{workspace}/content", {
       params: { path: { workspace } },
@@ -151,7 +160,7 @@ export function AddContentWizard({
     <Dialog
       open={open}
       onClose={close}
-      title="Add New Content Idea"
+      title={schedule ? "Schedule Post" : "Add New Content Idea"}
       width={860}
       header={
         <div className={styles.wizardHead}>
@@ -159,8 +168,12 @@ export function AddContentWizard({
             <Lightbulb size={18} />
           </span>
           <div>
-            <h2>Add New Content Idea</h2>
-            <p>Capture a new content idea to grow your pipeline.</p>
+            <h2>{schedule ? "Schedule Post" : "Add New Content Idea"}</h2>
+            <p>
+              {schedule
+                ? "Plan a post and pick when it goes live. It shows on the calendar."
+                : "Capture a new content idea to grow your pipeline."}
+            </p>
           </div>
         </div>
       }
@@ -373,10 +386,25 @@ export function AddContentWizard({
             <input
               className="field"
               type="date"
+              min={bounds.min}
+              max={bounds.max}
               value={draft.due_date ?? ""}
               onChange={(e) => set("due_date", e.target.value || null)}
             />
           </label>
+          <label className={styles.label}>
+            {schedule ? "Go Live" : "Go Live (optional)"}
+            <input
+              className="field"
+              type="datetime-local"
+              required={schedule}
+              min={`${bounds.min}T00:00`}
+              max={`${bounds.max}T23:59`}
+              value={draft.scheduled_at ?? ""}
+              onChange={(e) => set("scheduled_at", e.target.value || null)}
+            />
+          </label>
+          {datesBad && <small className={styles.help}>{DATE_RANGE_ERROR}</small>}
           <label className={styles.label}>
             Assign To
             <select
@@ -417,6 +445,15 @@ export function AddContentWizard({
             </dd>
             <dt>Due Date</dt>
             <dd>{draft.due_date ?? "Not set"}</dd>
+            <dt>Go Live</dt>
+            <dd>
+              {draft.scheduled_at
+                ? new Date(draft.scheduled_at).toLocaleString("en-GB", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })
+                : "Not scheduled"}
+            </dd>
             <dt>Deal</dt>
             <dd>{deals.find((d) => d.id === draft.crm_deal_id)?.company_name ?? "None"}</dd>
             <dt>Assigned To</dt>
